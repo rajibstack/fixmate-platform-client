@@ -6,7 +6,7 @@ import { Menu, X, Wrench, User, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  // টেম্পোরারি স্টেট - পরবর্তীতে জেসন ওয়েব টোকেন (JWT) বা সেশন দিয়ে প্রতিস্থাপন করা হবে
+  // Temporary state - will be replaced by JSON Web Token (JWT) or session later
   const [user, setUser] = useState(null); 
 
   return (
@@ -14,33 +14,35 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo */}
+          {/* Logo matching backend style */}
           <div className="flex-shrink-0">
-            <Link href="/" className="flex items-center gap-2 text-xl font-bold text-sky-400">
-              <Wrench className="w-6 h-6" />
-              <span>FixMate</span>
+            <Link href="/" className="flex items-center gap-2.5 text-xl font-bold text-sky-400 group">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
+                <Wrench className="w-5 h-5" />
+              </div>
+              <span className="tracking-tight text-white">Fix<span className="text-sky-400">Mate</span></span>
             </Link>
           </div>
 
           {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="/" className="hover:text-sky-400 transition">Home</Link>
-            <Link href="/services" className="hover:text-sky-400 transition">Services</Link>
-            <Link href="/about" className="hover:text-sky-400 transition">About Us</Link>
-            <Link href="/contact" className="hover:text-sky-400 transition">Contact</Link>
+            <Link href="/" className="hover:text-sky-400 transition font-medium">Home</Link>
+            <Link href="/services" className="hover:text-sky-400 transition font-medium">Services</Link>
+            <Link href="/about" className="hover:text-sky-400 transition font-medium">About Us</Link>
+            <Link href="/contact" className="hover:text-sky-400 transition font-medium">Contact</Link>
           </div>
 
           {/* Right Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center gap-4">
-                <Link href="/dashboard" className="flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 hover:border-sky-400 transition">
+                <Link href="/dashboard" className="flex items-center gap-2 bg-slate-800 px-3.5 py-2 rounded-xl border border-slate-700 hover:border-sky-400 transition text-sm">
                   <User className="w-4 h-4 text-sky-400" />
                   <span>Dashboard</span>
                 </Link>
                 <button 
                   onClick={() => setUser(null)}
-                  className="flex items-center gap-1 bg-red-500/10 text-red-400 px-3 py-1.5 rounded-lg border border-red-500/20 hover:bg-red-500/20 transition"
+                  className="flex items-center gap-1.5 bg-red-500/10 text-red-400 px-3.5 py-2 rounded-xl border border-red-500/20 hover:bg-red-500/20 transition text-sm font-medium"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Logout</span>
@@ -51,7 +53,7 @@ export default function Navbar() {
                 <Link href="/login" className="px-4 py-2 text-sm font-medium hover:text-sky-400 transition">
                   Login
                 </Link>
-                <Link href="/register" className="px-4 py-2 text-sm font-medium bg-sky-500 hover:bg-sky-600 text-white rounded-lg transition shadow-lg shadow-sky-500/20">
+                <Link href="/register" className="px-4 py-2 text-sm font-medium bg-sky-500 hover:bg-sky-600 text-white rounded-xl transition shadow-lg shadow-sky-500/20">
                   Register
                 </Link>
               </div>
@@ -78,8 +80,8 @@ export default function Navbar() {
           <Link href="/about" className="block py-2 hover:text-sky-400 transition">About Us</Link>
           <Link href="/contact" className="block py-2 hover:text-sky-400 transition">Contact</Link>
           <div className="pt-3 border-t border-slate-800 flex flex-col gap-2">
-            <Link href="/login" className="w-full text-center py-2 bg-slate-800 rounded-lg hover:bg-slate-700 transition">Login</Link>
-            <Link href="/register" className="w-full text-center py-2 bg-sky-500 text-white rounded-lg hover:bg-sky-600 transition">Register</Link>
+            <Link href="/login" className="w-full text-center py-2.5 bg-slate-800 rounded-xl hover:bg-slate-700 transition">Login</Link>
+            <Link href="/register" className="w-full text-center py-2.5 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition">Register</Link>
           </div>
         </div>
       )}
