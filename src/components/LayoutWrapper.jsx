@@ -1,10 +1,11 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
-export default function LayoutWrapper({ children }) {
+function LayoutContent({ children }) {
   const pathname = usePathname();
   const isDashboard = pathname?.startsWith("/dashboard");
 
@@ -18,5 +19,13 @@ export default function LayoutWrapper({ children }) {
       <main className="flex-grow">{children}</main>
       <Footer />
     </>
+  );
+}
+
+export default function LayoutWrapper({ children }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+      <LayoutContent>{children}</LayoutContent>
+    </Suspense>
   );
 }
