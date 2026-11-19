@@ -17,6 +17,7 @@ import {
   Settings,
   PanelLeft,
   X,
+  MessageSquare,
 } from "lucide-react";
 
 function getDashboardPath() {
@@ -161,6 +162,7 @@ export default function DashboardLayout({ children }) {
       { name: "Manage services", href: "/dashboard/admin/services", icon: Settings },
       { name: "All bookings", href: "/dashboard/admin/bookings", icon: CalendarCheck },
       { name: "Transactions", href: "/dashboard/admin/transactions", icon: CreditCard },
+      { name: "Messages", href: "/dashboard/admin/messages", icon: MessageSquare },
     ],
   };
 
