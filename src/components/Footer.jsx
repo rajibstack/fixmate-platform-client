@@ -54,7 +54,7 @@ export default function Footer() {
               <li><Link href="/services" className="hover:text-sky-400 transition">Browse Services</Link></li>
               <li><Link href="/about" className="hover:text-sky-400 transition">How It Works / About</Link></li>
               <li><Link href="/login" className="hover:text-sky-400 transition">Login</Link></li>
-              <li><Link href="/register" className="hover:text-sky-400 transition">Create Account</Link></li>
+              <li><Link href="/signup" className="hover:text-sky-400 transition">Create Account</Link></li>
             </ul>
           </div>
 

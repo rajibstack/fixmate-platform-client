@@ -6,7 +6,6 @@ import { Menu, X, Wrench, User, LogOut } from "lucide-react";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
-  // Temporary state - will be replaced by JSON Web Token (JWT) or session later
   const [user, setUser] = useState(null); 
 
   return (
@@ -14,7 +13,6 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           
-          {/* Logo matching backend style */}
           <div className="flex-shrink-0">
             <Link href="/" className="flex items-center gap-2.5 text-xl font-bold text-sky-400 group">
               <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
@@ -24,7 +22,6 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Menu */}
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/" className="hover:text-sky-400 transition font-medium">Home</Link>
             <Link href="/services" className="hover:text-sky-400 transition font-medium">Services</Link>
@@ -32,7 +29,6 @@ export default function Navbar() {
             <Link href="/contact" className="hover:text-sky-400 transition font-medium">Contact</Link>
           </div>
 
-          {/* Right Action Buttons */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center gap-4">
@@ -53,14 +49,13 @@ export default function Navbar() {
                 <Link href="/login" className="px-4 py-2 text-sm font-medium hover:text-sky-400 transition">
                   Login
                 </Link>
-                <Link href="/register" className="px-4 py-2 text-sm font-medium bg-sky-500 hover:bg-sky-600 text-white rounded-xl transition shadow-lg shadow-sky-500/20">
-                  Register
+                <Link href="/signup" className="px-4 py-2 text-sm font-medium bg-sky-500 hover:bg-sky-600 text-white rounded-xl transition shadow-lg shadow-sky-500/20">
+                  Sign Up
                 </Link>
               </div>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
           <div className="flex md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -72,7 +67,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Dropdown Menu */}
       {isOpen && (
         <div className="md:hidden bg-slate-900 border-b border-slate-800 px-4 pt-2 pb-4 space-y-3">
           <Link href="/" className="block py-2 hover:text-sky-400 transition">Home</Link>
@@ -81,7 +75,7 @@ export default function Navbar() {
           <Link href="/contact" className="block py-2 hover:text-sky-400 transition">Contact</Link>
           <div className="pt-3 border-t border-slate-800 flex flex-col gap-2">
             <Link href="/login" className="w-full text-center py-2.5 bg-slate-800 rounded-xl hover:bg-slate-700 transition">Login</Link>
-            <Link href="/register" className="w-full text-center py-2.5 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition">Register</Link>
+            <Link href="/signup" className="w-full text-center py-2.5 bg-sky-500 text-white rounded-xl hover:bg-sky-600 transition">Sign Up</Link>
           </div>
         </div>
       )}
