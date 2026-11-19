@@ -6,11 +6,11 @@ import {
   Wrench,
   CheckCircle2,
   AlertCircle,
-  Loader2,
   XCircle,
   CreditCard,
   ArrowRight,
 } from "lucide-react";
+import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -80,6 +80,7 @@ export default function CustomerMyBookingsPage() {
   const [bookings, setBookings] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [actionId, setActionId] = useState(null);
   const [feedback, setFeedback] = useState(null);
 
@@ -270,6 +271,10 @@ export default function CustomerMyBookingsPage() {
     { key: "closed", label: "Closed", count: counts.closed },
   ];
 
+  if (loading || navigating) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
@@ -330,12 +335,7 @@ export default function CustomerMyBookingsPage() {
       )}
 
       {/* Bookings List / States */}
-      {loading ? (
-        <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400 bg-slate-900/90 border border-slate-800 rounded-3xl">
-          <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-          <span className="text-sm">Loading your bookings...</span>
-        </div>
-      ) : filteredBookings.length === 0 ? (
+      {filteredBookings.length === 0 ? (
         <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
             <Wrench className="w-6 h-6" />
@@ -349,6 +349,7 @@ export default function CustomerMyBookingsPage() {
           <div className="pt-2">
             <Link
               href="/services"
+              onClick={() => setNavigating(true)}
               className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20"
             >
               <span>Browse Services</span>
@@ -477,7 +478,7 @@ export default function CustomerMyBookingsPage() {
                           className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           {busy ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <FixMateSpinner compact />
                           ) : (
                             <XCircle className="w-3.5 h-3.5" />
                           )}
@@ -493,7 +494,7 @@ export default function CustomerMyBookingsPage() {
                           className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           {busy ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <FixMateSpinner compact />
                           ) : (
                             <CreditCard className="w-3.5 h-3.5" />
                           )}

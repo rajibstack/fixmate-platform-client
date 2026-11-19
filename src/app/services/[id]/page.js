@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   ExternalLink,
 } from "lucide-react";
+import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 function getInitials(name = "") {
   return (
@@ -49,6 +50,7 @@ export default function ServiceDetailsPage() {
   const [service, setService] = useState(null);
   const [technician, setTechnician] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [notFound, setNotFound] = useState(false);
 
   const [sessionUser, setSessionUser] = useState(null);
@@ -181,6 +183,7 @@ export default function ServiceDetailsPage() {
     setFormError("");
     if (!isLoggedIn) {
       const redirectTarget = encodeURIComponent(`/services/${serviceId}`);
+      setNavigating(true);
       router.push(`/sign-in?redirect=${redirectTarget}`);
       return;
     }
@@ -272,13 +275,8 @@ export default function ServiceDetailsPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-slate-300 flex flex-col items-center justify-center gap-3">
-        <Loader2 className="w-7 h-7 animate-spin text-sky-400" />
-        <span className="text-sm">Loading service details...</span>
-      </div>
-    );
+  if (loading || navigating) {
+    return <PublicPageSkeleton cards={3} />;
   }
 
   if (notFound || !service) {
@@ -299,6 +297,7 @@ export default function ServiceDetailsPage() {
           <div className="pt-2">
             <Link
               href="/services"
+              onClick={() => setNavigating(true)}
               className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -363,6 +362,7 @@ export default function ServiceDetailsPage() {
         <div>
           <Link
             href="/services"
+            onClick={() => setNavigating(true)}
             className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-sky-400 transition"
           >
             <ArrowLeft className="w-4 h-4" />

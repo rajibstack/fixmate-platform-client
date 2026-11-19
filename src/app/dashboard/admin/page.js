@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import AdminOverview from "@/components/overviews/AdminOverview";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 export default function AdminDashboardPage() {
   const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     try {
@@ -14,8 +16,14 @@ export default function AdminDashboardPage() {
       }
     } catch {
       setUser(null);
+    } finally {
+      setReady(true);
     }
   }, []);
+
+  if (!ready) {
+    return <DashboardPageSkeleton />;
+  }
 
   return <AdminOverview user={user} />;
 }

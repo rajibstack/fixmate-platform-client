@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -12,6 +13,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
+import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 const highlights = [
   {
@@ -76,6 +78,12 @@ const pillars = [
 ];
 
 export default function AboutPage() {
+  const [navigating, setNavigating] = useState(false);
+
+  if (navigating) {
+    return <PublicPageSkeleton cards={6} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-12 sm:space-y-16">
@@ -102,6 +110,7 @@ export default function AboutPage() {
             <div className="flex flex-wrap items-center gap-3.5 pt-2">
               <Link
                 href="/services"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold transition shadow-lg shadow-sky-500/20"
               >
                 <span>Browse services</span>
@@ -110,6 +119,7 @@ export default function AboutPage() {
 
               <Link
                 href="/sign-in"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-slate-200 text-sm font-semibold transition"
               >
                 <span>Go to dashboard</span>
@@ -235,6 +245,7 @@ export default function AboutPage() {
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
                 href="/services"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold transition shadow-md shadow-sky-500/20"
               >
                 <span>Explore services</span>
@@ -243,6 +254,7 @@ export default function AboutPage() {
 
               <Link
                 href="/sign-up"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-950/90 hover:bg-slate-900 border border-slate-700 text-white text-sm font-semibold transition"
               >
                 Create account

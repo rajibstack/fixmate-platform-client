@@ -20,8 +20,8 @@ import {
   Clock,
   Award,
   Sparkles,
-  Loader2,
 } from "lucide-react";
+import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 const POPULAR_CATEGORIES = [
   {
@@ -168,6 +168,7 @@ export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [allServices, setAllServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
 
   const fetchFeaturedServices = useCallback(async () => {
@@ -218,6 +219,7 @@ export default function HomePage() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const trimmed = searchQuery.trim();
+    setNavigating(true);
     if (trimmed) {
       router.push(`/services?search=${encodeURIComponent(trimmed)}`);
     } else {
@@ -232,6 +234,10 @@ export default function HomePage() {
       section.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
+
+  if (navigating) {
+    return <PublicPageSkeleton cards={6} />;
+  }
 
   return (
     <div className="bg-slate-950 text-slate-100">
@@ -284,6 +290,7 @@ export default function HomePage() {
 
                 <Link
                   href="/services"
+                  onClick={() => setNavigating(true)}
                   className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-semibold text-sm px-5 py-3 rounded-xl transition shrink-0"
                 >
                   <span>Explore Services</span>
@@ -382,6 +389,7 @@ export default function HomePage() {
                   ? `/services?category=${encodeURIComponent(selectedCategory)}`
                   : "/services"
               }
+              onClick={() => setNavigating(true)}
               className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-400 hover:text-sky-300 transition"
             >
               <span>View All Services</span>
@@ -391,10 +399,7 @@ export default function HomePage() {
         </div>
 
         {loading ? (
-          <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400 bg-slate-900/60 border border-slate-800 rounded-3xl">
-            <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-            <span className="text-sm">Loading featured services...</span>
-          </div>
+          <PublicPageSkeleton cards={6} />
         ) : error ? (
           <div className="py-12 px-6 text-center bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
             <p className="text-sm font-medium text-rose-300">{error}</p>
@@ -492,6 +497,7 @@ export default function HomePage() {
 
                     <Link
                       href={`/services/${id}`}
+                      onClick={() => setNavigating(true)}
                       className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
                     >
                       <span>View Details</span>
@@ -577,6 +583,7 @@ export default function HomePage() {
 
             <Link
               href="/services"
+              onClick={() => setNavigating(true)}
               className="text-sm font-semibold text-sky-400 hover:text-sky-300 inline-flex items-center gap-1.5 self-start sm:self-auto"
             >
               <span>Browse all categories</span>
@@ -643,6 +650,7 @@ export default function HomePage() {
             </div>
             <Link
               href="/services"
+              onClick={() => setNavigating(true)}
               className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20 self-start sm:self-auto"
             >
               <span>Book a Repair</span>

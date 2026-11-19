@@ -4,11 +4,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   CreditCard,
-  Loader2,
   AlertCircle,
   ArrowRight,
   Receipt,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -48,6 +48,7 @@ export default function CustomerPaymentHistoryPage() {
 
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
 
   const fetchPaymentHistory = useCallback(async () => {
@@ -99,6 +100,10 @@ export default function CustomerPaymentHistoryPage() {
     return { count, totalAmount };
   }, [payments]);
 
+  if (loading || navigating) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
@@ -107,9 +112,7 @@ export default function CustomerPaymentHistoryPage() {
           Payment history
         </h1>
         <p className="text-slate-400 text-sm mt-1.5">
-          {loading
-            ? "Loading your completed payments..."
-            : `${summary.count} payments, $${summary.totalAmount} in total.`}
+          {`${summary.count} payments, $${summary.totalAmount} in total.`}
         </p>
       </div>
 
@@ -122,12 +125,7 @@ export default function CustomerPaymentHistoryPage() {
       )}
 
       {/* Content */}
-      {loading ? (
-        <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400 bg-slate-900/90 border border-slate-800 rounded-3xl">
-          <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-          <span className="text-sm">Loading payment history...</span>
-        </div>
-      ) : payments.length === 0 ? (
+      {payments.length === 0 ? (
         <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
           <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
             <Receipt className="w-6 h-6" />
@@ -142,6 +140,7 @@ export default function CustomerPaymentHistoryPage() {
           <div className="pt-2">
             <Link
               href="/dashboard/customer/bookings"
+              onClick={() => setNavigating(true)}
               className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20"
             >
               <span>Go to My bookings</span>

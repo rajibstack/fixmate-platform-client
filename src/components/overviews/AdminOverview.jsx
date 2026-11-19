@@ -9,8 +9,8 @@ import {
   DollarSign,
   ArrowUpRight,
   AlertCircle,
-  Loader2,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function getBookingAmount(booking) {
   const raw =
@@ -48,6 +48,7 @@ function formatStatusLabel(status = "") {
 
 export default function AdminOverview() {
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -170,6 +171,10 @@ export default function AdminOverview() {
     loadAdminOverview();
   }, [loadAdminOverview]);
 
+  if (loading || navigating) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       {/* Header */}
@@ -200,11 +205,9 @@ export default function AdminOverview() {
             <Users className="w-4 h-4 text-slate-400" />
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.totalUsers}
-            </p>
+            <p className="text-3xl font-bold text-white">{stats.totalUsers}</p>
             <p className="text-xs text-slate-400 mt-1.5">
-              {loading ? "Loading..." : `${stats.customerCount} customers`}
+              {`${stats.customerCount} customers`}
             </p>
           </div>
         </div>
@@ -218,7 +221,7 @@ export default function AdminOverview() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.totalTechnicians}
+              {stats.totalTechnicians}
             </p>
             <p className="text-xs text-slate-400 mt-1.5">
               Verified repair specialists
@@ -235,10 +238,10 @@ export default function AdminOverview() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.pendingServices}
+              {stats.pendingServices}
             </p>
             <p className="text-xs text-slate-400 mt-1.5">
-              {loading ? "Loading..." : `${stats.approvedServices} approved`}
+              {`${stats.approvedServices} approved`}
             </p>
           </div>
         </div>
@@ -254,10 +257,10 @@ export default function AdminOverview() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : `$${stats.totalRevenue}`}
+              {`$${stats.totalRevenue}`}
             </p>
             <p className="text-xs text-sky-300/80 mt-1.5">
-              {loading ? "Loading..." : `${stats.paymentCount} payments`}
+              {`${stats.paymentCount} payments`}
             </p>
           </div>
         </div>
@@ -279,6 +282,7 @@ export default function AdminOverview() {
               </div>
               <Link
                 href="/dashboard/admin/services"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 transition"
               >
                 <span>Review services</span>
@@ -286,12 +290,7 @@ export default function AdminOverview() {
               </Link>
             </div>
 
-            {loading ? (
-              <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
-                <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-                <span>Loading pending services...</span>
-              </div>
-            ) : pendingServicesList.length === 0 ? (
+            {pendingServicesList.length === 0 ? (
               <div className="py-10 text-center border border-dashed border-slate-800 rounded-2xl text-sm text-slate-400">
                 No services waiting for review right now.
               </div>
@@ -318,7 +317,7 @@ export default function AdminOverview() {
                         </p>
                       </div>
                       <span className="text-base font-bold text-white shrink-0">
-                        ${Number(srv.price || 0)}
+                        {`$${Number(srv.price || 0)}`}
                       </span>
                     </div>
                   );
@@ -342,6 +341,7 @@ export default function AdminOverview() {
               </div>
               <Link
                 href="/dashboard/admin/bookings"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 transition"
               >
                 <span>All bookings</span>
@@ -349,12 +349,7 @@ export default function AdminOverview() {
               </Link>
             </div>
 
-            {loading ? (
-              <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
-                <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-                <span>Loading latest bookings...</span>
-              </div>
-            ) : latestBookingsList.length === 0 ? (
+            {latestBookingsList.length === 0 ? (
               <div className="py-10 text-center border border-dashed border-slate-800 rounded-2xl text-sm text-slate-400">
                 No bookings recorded yet.
               </div>

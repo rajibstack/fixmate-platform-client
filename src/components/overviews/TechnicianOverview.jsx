@@ -9,10 +9,10 @@ import {
   DollarSign,
   ArrowUpRight,
   Calendar,
-  Loader2,
   Inbox,
   Wallet,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -49,6 +49,7 @@ function getBookingAmount(booking) {
 
 export default function TechnicianOverview() {
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
     totalServices: 0,
@@ -79,6 +80,8 @@ export default function TechnicianOverview() {
         ]);
 
         let servicesList = [];
+        let loadError = "";
+
         if (servicesRes.status === "fulfilled") {
           const sData = await servicesRes.value.json().catch(() => ({}));
           if (servicesRes.value.ok) {
@@ -87,8 +90,8 @@ export default function TechnicianOverview() {
               : Array.isArray(sData)
               ? sData
               : [];
-          } else if (active) {
-            setError(sData?.message || "Could not load your services.");
+          } else {
+            loadError = sData?.message || "Could not load your services.";
           }
         }
 
@@ -101,12 +104,16 @@ export default function TechnicianOverview() {
               : Array.isArray(bData)
               ? bData
               : [];
-          } else if (active && !error) {
-            setError(bData?.message || "Could not load your bookings.");
+          } else if (!loadError) {
+            loadError = bData?.message || "Could not load your bookings.";
           }
         }
 
         if (!active) return;
+
+        if (loadError) {
+          setError(loadError);
+        }
 
         const approvedCount = servicesList.filter(
           (s) => (s?.status || "").toString().toLowerCase() === "approved"
@@ -158,6 +165,10 @@ export default function TechnicianOverview() {
     };
   }, [apiUrl]);
 
+  if (loading || navigating) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <div>
@@ -185,9 +196,7 @@ export default function TechnicianOverview() {
             <Wrench className="w-4 h-4 text-slate-500" />
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.totalServices}
-            </p>
+            <p className="text-3xl font-bold text-white">{stats.totalServices}</p>
             <p className="text-xs text-slate-500 mt-1.5">
               Listed under your profile
             </p>
@@ -203,12 +212,10 @@ export default function TechnicianOverview() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.approvedServices}
+              {stats.approvedServices}
             </p>
             <p className="text-xs text-slate-400 mt-1.5">
-              {loading
-                ? "Checking review status..."
-                : `${stats.pendingReviewServices} waiting for review`}
+              {`${stats.pendingReviewServices} waiting for review`}
             </p>
           </div>
         </div>
@@ -222,7 +229,7 @@ export default function TechnicianOverview() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.pendingRequests}
+              {stats.pendingRequests}
             </p>
             <p className="text-xs text-slate-400 mt-1.5">
               Waiting for you to accept or decline
@@ -241,7 +248,7 @@ export default function TechnicianOverview() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : `$${stats.totalEarnings}`}
+              {`$${stats.totalEarnings}`}
             </p>
             <p className="text-xs text-sky-300/80 mt-1.5">
               Completed &amp; settled payouts
@@ -263,6 +270,7 @@ export default function TechnicianOverview() {
             </div>
             <Link
               href="/dashboard/technician/requests"
+              onClick={() => setNavigating(true)}
               className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 transition"
             >
               <span>Manage requests</span>
@@ -270,12 +278,7 @@ export default function TechnicianOverview() {
             </Link>
           </div>
 
-          {loading ? (
-            <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
-              <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-              <span>Loading requests...</span>
-            </div>
-          ) : newRequests.length === 0 ? (
+          {newRequests.length === 0 ? (
             <div className="py-10 text-center space-y-2">
               <Inbox className="w-6 h-6 text-slate-500 mx-auto" />
               <p className="text-sm font-medium text-slate-300">
@@ -322,12 +325,7 @@ export default function TechnicianOverview() {
             </p>
           </div>
 
-          {loading ? (
-            <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
-              <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-              <span>Loading earnings...</span>
-            </div>
-          ) : recentEarnings.length === 0 ? (
+          {recentEarnings.length === 0 ? (
             <div className="py-10 text-center space-y-2">
               <Wallet className="w-6 h-6 text-slate-500 mx-auto" />
               <p className="text-sm font-medium text-slate-300">
@@ -354,7 +352,7 @@ export default function TechnicianOverview() {
                     </p>
                   </div>
                   <span className="text-base font-bold text-sky-400 shrink-0">
-                    ${getBookingAmount(item)}
+                    {`$${getBookingAmount(item)}`}
                   </span>
                 </div>
               ))}

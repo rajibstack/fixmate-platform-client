@@ -10,10 +10,10 @@ import {
   ArrowRight,
   SlidersHorizontal,
   RotateCcw,
-  Loader2,
   UserCheck,
   Laptop,
 } from "lucide-react";
+import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 const CATEGORY_OPTIONS = [
   "All",
@@ -80,6 +80,7 @@ function BrowseServicesContent() {
 
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
 
   const [searchTerm, setSearchTerm] = useState(initialQuery);
@@ -198,6 +199,10 @@ function BrowseServicesContent() {
     (selectedCategory && selectedCategory !== "All") ||
     sortBy !== "newest";
 
+  if (loading || navigating) {
+    return <PublicPageSkeleton cards={8} />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-10 sm:py-14">
       <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
@@ -311,12 +316,7 @@ function BrowseServicesContent() {
         </div>
 
         {/* Services Grid / States */}
-        {loading ? (
-          <div className="py-20 flex flex-col items-center justify-center gap-3 text-slate-400 bg-slate-900/60 border border-slate-800 rounded-3xl">
-            <Loader2 className="w-7 h-7 animate-spin text-sky-400" />
-            <span className="text-sm">Loading available services...</span>
-          </div>
-        ) : error ? (
+        {error ? (
           <div className="py-14 px-6 text-center bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
             <p className="text-sm font-medium text-rose-300">{error}</p>
             <button
@@ -422,6 +422,7 @@ function BrowseServicesContent() {
 
                     <Link
                       href={`/services/${id}`}
+                      onClick={() => setNavigating(true)}
                       className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
                     >
                       <span>View Details</span>
@@ -440,13 +441,7 @@ function BrowseServicesContent() {
 
 export default function ServicesPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-sm">
-          Loading services...
-        </div>
-      }
-    >
+    <Suspense fallback={<PublicPageSkeleton cards={8} />}>
       <BrowseServicesContent />
     </Suspense>
   );

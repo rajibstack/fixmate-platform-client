@@ -10,8 +10,8 @@ import {
   X,
   CheckCircle2,
   AlertCircle,
-  Loader2,
 } from "lucide-react";
+import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 const CATEGORIES = [
   "Smartphone",
@@ -51,6 +51,7 @@ export default function MyServicesPage() {
 
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [feedback, setFeedback] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
@@ -286,6 +287,10 @@ export default function MyServicesPage() {
     }
   };
 
+  if (loading || navigating) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-800/90">
@@ -300,6 +305,7 @@ export default function MyServicesPage() {
 
         <Link
           href="/dashboard/technician/add-service"
+          onClick={() => setNavigating(true)}
           className="inline-flex items-center justify-center gap-2 self-start sm:self-auto bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20"
         >
           <Plus className="w-4 h-4" />
@@ -327,12 +333,7 @@ export default function MyServicesPage() {
       )}
 
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
-        {loading ? (
-          <div className="py-16 flex flex-col items-center justify-center text-slate-400 gap-2.5">
-            <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-            <span className="text-sm">Loading your services...</span>
-          </div>
-        ) : services.length === 0 ? (
+        {services.length === 0 ? (
           <div className="py-16 px-6 text-center space-y-3">
             <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
               <Wrench className="w-6 h-6" />
@@ -347,6 +348,7 @@ export default function MyServicesPage() {
             <div className="pt-2">
               <Link
                 href="/dashboard/technician/add-service"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20"
               >
                 <Plus className="w-4 h-4" />
@@ -455,7 +457,11 @@ export default function MyServicesPage() {
                             onClick={() => handleDeleteService(service)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
                           >
-                            <Trash2 className="w-3.5 h-3.5" />
+                            {deletingId === id ? (
+                              <FixMateSpinner compact />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
                             <span>
                               {deletingId === id ? "Deleting..." : "Delete"}
                             </span>
@@ -606,9 +612,10 @@ export default function MyServicesPage() {
                 <button
                   type="submit"
                   disabled={savingEdit}
-                  className="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold disabled:opacity-60 transition shadow-lg shadow-sky-500/20 cursor-pointer"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold disabled:opacity-60 transition shadow-lg shadow-sky-500/20 cursor-pointer"
                 >
-                  {savingEdit ? "Saving..." : "Save changes"}
+                  {savingEdit && <FixMateSpinner compact />}
+                  <span>{savingEdit ? "Saving..." : "Save changes"}</span>
                 </button>
               </div>
             </form>

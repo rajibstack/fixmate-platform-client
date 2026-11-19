@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Lock,
 } from "lucide-react";
+import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 const CATEGORIES = [
   "Smartphone",
@@ -58,6 +59,7 @@ export default function AddServicePage() {
   const [imagePreview, setImagePreview] = useState("");
   const [uploadingImage, setUploadingImage] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
@@ -265,6 +267,7 @@ export default function AddServicePage() {
       setImagePreview("");
 
       setTimeout(() => {
+        setNavigating(true);
         router.push("/dashboard/technician/my-services");
       }, 1200);
     } catch (err) {
@@ -276,6 +279,10 @@ export default function AddServicePage() {
       setSubmitting(false);
     }
   };
+
+  if (navigating) {
+    return <DashboardPageSkeleton />;
+  }
 
   const previewImageSrc = formData.image || imagePreview;
 
@@ -299,6 +306,7 @@ export default function AddServicePage() {
 
         <Link
           href="/dashboard/technician/my-services"
+          onClick={() => setNavigating(true)}
           className="inline-flex items-center gap-2 self-start sm:self-auto text-xs sm:text-sm font-medium text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 px-4 py-2.5 rounded-xl transition"
         >
           <ArrowLeft className="w-4 h-4 text-sky-400" />
@@ -570,6 +578,7 @@ export default function AddServicePage() {
               Account details are locked here and can only be updated from{" "}
               <Link
                 href="/dashboard/profile"
+                onClick={() => setNavigating(true)}
                 className="text-sky-400 hover:underline font-medium"
               >
                 Update profile
@@ -614,7 +623,11 @@ export default function AddServicePage() {
 
               <div className="flex-1 space-y-2">
                 <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white transition cursor-pointer">
-                  <Upload className="w-4 h-4 text-sky-400" />
+                  {uploadingImage ? (
+                    <FixMateSpinner compact />
+                  ) : (
+                    <Upload className="w-4 h-4 text-sky-400" />
+                  )}
                   <span>{uploadingImage ? "Uploading..." : "Upload image"}</span>
                   <input
                     type="file"
@@ -715,7 +728,11 @@ export default function AddServicePage() {
                 disabled={submitting || uploadingImage}
                 className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-semibold text-sm px-5 py-3 rounded-xl transition shadow-lg shadow-sky-500/20 cursor-pointer shrink-0"
               >
-                <PlusCircle className="w-4 h-4" />
+                {submitting ? (
+                  <FixMateSpinner compact />
+                ) : (
+                  <PlusCircle className="w-4 h-4" />
+                )}
                 <span>{submitting ? "Submitting..." : "Submit for review"}</span>
               </button>
             </div>

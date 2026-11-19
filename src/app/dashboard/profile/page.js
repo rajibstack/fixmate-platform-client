@@ -10,6 +10,7 @@ import {
   Save,
   User as UserIcon,
 } from "lucide-react";
+import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 function formatRoleLabel(role) {
   const normalized = (role || "technician").toLowerCase();
@@ -31,15 +32,20 @@ export default function UpdateProfilePage() {
   });
 
   const [photoPreview, setPhotoPreview] = useState("");
+  const [loadingProfile, setLoadingProfile] = useState(true);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
   useEffect(() => {
+    let active = true;
+    let hasCachedUser = false;
+
     try {
       const stored = localStorage.getItem("user");
       if (stored) {
         const parsed = JSON.parse(stored);
+        hasCachedUser = Boolean(parsed && typeof parsed === "object");
         setFormData((prev) => ({
           ...prev,
           name: parsed?.name || "",
@@ -59,7 +65,16 @@ export default function UpdateProfilePage() {
     }
 
     const token = localStorage.getItem("token");
-    if (!token) return;
+    if (!token) {
+      if (active) setLoadingProfile(false);
+      return () => {
+        active = false;
+      };
+    }
+
+    if (hasCachedUser && active) {
+      setLoadingProfile(false);
+    }
 
     fetch(`${apiUrl}/api/auth/me`, {
       headers: {
@@ -68,6 +83,7 @@ export default function UpdateProfilePage() {
     })
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
+        if (!active) return;
         if (data?.success && data?.user) {
           setFormData((prev) => ({
             ...prev,
@@ -86,7 +102,14 @@ export default function UpdateProfilePage() {
       })
       .catch(() => {
         // fallback to localStorage data
+      })
+      .finally(() => {
+        if (active) setLoadingProfile(false);
       });
+
+    return () => {
+      active = false;
+    };
   }, [apiUrl]);
 
   useEffect(() => {
@@ -270,6 +293,10 @@ export default function UpdateProfilePage() {
     }
   };
 
+  if (loadingProfile) {
+    return <DashboardPageSkeleton />;
+  }
+
   const displayAvatar = formData.avatar || photoPreview;
 
   return (
@@ -335,7 +362,11 @@ export default function UpdateProfilePage() {
 
           <div className="space-y-1.5">
             <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white transition cursor-pointer">
-              <Upload className="w-4 h-4 text-sky-400" />
+              {uploadingPhoto ? (
+                <FixMateSpinner compact />
+              ) : (
+                <Upload className="w-4 h-4 text-sky-400" />
+              )}
               <span>{uploadingPhoto ? "Uploading..." : "Upload photo"}</span>
               <input
                 type="file"
@@ -472,7 +503,11 @@ export default function UpdateProfilePage() {
             disabled={saving || uploadingPhoto}
             className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 disabled:opacity-60 disabled:cursor-not-allowed text-slate-950 font-semibold text-sm px-6 py-3 rounded-xl transition shadow-lg shadow-sky-500/20 cursor-pointer"
           >
-            <Save className="w-4 h-4" />
+            {saving ? (
+              <FixMateSpinner compact />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
             <span>{saving ? "Saving..." : "Save profile"}</span>
           </button>
         </div>

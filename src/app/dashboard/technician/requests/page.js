@@ -4,7 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CheckCircle2,
   AlertCircle,
-  Loader2,
   Inbox,
   XCircle,
   Check,
@@ -12,6 +11,7 @@ import {
   CheckCheck,
   Wrench,
 } from "lucide-react";
+import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -195,6 +195,10 @@ export default function TechnicianManageRequestsPage() {
     { key: "completed", label: "Completed", count: counts.completed },
   ];
 
+  if (loading) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
@@ -255,12 +259,7 @@ export default function TechnicianManageRequestsPage() {
       )}
 
       {/* Requests List / States */}
-      {loading ? (
-        <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400 bg-slate-900/90 border border-slate-800 rounded-3xl">
-          <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-          <span className="text-sm">Loading incoming repair requests...</span>
-        </div>
-      ) : filteredRequests.length === 0 ? (
+      {filteredRequests.length === 0 ? (
         <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-2.5">
           <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
             <Inbox className="w-6 h-6" />
@@ -412,7 +411,7 @@ export default function TechnicianManageRequestsPage() {
                             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold transition shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-50 whitespace-nowrap"
                           >
                             {isAccepting ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <FixMateSpinner compact />
                             ) : (
                               <Check className="w-3.5 h-3.5" />
                             )}
@@ -428,7 +427,7 @@ export default function TechnicianManageRequestsPage() {
                             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                           >
                             {isRejecting ? (
-                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                              <FixMateSpinner compact />
                             ) : (
                               <XCircle className="w-3.5 h-3.5" />
                             )}
@@ -447,7 +446,7 @@ export default function TechnicianManageRequestsPage() {
                           className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-bold transition shadow-md shadow-sky-500/20 cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           {isStarting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <FixMateSpinner compact />
                           ) : (
                             <Play className="w-3.5 h-3.5" />
                           )}
@@ -465,7 +464,7 @@ export default function TechnicianManageRequestsPage() {
                           className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition shadow-md shadow-amber-500/20 cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           {isCompleting ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            <FixMateSpinner compact />
                           ) : (
                             <CheckCheck className="w-3.5 h-3.5" />
                           )}

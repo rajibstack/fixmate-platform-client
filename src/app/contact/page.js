@@ -6,7 +6,6 @@ import {
   AlertCircle,
   CheckCircle2,
   Clock,
-  Loader2,
   Mail,
   MapPin,
   MessageSquare,
@@ -15,6 +14,7 @@ import {
   ShieldCheck,
   Wrench,
 } from "lucide-react";
+import { FixMateSpinner, PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 const contactMethods = [
   {
@@ -73,6 +73,7 @@ export default function ContactPage() {
     message: "",
   });
   const [submitting, setSubmitting] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
   const apiUrl = (
@@ -148,6 +149,10 @@ export default function ContactPage() {
       setSubmitting(false);
     }
   };
+
+  if (navigating) {
+    return <PublicPageSkeleton cards={4} />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
@@ -242,98 +247,100 @@ export default function ContactPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="name"
-                    className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
-                  >
-                    Full name
-                  </label>
-                  <input
-                    id="name"
-                    name="name"
-                    type="text"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="Your name"
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition"
-                  />
+            {submitting ? (
+              <div className="rounded-2xl bg-slate-950/80 border border-slate-800 px-4">
+                <FixMateSpinner label="Sending your message..." compact />
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="name"
+                      className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                    >
+                      Full name
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      placeholder="Your name"
+                      className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="email"
+                      className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                    >
+                      Email address
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      placeholder="you@example.com"
+                      className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition"
+                    />
+                  </div>
                 </div>
 
                 <div>
                   <label
-                    htmlFor="email"
+                    htmlFor="topic"
                     className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
                   >
-                    Email address
+                    Topic
                   </label>
-                  <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    value={formData.email}
+                  <select
+                    id="topic"
+                    name="topic"
+                    value={formData.topic}
                     onChange={handleChange}
-                    placeholder="you@example.com"
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition"
+                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white transition"
+                  >
+                    {topics.map((topic) => (
+                      <option key={topic} value={topic} className="bg-slate-950">
+                        {topic}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="message"
+                    className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                  >
+                    Message
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={5}
+                    value={formData.message}
+                    onChange={handleChange}
+                    placeholder="Describe your question, booking ID, or device issue..."
+                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition resize-y"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label
-                  htmlFor="topic"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold transition shadow-lg shadow-sky-500/20 cursor-pointer disabled:opacity-60"
                 >
-                  Topic
-                </label>
-                <select
-                  id="topic"
-                  name="topic"
-                  value={formData.topic}
-                  onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white transition"
-                >
-                  {topics.map((topic) => (
-                    <option key={topic} value={topic} className="bg-slate-950">
-                      {topic}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="message"
-                  className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
-                >
-                  Message
-                </label>
-                <textarea
-                  id="message"
-                  name="message"
-                  rows={5}
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="Describe your question, booking ID, or device issue..."
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition resize-y"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold transition shadow-lg shadow-sky-500/20 cursor-pointer disabled:opacity-60"
-              >
-                {submitting ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
                   <Send className="w-4 h-4" />
-                )}
-                <span>{submitting ? "Sending..." : "Send message"}</span>
-              </button>
-            </form>
+                  <span>Send message</span>
+                </button>
+              </form>
+            )}
           </div>
 
           {/* Right Helpful Notes & Shortcuts */}
@@ -375,12 +382,14 @@ export default function ContactPage() {
               <div className="flex flex-wrap items-center gap-3 pt-1">
                 <Link
                   href="/services"
+                  onClick={() => setNavigating(true)}
                   className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-bold transition shadow-md shadow-sky-500/20"
                 >
                   Browse services
                 </Link>
                 <Link
                   href="/sign-in"
+                  onClick={() => setNavigating(true)}
                   className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-950/90 hover:bg-slate-900 border border-slate-700 text-white text-sm font-semibold transition"
                 >
                   Sign in

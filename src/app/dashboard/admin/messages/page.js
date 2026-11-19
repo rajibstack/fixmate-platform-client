@@ -4,12 +4,12 @@ import { useCallback, useEffect, useState } from "react";
 import {
   CheckCircle2,
   Clock,
-  Loader2,
   Mail,
   MessageSquare,
   RefreshCw,
   User,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 const statusStyles = {
   unread: "bg-sky-500/15 text-sky-300 border-sky-500/30",
@@ -102,6 +102,10 @@ export default function AdminMessagesPage() {
       ? messages
       : messages.filter((m) => (m.status || "unread") === filter);
 
+  if (loading) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header & Controls */}
@@ -138,19 +142,14 @@ export default function AdminMessagesPage() {
             onClick={fetchMessages}
             className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition cursor-pointer"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+            <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
           </button>
         </div>
       </div>
 
       {/* Content */}
-      {loading ? (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-10 flex items-center justify-center gap-3 text-slate-400">
-          <Loader2 className="w-5 h-5 animate-spin text-sky-400" />
-          <span>Loading messages...</span>
-        </div>
-      ) : error ? (
+      {error ? (
         <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl p-5 text-sm">
           {error}
         </div>

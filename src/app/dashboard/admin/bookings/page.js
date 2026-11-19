@@ -6,10 +6,10 @@ import {
   Calendar,
   CheckCircle2,
   ClipboardList,
-  Loader2,
   User,
   Wrench,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -181,6 +181,10 @@ export default function AdminAllBookingsPage() {
     { key: "cancelled", label: "Cancelled", count: counts.cancelled },
   ];
 
+  if (loading) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
@@ -231,12 +235,7 @@ export default function AdminAllBookingsPage() {
       )}
 
       {/* Bookings Table / Cards */}
-      {loading ? (
-        <div className="py-16 flex flex-col items-center justify-center gap-3 text-slate-400 bg-slate-900/90 border border-slate-800 rounded-3xl">
-          <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-          <span className="text-sm">Loading platform bookings...</span>
-        </div>
-      ) : filteredBookings.length === 0 ? (
+      {filteredBookings.length === 0 ? (
         <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-2.5">
           <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
             <ClipboardList className="w-6 h-6" />

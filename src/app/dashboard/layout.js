@@ -19,6 +19,7 @@ import {
   X,
   MessageSquare,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function getDashboardPath() {
   return "/dashboard/overview";
@@ -138,8 +139,8 @@ export default function DashboardLayout({ children }) {
 
   if (checkingAuth || !user) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-400 text-sm">
-        Loading workspace...
+      <div className="min-h-screen bg-slate-950 p-4 sm:p-6 lg:p-8">
+        <DashboardPageSkeleton />
       </div>
     );
   }

@@ -5,9 +5,9 @@ import {
   Users,
   CheckCircle2,
   AlertCircle,
-  Loader2,
   MapPin,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function getInitials(name = "") {
   return (
@@ -197,6 +197,10 @@ export default function ManageUsersPage() {
     { key: "admin", label: "Admins", count: counts.admins },
   ];
 
+  if (loading) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Segmented Filter Tabs */}
@@ -258,12 +262,7 @@ export default function ManageUsersPage() {
 
       {/* Users Table Card */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
-        {loading ? (
-          <div className="py-16 flex flex-col items-center justify-center text-slate-400 gap-2.5">
-            <Loader2 className="w-6 h-6 animate-spin text-sky-400" />
-            <span className="text-sm">Loading users...</span>
-          </div>
-        ) : filteredUsers.length === 0 ? (
+        {filteredUsers.length === 0 ? (
           <div className="py-16 px-6 text-center space-y-2.5">
             <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
               <Users className="w-6 h-6" />

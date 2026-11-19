@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import CustomerOverview from "@/components/overviews/CustomerOverview";
 import TechnicianOverview from "@/components/overviews/TechnicianOverview";
 import AdminOverview from "@/components/overviews/AdminOverview";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 export default function DashboardOverviewPage() {
   const router = useRouter();
@@ -53,11 +54,7 @@ export default function DashboardOverviewPage() {
   }, [loading, user, router]);
 
   if (loading || !user) {
-    return (
-      <div className="min-h-[50vh] flex items-center justify-center text-slate-400 text-sm">
-        Loading overview...
-      </div>
-    );
+    return <DashboardPageSkeleton />;
   }
 
   if (user.role === "admin") {

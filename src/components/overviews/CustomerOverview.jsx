@@ -9,8 +9,8 @@ import {
   CreditCard,
   ArrowUpRight,
   AlertCircle,
-  Loader2,
 } from "lucide-react";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -43,6 +43,7 @@ function formatStatusLabel(status = "") {
 
 export default function CustomerOverview({ user }) {
   const [loading, setLoading] = useState(true);
+  const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
   const [stats, setStats] = useState({
     totalRequests: 0,
@@ -148,6 +149,10 @@ export default function CustomerOverview({ user }) {
     return "bg-amber-500/15 text-amber-300 border border-amber-500/30";
   };
 
+  if (loading || navigating) {
+    return <DashboardPageSkeleton />;
+  }
+
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <div>
@@ -176,9 +181,7 @@ export default function CustomerOverview({ user }) {
             <ClipboardList className="w-4 h-4 text-slate-500" />
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.totalRequests}
-            </p>
+            <p className="text-3xl font-bold text-white">{stats.totalRequests}</p>
             <p className="text-xs text-slate-500 mt-1.5">
               All repair bookings placed
             </p>
@@ -193,9 +196,7 @@ export default function CustomerOverview({ user }) {
             <Activity className="w-4 h-4 text-sky-400" />
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.activeJobs}
-            </p>
+            <p className="text-3xl font-bold text-white">{stats.activeJobs}</p>
             <p className="text-xs text-slate-400 mt-1.5">
               Requested, accepted or in progress
             </p>
@@ -211,7 +212,7 @@ export default function CustomerOverview({ user }) {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : stats.completedJobs}
+              {stats.completedJobs}
             </p>
             <p className="text-xs text-slate-500 mt-1.5">
               Repairs marked finished
@@ -230,7 +231,7 @@ export default function CustomerOverview({ user }) {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : `$${stats.totalSpent}`}
+              {`$${stats.totalSpent}`}
             </p>
             <p className="text-xs text-sky-300/80 mt-1.5">
               Completed &amp; paid invoices
@@ -240,7 +241,7 @@ export default function CustomerOverview({ user }) {
       </div>
 
       {/* Unpaid Completed Job Banner */}
-      {!loading && stats.unpaidCompletedCount > 0 && (
+      {stats.unpaidCompletedCount > 0 && (
         <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
@@ -254,7 +255,7 @@ export default function CustomerOverview({ user }) {
               </span>
               ,{" "}
               <span className="font-semibold text-amber-300">
-                ${stats.unpaidAmount}
+                {`$${stats.unpaidAmount}`}
               </span>{" "}
               in total.
             </p>
@@ -262,6 +263,7 @@ export default function CustomerOverview({ user }) {
 
           <Link
             href="/dashboard/customer/bookings"
+            onClick={() => setNavigating(true)}
             className="inline-flex items-center justify-center bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20 shrink-0"
           >
             Review and pay
@@ -282,6 +284,7 @@ export default function CustomerOverview({ user }) {
               </div>
               <Link
                 href="/dashboard/customer/bookings"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 transition"
               >
                 <span>All bookings</span>
@@ -289,12 +292,7 @@ export default function CustomerOverview({ user }) {
               </Link>
             </div>
 
-            {loading ? (
-              <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
-                <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-                <span>Loading active jobs...</span>
-              </div>
-            ) : inProgressJobs.length === 0 ? (
+            {inProgressJobs.length === 0 ? (
               <div className="py-10 text-center border border-dashed border-slate-800 rounded-2xl text-sm text-slate-400">
                 No active jobs right now.
               </div>
@@ -340,6 +338,7 @@ export default function CustomerOverview({ user }) {
               </div>
               <Link
                 href="/dashboard/customer/payments"
+                onClick={() => setNavigating(true)}
                 className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 transition"
               >
                 <span>Payment history</span>
@@ -347,12 +346,7 @@ export default function CustomerOverview({ user }) {
               </Link>
             </div>
 
-            {loading ? (
-              <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
-                <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
-                <span>Loading recent payments...</span>
-              </div>
-            ) : recentPayments.length === 0 ? (
+            {recentPayments.length === 0 ? (
               <div className="py-10 text-center border border-dashed border-slate-800 rounded-2xl text-sm text-slate-400">
                 No completed payments yet.
               </div>
@@ -375,7 +369,7 @@ export default function CustomerOverview({ user }) {
                       </p>
                     </div>
                     <span className="text-base font-bold text-sky-400 shrink-0">
-                      ${getBookingAmount(pay)}
+                      {`$${getBookingAmount(pay)}`}
                     </span>
                   </div>
                 ))}

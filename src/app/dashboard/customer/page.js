@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import CustomerOverview from "@/components/overviews/CustomerOverview";
+import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 export default function CustomerDashboardPage() {
   const [user, setUser] = useState(null);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     try {
@@ -14,8 +16,14 @@ export default function CustomerDashboardPage() {
       }
     } catch {
       setUser(null);
+    } finally {
+      setReady(true);
     }
   }, []);
+
+  if (!ready) {
+    return <DashboardPageSkeleton />;
+  }
 
   return <CustomerOverview user={user} />;
 }

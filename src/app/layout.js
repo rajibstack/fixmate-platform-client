@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
+import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,7 +29,11 @@ export default function RootLayout({ children }) {
         className="min-h-full flex flex-col bg-slate-950 text-slate-100"
         suppressHydrationWarning={true}
       >
-        <LayoutWrapper>{children}</LayoutWrapper>
+        <LayoutWrapper>
+          <Suspense fallback={<PublicPageSkeleton cards={6} />}>
+            {children}
+          </Suspense>
+        </LayoutWrapper>
       </body>
     </html>
   );
