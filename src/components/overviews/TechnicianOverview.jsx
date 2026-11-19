@@ -9,10 +9,47 @@ import {
   DollarSign,
   ArrowUpRight,
   Calendar,
+  Loader2,
+  Inbox,
+  Wallet,
 } from "lucide-react";
+
+function formatShortDate(dateValue) {
+  if (!dateValue) return "—";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return String(dateValue);
+  return parsed.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+function getTicketCode(booking) {
+  if (booking?.ticketNumber) return booking.ticketNumber;
+  if (booking?.bookingCode) return booking.bookingCode;
+  const rawId = String(booking?._id || booking?.id || "");
+  if (!rawId) return "#FM-0000";
+  const numericTail = rawId
+    .split("")
+    .reduce((acc, ch) => (acc * 31 + ch.charCodeAt(0)) % 9000, 1000);
+  return `#FM-${numericTail}`;
+}
+
+function getBookingAmount(booking) {
+  const rawAmount =
+    booking?.finalAmount ??
+    booking?.totalPrice ??
+    booking?.startingPrice ??
+    booking?.price ??
+    0;
+  const num = Number(rawAmount);
+  return Number.isNaN(num) ? 0 : num;
+}
 
 export default function TechnicianOverview() {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [stats, setStats] = useState({
     totalServices: 0,
     approvedServices: 0,
@@ -26,7 +63,12 @@ export default function TechnicianOverview() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
   useEffect(() => {
+    let active = true;
+
     const fetchTechnicianData = async () => {
+      setLoading(true);
+      setError("");
+
       try {
         const token = localStorage.getItem("token");
         const headers = token ? { Authorization: `Bearer ${token}` } : {};
@@ -37,146 +79,187 @@ export default function TechnicianOverview() {
         ]);
 
         let servicesList = [];
-        if (servicesRes.status === "fulfilled" && servicesRes.value.ok) {
-          const sData = await servicesRes.value.json();
-          servicesList = sData.data || sData || [];
+        if (servicesRes.status === "fulfilled") {
+          const sData = await servicesRes.value.json().catch(() => ({}));
+          if (servicesRes.value.ok) {
+            servicesList = Array.isArray(sData?.data)
+              ? sData.data
+              : Array.isArray(sData)
+              ? sData
+              : [];
+          } else if (active) {
+            setError(sData?.message || "Could not load your services.");
+          }
         }
 
         let bookingsList = [];
-        if (bookingsRes.status === "fulfilled" && bookingsRes.value.ok) {
-          const bData = await bookingsRes.value.json();
-          bookingsList = bData.data || bData || [];
+        if (bookingsRes.status === "fulfilled") {
+          const bData = await bookingsRes.value.json().catch(() => ({}));
+          if (bookingsRes.value.ok) {
+            bookingsList = Array.isArray(bData?.data)
+              ? bData.data
+              : Array.isArray(bData)
+              ? bData
+              : [];
+          } else if (active && !error) {
+            setError(bData?.message || "Could not load your bookings.");
+          }
         }
 
-        if (servicesList.length > 0 || bookingsList.length > 0) {
-          const approved = servicesList.filter((s) => s.status === "approved" || s.isApproved).length;
-          const underReview = servicesList.filter((s) => s.status === "pending" || !s.isApproved).length;
-          const pendingJobs = bookingsList.filter((b) => b.status === "pending");
-          const paidJobs = bookingsList.filter((b) => b.paymentStatus === "paid");
-          const earningsSum = paidJobs.reduce((acc, item) => acc + (Number(item.price) || 0), 0);
+        if (!active) return;
 
-          setStats({
-            totalServices: servicesList.length,
-            approvedServices: approved,
-            pendingReviewServices: underReview,
-            pendingRequests: pendingJobs.length,
-            totalEarnings: earningsSum,
-          });
-          setNewRequests(pendingJobs.slice(0, 4));
-          setRecentEarnings(paidJobs.slice(0, 4));
-        } else {
-          setStats({
-            totalServices: 8,
-            approvedServices: 6,
-            pendingReviewServices: 1,
-            pendingRequests: 2,
-            totalEarnings: 38,
-          });
-          setNewRequests([
-            {
-              _id: "1",
-              bookingCode: "#FM-1051",
-              serviceTitle: "Phone Battery Replacement",
-              customerName: "Sadia Rahman",
-              preferredDate: "19 Nov 2026",
-            },
-            {
-              _id: "2",
-              bookingCode: "#FM-1052",
-              serviceTitle: "Laptop Motherboard Diagnosis & Repair",
-              customerName: "Tanvir Hasan",
-              preferredDate: "21 Nov 2026",
-            },
-          ]);
-          setRecentEarnings([
-            {
-              _id: "e1",
-              serviceTitle: "House Wiring Fault Finding",
-              customerName: "Tanvir Hasan",
-              paidDate: "28 Sept 2026",
-              amount: 38,
-            },
-          ]);
-        }
-      } catch {
+        const approvedCount = servicesList.filter(
+          (s) => (s?.status || "").toString().toLowerCase() === "approved"
+        ).length;
+
+        const pendingReviewCount = servicesList.filter(
+          (s) => (s?.status || "").toString().toLowerCase() === "pending"
+        ).length;
+
+        const requestedBookings = bookingsList.filter(
+          (b) => (b?.status || "").toString().toLowerCase() === "requested"
+        );
+
+        const paidBookings = bookingsList.filter(
+          (b) =>
+            (b?.paymentStatus || "").toString().toLowerCase() === "paid"
+        );
+
+        const earningsSum = paidBookings.reduce(
+          (acc, item) => acc + getBookingAmount(item),
+          0
+        );
+
         setStats({
-          totalServices: 8,
-          approvedServices: 6,
-          pendingReviewServices: 1,
-          pendingRequests: 2,
-          totalEarnings: 38,
+          totalServices: servicesList.length,
+          approvedServices: approvedCount,
+          pendingReviewServices: pendingReviewCount,
+          pendingRequests: requestedBookings.length,
+          totalEarnings: earningsSum,
         });
+
+        setNewRequests(requestedBookings.slice(0, 4));
+        setRecentEarnings(paidBookings.slice(0, 4));
+      } catch {
+        if (active) {
+          setError("Network error while loading technician overview.");
+        }
       } finally {
-        setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     };
 
     fetchTechnicianData();
+
+    return () => {
+      active = false;
+    };
   }, [apiUrl]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-white">Overview</h1>
-        <p className="text-slate-400 text-sm mt-1">Your services, jobs and earnings.</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          Overview
+        </h1>
+        <p className="text-slate-400 text-sm mt-1">
+          Your services, jobs and earnings.
+        </p>
       </div>
 
+      {error && (
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
+          {error}
+        </div>
+      )}
+
+      {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-400">Total services</span>
+            <span className="text-sm font-medium text-slate-400">
+              Total services
+            </span>
             <Wrench className="w-4 h-4 text-slate-500" />
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-white">{loading ? "—" : stats.totalServices}</p>
-            <p className="text-xs text-slate-500 mt-1.5">Listed under your profile</p>
-          </div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-400">Approved services</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="mt-4">
-            <p className="text-3xl font-bold text-white">{loading ? "—" : stats.approvedServices}</p>
-            <p className="text-xs text-slate-400 mt-1.5">
-              {stats.pendingReviewServices} waiting for review
+            <p className="text-3xl font-bold text-white">
+              {loading ? "—" : stats.totalServices}
+            </p>
+            <p className="text-xs text-slate-500 mt-1.5">
+              Listed under your profile
             </p>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-400">Pending requests</span>
+            <span className="text-sm font-medium text-slate-400">
+              Approved services
+            </span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="mt-4">
+            <p className="text-3xl font-bold text-white">
+              {loading ? "—" : stats.approvedServices}
+            </p>
+            <p className="text-xs text-slate-400 mt-1.5">
+              {loading
+                ? "Checking review status..."
+                : `${stats.pendingReviewServices} waiting for review`}
+            </p>
+          </div>
+        </div>
+
+        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-lg">
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-400">
+              Pending requests
+            </span>
             <Clock className="w-4 h-4 text-amber-400" />
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-white">{loading ? "—" : stats.pendingRequests}</p>
-            <p className="text-xs text-slate-400 mt-1.5">Waiting for you to accept or decline</p>
+            <p className="text-3xl font-bold text-white">
+              {loading ? "—" : stats.pendingRequests}
+            </p>
+            <p className="text-xs text-slate-400 mt-1.5">
+              Waiting for you to accept or decline
+            </p>
           </div>
         </div>
 
         <div className="bg-gradient-to-br from-sky-500/20 via-slate-900 to-slate-900 border border-sky-500/30 rounded-2xl p-6 flex flex-col justify-between shadow-lg shadow-sky-500/5">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-sky-300">Total earnings</span>
+            <span className="text-sm font-medium text-sky-300">
+              Total earnings
+            </span>
             <div className="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-white">{loading ? "—" : `$${stats.totalEarnings}`}</p>
-            <p className="text-xs text-sky-300/80 mt-1.5">Completed &amp; settled payouts</p>
+            <p className="text-3xl font-bold text-white">
+              {loading ? "—" : `$${stats.totalEarnings}`}
+            </p>
+            <p className="text-xs text-sky-300/80 mt-1.5">
+              Completed &amp; settled payouts
+            </p>
           </div>
         </div>
       </div>
 
+      {/* Bottom Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl">
+        {/* New Requests */}
+        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-lg font-bold text-white">New requests</h2>
-              <p className="text-xs text-slate-400 mt-0.5">Incoming repair bookings</p>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Incoming repair bookings
+              </p>
             </div>
             <Link
               href="/dashboard/technician/requests"
@@ -187,46 +270,96 @@ export default function TechnicianOverview() {
             </Link>
           </div>
 
-          <div className="divide-y divide-slate-800/80">
-            {newRequests.map((req) => (
-              <div key={req._id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
-                <div>
-                  <p className="font-semibold text-white text-sm">{req.serviceTitle}</p>
-                  <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-                    <span>{req.customerName},</span>
-                    <span className="inline-flex items-center gap-1 text-slate-300">
-                      <Calendar className="w-3 h-3 text-sky-400" />
-                      preferred {req.preferredDate}
-                    </span>
-                  </p>
+          {loading ? (
+            <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
+              <span>Loading requests...</span>
+            </div>
+          ) : newRequests.length === 0 ? (
+            <div className="py-10 text-center space-y-2">
+              <Inbox className="w-6 h-6 text-slate-500 mx-auto" />
+              <p className="text-sm font-medium text-slate-300">
+                No pending requests
+              </p>
+              <p className="text-xs text-slate-500">
+                New customer repair requests will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-800/80">
+              {newRequests.map((req) => (
+                <div
+                  key={req._id || req.id}
+                  className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
+                >
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white text-sm truncate">
+                      {req.serviceTitle || "Repair Service"}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-1.5">
+                      <span>{req.customerName || "Customer"},</span>
+                      <span className="inline-flex items-center gap-1 text-slate-300">
+                        <Calendar className="w-3 h-3 text-sky-400" />
+                        preferred {formatShortDate(req.preferredDate)}
+                      </span>
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 shrink-0">
+                    {getTicketCode(req)}
+                  </span>
                 </div>
-                <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 shrink-0">
-                  {req.bookingCode}
-                </span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl">
+        {/* Recent Earnings */}
+        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl">
           <div className="mb-6">
             <h2 className="text-lg font-bold text-white">Recent earnings</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Jobs customers have paid for</p>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Jobs customers have paid for
+            </p>
           </div>
 
-          <div className="divide-y divide-slate-800/80">
-            {recentEarnings.map((item) => (
-              <div key={item._id} className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4">
-                <div>
-                  <p className="font-semibold text-white text-sm">{item.serviceTitle}</p>
-                  <p className="text-xs text-slate-400 mt-1">
-                    {item.customerName}, {item.paidDate}
-                  </p>
+          {loading ? (
+            <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-sm">
+              <Loader2 className="w-4 h-4 animate-spin text-sky-400" />
+              <span>Loading earnings...</span>
+            </div>
+          ) : recentEarnings.length === 0 ? (
+            <div className="py-10 text-center space-y-2">
+              <Wallet className="w-6 h-6 text-slate-500 mx-auto" />
+              <p className="text-sm font-medium text-slate-300">
+                No settled earnings yet
+              </p>
+              <p className="text-xs text-slate-500">
+                Paid completed repairs will show up here.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-800/80">
+              {recentEarnings.map((item) => (
+                <div
+                  key={item._id || item.id}
+                  className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
+                >
+                  <div className="min-w-0">
+                    <p className="font-semibold text-white text-sm truncate">
+                      {item.serviceTitle || "Repair Service"}
+                    </p>
+                    <p className="text-xs text-slate-400 mt-1">
+                      {item.customerName || "Customer"},{" "}
+                      {formatShortDate(item.updatedAt || item.createdAt)}
+                    </p>
+                  </div>
+                  <span className="text-base font-bold text-sky-400 shrink-0">
+                    ${getBookingAmount(item)}
+                  </span>
                 </div>
-                <span className="text-base font-bold text-sky-400 shrink-0">${item.amount}</span>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>
