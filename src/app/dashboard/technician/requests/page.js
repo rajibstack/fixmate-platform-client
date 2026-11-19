@@ -303,14 +303,14 @@ export default function TechnicianManageRequestsPage() {
                 key={id}
                 className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
               >
-                {/* Left Section: Tall Service Image + Details with Equal Vertical Spacing */}
-                <div className="flex flex-col sm:flex-row sm:items-stretch gap-4 sm:gap-5 flex-1 min-w-0">
-                  <div className="w-full h-40 sm:w-32 sm:h-auto sm:min-h-[132px] rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                {/* Left Section: Fixed-Size Service Image + Details with Equal Vertical Spacing */}
+                <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
+                  <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     {booking?.serviceImage ? (
                       <img
                         src={booking.serviceImage}
                         alt={booking.serviceTitle}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                       />
                     ) : (
                       <Wrench className="w-8 h-8 text-sky-400" />
