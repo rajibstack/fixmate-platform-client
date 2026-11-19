@@ -21,6 +21,7 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
   const dropdownRef = useRef(null);
 
   const loadUser = useCallback(() => {
@@ -28,12 +29,15 @@ export default function Navbar() {
       const stored = localStorage.getItem("user");
       if (!stored) {
         setUser(null);
+        setAvatarError(false);
         return;
       }
       const parsed = JSON.parse(stored);
       setUser(parsed && typeof parsed === "object" ? parsed : null);
+      setAvatarError(false);
     } catch {
       setUser(null);
+      setAvatarError(false);
     }
   }, []);
 
@@ -79,6 +83,8 @@ export default function Navbar() {
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
+
+  const showAvatarImage = Boolean(user?.avatar) && !avatarError;
 
   return (
     <header className="sticky top-0 z-40 h-16 bg-slate-950/85 backdrop-blur border-b border-slate-800/80 text-slate-100">
@@ -132,9 +138,18 @@ export default function Navbar() {
                 onClick={() => setMenuOpen((prev) => !prev)}
                 className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
               >
-                <span className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs">
-                  {getInitials(user.name)}
-                </span>
+                {showAvatarImage ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name || "User avatar"}
+                    onError={() => setAvatarError(true)}
+                    className="w-8 h-8 rounded-full object-cover border border-sky-500/30"
+                  />
+                ) : (
+                  <span className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs">
+                    {getInitials(user.name)}
+                  </span>
+                )}
                 <ChevronDown
                   className={`w-4 h-4 text-slate-400 transition-transform duration-150 ${
                     menuOpen ? "rotate-180 text-sky-400" : ""
@@ -144,18 +159,32 @@ export default function Navbar() {
 
               {menuOpen && (
                 <div className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50">
-                  <div className="p-4 border-b border-slate-800">
-                    <p className="text-sm font-bold text-white truncate">
-                      {user.name || "FixMate User"}
-                    </p>
-                    {user.email && (
-                      <p className="text-xs text-slate-400 truncate mt-0.5">
-                        {user.email}
-                      </p>
+                  <div className="p-4 border-b border-slate-800 flex items-center gap-3">
+                    {showAvatarImage ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name || "User avatar"}
+                        onError={() => setAvatarError(true)}
+                        className="w-10 h-10 rounded-full object-cover border border-sky-500/30 shrink-0"
+                      />
+                    ) : (
+                      <span className="w-10 h-10 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
+                        {getInitials(user.name)}
+                      </span>
                     )}
-                    <span className="inline-block mt-2.5 text-xs capitalize px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25 font-semibold">
-                      {user.role || "customer"}
-                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-white truncate">
+                        {user.name || "FixMate User"}
+                      </p>
+                      {user.email && (
+                        <p className="text-xs text-slate-400 truncate mt-0.5">
+                          {user.email}
+                        </p>
+                      )}
+                      <span className="inline-block mt-1.5 text-xs capitalize px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25 font-semibold">
+                        {user.role || "customer"}
+                      </span>
+                    </div>
                   </div>
 
                   <div className="py-1.5">

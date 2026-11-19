@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
@@ -41,18 +41,28 @@ export default function DashboardLayout({ children }) {
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [avatarError, setAvatarError] = useState(false);
+
+  const syncUserFromStorage = useCallback(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (!storedUser) return null;
+      const parsed = JSON.parse(storedUser);
+      return parsed && typeof parsed === "object" ? parsed : null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     try {
-      const storedUser = localStorage.getItem("user");
-      if (!storedUser) {
+      const currentUser = syncUserFromStorage();
+      if (!currentUser) {
         router.replace("/sign-in");
         return;
       }
 
-      const currentUser = JSON.parse(storedUser);
       const role = currentUser?.role;
-
       if (!role) {
         router.replace("/sign-in");
         return;
@@ -81,11 +91,30 @@ export default function DashboardLayout({ children }) {
       }
 
       setUser(currentUser);
+      setAvatarError(false);
       setCheckingAuth(false);
     } catch {
       router.replace("/sign-in");
     }
-  }, [pathname, router]);
+  }, [pathname, router, syncUserFromStorage]);
+
+  useEffect(() => {
+    const handleProfileOrAuthSync = () => {
+      const updated = syncUserFromStorage();
+      if (updated) {
+        setUser(updated);
+        setAvatarError(false);
+      }
+    };
+
+    window.addEventListener("auth-change", handleProfileOrAuthSync);
+    window.addEventListener("storage", handleProfileOrAuthSync);
+
+    return () => {
+      window.removeEventListener("auth-change", handleProfileOrAuthSync);
+      window.removeEventListener("storage", handleProfileOrAuthSync);
+    };
+  }, [syncUserFromStorage]);
 
   useEffect(() => {
     setMobileOpen(false);
@@ -142,6 +171,8 @@ export default function DashboardLayout({ children }) {
 
   const currentTab =
     navItems.find((item) => item.href === pathname)?.name || "Overview";
+
+  const showTopbarAvatar = Boolean(user?.avatar) && !avatarError;
 
   return (
     <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-slate-950 text-slate-100 flex">
@@ -289,9 +320,18 @@ export default function DashboardLayout({ children }) {
             <span className="text-[11px] sm:text-xs capitalize px-2.5 sm:px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">
               {user.role}
             </span>
-            <div className="w-9 h-9 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
-              {getInitials(user.name)}
-            </div>
+            {showTopbarAvatar ? (
+              <img
+                src={user.avatar}
+                alt={user.name || "User avatar"}
+                onError={() => setAvatarError(true)}
+                className="w-9 h-9 rounded-full object-cover border border-sky-500/30 shrink-0"
+              />
+            ) : (
+              <div className="w-9 h-9 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
+                {getInitials(user.name)}
+              </div>
+            )}
           </div>
         </header>
 
