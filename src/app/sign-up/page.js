@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Wrench } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+
+function getDashboardPath(role) {
+  if (role === "admin") return "/dashboard/admin";
+  if (role === "technician") return "/dashboard/technician";
+  return "/dashboard/customer";
+}
 
 function SignUpContent() {
   const router = useRouter();
@@ -19,6 +25,20 @@ function SignUpContent() {
   });
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsedUser = JSON.parse(storedUser);
+        if (parsedUser?.role) {
+          router.replace(getDashboardPath(parsedUser.role));
+        }
+      }
+    } catch {
+      localStorage.removeItem("user");
+    }
+  }, [router]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -64,7 +84,8 @@ function SignUpContent() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      router.push("/services");
+      window.dispatchEvent(new Event("auth-change"));
+      router.push(getDashboardPath(data.user?.role));
     } catch (err) {
       setError("Something went wrong. Please try again.");
       setLoading(false);
@@ -97,7 +118,8 @@ function SignUpContent() {
 
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
-        router.push("/services");
+        window.dispatchEvent(new Event("auth-change"));
+        router.push(getDashboardPath(data.user?.role));
       } catch (err) {
         setError("Google authentication failed. Please try again.");
         setGoogleLoading(false);
@@ -124,7 +146,7 @@ function SignUpContent() {
             <h1 className="text-3xl font-bold tracking-tight text-white mb-2">Create your account</h1>
             <p className="text-slate-400 text-sm">
               Already have one?{" "}
-              <Link href="/login" className="text-sky-400 hover:underline font-medium">
+              <Link href="/sign-in" className="text-sky-400 hover:underline font-medium">
                 Sign in
               </Link>
             </p>
