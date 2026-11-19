@@ -15,7 +15,7 @@ import {
   CreditCard,
   Users,
   Settings,
-  Menu,
+  PanelLeft,
   X,
 } from "lucide-react";
 
@@ -39,7 +39,8 @@ export default function DashboardLayout({ children }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
 
   useEffect(() => {
     try {
@@ -86,6 +87,18 @@ export default function DashboardLayout({ children }) {
     }
   }, [pathname, router]);
 
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  const handleToggleSidebar = () => {
+    if (typeof window !== "undefined" && window.innerWidth < 1024) {
+      setMobileOpen((prev) => !prev);
+    } else {
+      setCollapsed((prev) => !prev);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -131,38 +144,57 @@ export default function DashboardLayout({ children }) {
     navItems.find((item) => item.href === pathname)?.name || "Overview";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex">
-      {sidebarOpen && (
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-slate-950 text-slate-100 flex">
+      {/* Mobile Backdrop */}
+      {mobileOpen && (
         <div
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          className="fixed inset-0 bg-black/65 backdrop-blur-xs z-30 lg:hidden"
         />
       )}
 
+      {/* Fixed Sidebar (Collapsible on Desktop, Drawer on Mobile) */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-transform duration-200 ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed inset-y-0 left-0 z-40 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-all duration-200 ease-out ${
+          collapsed ? "lg:w-20" : "lg:w-64"
+        } w-64 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
       >
-        <div>
-          <div className="h-16 px-6 flex items-center justify-between border-b border-slate-800/80">
-            <Link href="/" className="flex items-center gap-2.5 text-xl font-bold">
-              <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+        <div className="flex-1 overflow-y-auto">
+          {/* Brand Header */}
+          <div
+            className={`h-16 flex items-center border-b border-slate-800/80 sticky top-0 bg-slate-900 z-10 ${
+              collapsed ? "lg:justify-center lg:px-2 px-5" : "justify-between px-5"
+            }`}
+          >
+            <Link
+              href="/"
+              className="flex items-center gap-2.5 text-xl font-bold min-w-0"
+              title="FixMate"
+            >
+              <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
                 <Wrench className="w-5 h-5" />
               </div>
-              <span className="tracking-tight text-white">
+              <span
+                className={`tracking-tight text-white whitespace-nowrap transition-opacity ${
+                  collapsed ? "lg:hidden" : "inline"
+                }`}
+              >
                 Fix<span className="text-sky-400">Mate</span>
               </span>
             </Link>
+
             <button
-              onClick={() => setSidebarOpen(false)}
-              className="lg:hidden text-slate-400 hover:text-white cursor-pointer"
+              type="button"
+              onClick={() => setMobileOpen(false)}
+              aria-label="Close sidebar"
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <nav className="p-4 space-y-1.5 mt-2">
+          {/* Sidebar Nav Items */}
+          <nav className="p-3 space-y-1.5 mt-1">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
@@ -170,66 +202,103 @@ export default function DashboardLayout({ children }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition ${
+                  onClick={() => setMobileOpen(false)}
+                  title={collapsed ? item.name : undefined}
+                  className={`flex items-center rounded-xl text-sm font-medium transition ${
+                    collapsed ? "lg:justify-center lg:px-0 px-3.5 py-3" : "gap-3 px-3.5 py-3"
+                  } ${
                     isActive
                       ? "bg-sky-500/15 text-sky-400 border border-sky-500/25 shadow-sm"
                       : "text-slate-400 hover:text-white hover:bg-slate-800/60"
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
-                  <span>{item.name}</span>
+                  <span className={`truncate ${collapsed ? "lg:hidden" : "inline"}`}>
+                    {item.name}
+                  </span>
                 </Link>
               );
             })}
           </nav>
         </div>
 
-        <div className="p-4 border-t border-slate-800 space-y-1">
+        {/* Bottom Actions */}
+        <div className="p-3 border-t border-slate-800 space-y-1 bg-slate-900 shrink-0">
           <Link
             href="/"
-            className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition"
+            onClick={() => setMobileOpen(false)}
+            title={collapsed ? "Back to site" : undefined}
+            className={`flex items-center rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition ${
+              collapsed ? "lg:justify-center lg:px-0 px-3.5 py-2.5" : "gap-3 px-3.5 py-2.5"
+            }`}
           >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Back to site</span>
+            <ChevronLeft className="w-4 h-4 shrink-0" />
+            <span className={`truncate ${collapsed ? "lg:hidden" : "inline"}`}>
+              Back to site
+            </span>
           </Link>
+
           <button
+            type="button"
             onClick={handleLogout}
-            className="w-full cursor-pointer flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition"
+            title={collapsed ? "Sign out" : undefined}
+            className={`w-full cursor-pointer flex items-center rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition ${
+              collapsed ? "lg:justify-center lg:px-0 px-3.5 py-2.5" : "gap-3 px-3.5 py-2.5"
+            }`}
           >
-            <LogOut className="w-4 h-4" />
-            <span>Sign out</span>
+            <LogOut className="w-4 h-4 shrink-0" />
+            <span className={`truncate ${collapsed ? "lg:hidden" : "inline"}`}>
+              Sign out
+            </span>
           </button>
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-16 bg-slate-900/70 backdrop-blur border-b border-slate-800 px-4 sm:px-8 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+      {/* Right Content Area */}
+      <div
+        className={`flex-1 flex flex-col min-w-0 min-h-screen lg:h-screen transition-all duration-200 ${
+          collapsed ? "lg:pl-20" : "lg:pl-64"
+        }`}
+      >
+        {/* Fixed Topbar */}
+        <header className="sticky top-0 z-20 h-16 shrink-0 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
             <button
-              onClick={() => setSidebarOpen(true)}
-              className="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              type="button"
+              onClick={handleToggleSidebar}
+              aria-label="Toggle sidebar"
+              title="Toggle sidebar"
+              className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
             >
-              <Menu className="w-5 h-5" />
+              <PanelLeft className="w-4 h-4" />
             </button>
-            <span className="text-sm text-slate-400 font-medium">{currentTab}</span>
+            <span className="text-sm text-slate-300 font-medium truncate">
+              {currentTab}
+            </span>
           </div>
 
-          <div className="flex items-center gap-3.5">
-            <div className="text-right hidden sm:block">
-              <p className="text-sm font-semibold text-white leading-none">{user.name}</p>
-              <p className="text-xs text-slate-400 mt-1">{user.email}</p>
+          <div className="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
+            <div className="text-right hidden md:block">
+              <p className="text-sm font-semibold text-white leading-none truncate max-w-44">
+                {user.name}
+              </p>
+              <p className="text-xs text-slate-400 mt-1 truncate max-w-44">
+                {user.email}
+              </p>
             </div>
-            <span className="text-xs capitalize px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">
+            <span className="text-[11px] sm:text-xs capitalize px-2.5 sm:px-3 py-1 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/20 font-semibold">
               {user.role}
             </span>
-            <div className="w-9 h-9 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs">
+            <div className="w-9 h-9 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
               {getInitials(user.name)}
             </div>
           </div>
         </header>
 
-        <main className="flex-1 p-4 sm:p-8">{children}</main>
+        {/* Scrollable Main Content */}
+        <main className="flex-1 lg:overflow-y-auto p-4 sm:p-6 lg:p-8">
+          {children}
+        </main>
       </div>
     </div>
   );
