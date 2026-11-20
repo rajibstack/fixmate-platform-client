@@ -77,6 +77,48 @@ function normalizeSortOption(rawSort = "newest") {
   return "newest";
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveTechnicianName(service, currentUser) {
+  const srvTechId = String(
+    service?.technicianId || service?.technician?._id || service?.technician?.id || ""
+  ).trim();
+  const userId = String(currentUser?._id || currentUser?.id || "").trim();
+
+  const srvTechEmail = String(
+    service?.technicianEmail || service?.technician?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+  const userEmail = String(currentUser?.email || "").trim().toLowerCase();
+
+  const isOwnService = Boolean(
+    currentUser?.name &&
+      ((srvTechId && userId && srvTechId === userId) ||
+        (srvTechEmail && userEmail && srvTechEmail === userEmail))
+  );
+
+  if (isOwnService) {
+    return currentUser.name;
+  }
+
+  return (
+    service?.technician?.name ||
+    service?.technicianName ||
+    "Verified Technician"
+  );
+}
+
 function ServiceCardImage({ src, alt }) {
   const [imgSrc, setImgSrc] = useState(src || FALLBACK_SERVICE_IMAGE);
   const [failed, setFailed] = useState(false);
@@ -122,6 +164,7 @@ function BrowseServicesContent() {
   const urlSort = normalizeSortOption(searchParams.get("sort") || "newest");
 
   const [services, setServices] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
   const [navigating, setNavigating] = useState(false);
@@ -237,7 +280,37 @@ function BrowseServicesContent() {
       sort: urlSort,
       isInitial: initialLoading,
     });
-  }, [fetchServicesFromServer, urlQuery, urlCategory, urlMode, urlSort, initialLoading]);
+  }, [
+    fetchServicesFromServer,
+    urlQuery,
+    urlCategory,
+    urlMode,
+    urlSort,
+    initialLoading,
+  ]);
+
+  useEffect(() => {
+    setCurrentUser(readStoredUser());
+
+    const handleSessionOrProfileChange = () => {
+      setCurrentUser(readStoredUser());
+      fetchServicesFromServer({
+        search: searchTerm,
+        category: selectedCategory,
+        mode: selectedMode,
+        sort: sortBy,
+        isInitial: false,
+      });
+    };
+
+    window.addEventListener("auth-change", handleSessionOrProfileChange);
+    window.addEventListener("storage", handleSessionOrProfileChange);
+
+    return () => {
+      window.removeEventListener("auth-change", handleSessionOrProfileChange);
+      window.removeEventListener("storage", handleSessionOrProfileChange);
+    };
+  }, [fetchServicesFromServer, searchTerm, selectedCategory, selectedMode, sortBy]);
 
   const totalPages = Math.max(1, Math.ceil(services.length / ITEMS_PER_PAGE));
 
@@ -553,10 +626,7 @@ function BrowseServicesContent() {
                   service.area ||
                   service.serviceArea ||
                   "Service Area Available";
-                const techName =
-                  service.technicianName ||
-                  service.technician?.name ||
-                  "Verified Technician";
+                const techName = resolveTechnicianName(service, currentUser);
 
                 return (
                   <article

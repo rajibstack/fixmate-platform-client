@@ -38,6 +38,49 @@ function getTicketCode(booking) {
   return `#FM-${numericTail}`;
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveTechnicianName(booking, currentUser) {
+  const bTechId = String(
+    booking?.technicianId ||
+      booking?.technician?._id ||
+      booking?.technician?.id ||
+      ""
+  ).trim();
+  const uId = String(currentUser?._id || currentUser?.id || "").trim();
+
+  const bTechEmail = String(
+    booking?.technicianEmail || booking?.technician?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+  const uEmail = String(currentUser?.email || "").trim().toLowerCase();
+
+  const isCurrentUserTech = Boolean(
+    currentUser?.name &&
+      ((bTechId && uId && bTechId === uId) ||
+        (bTechEmail && uEmail && bTechEmail === uEmail))
+  );
+
+  if (isCurrentUserTech) {
+    return currentUser.name;
+  }
+
+  return (
+    booking?.technician?.name || booking?.technicianName || "Technician"
+  );
+}
+
 function normalizeStatus(status) {
   return (status || "requested").toString().toLowerCase().trim();
 }
@@ -101,9 +144,12 @@ function BookingThumbnail({ src, alt }) {
 }
 
 export default function CustomerMyBookingsPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [bookings, setBookings] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
@@ -111,47 +157,74 @@ export default function CustomerMyBookingsPage() {
   const [feedback, setFeedback] = useState(null);
   const [bookingToCancel, setBookingToCancel] = useState(null);
 
-  const fetchMyBookings = useCallback(async () => {
-    setLoading(true);
-    setFeedback(null);
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Please sign in to view your bookings.");
+  const fetchMyBookings = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setFeedback(null);
       }
 
-      const res = await fetch(`${apiUrl}/api/bookings/my`, {
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        if (!token) {
+          throw new Error("Please sign in to view your bookings.");
+        }
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load your bookings.");
+        const res = await fetch(`${apiUrl}/api/bookings/my`, {
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.message || "Failed to load your bookings.");
+        }
+
+        const list = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setBookings(list);
+      } catch (err) {
+        if (!silent) {
+          setFeedback({
+            type: "error",
+            message: err.message || "Could not fetch bookings.",
+          });
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-
-      const list = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : [];
-      setBookings(list);
-    } catch (err) {
-      setFeedback({
-        type: "error",
-        message: err.message || "Could not fetch bookings.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setCurrentUser(readStoredUser());
     fetchMyBookings();
+
+    const handleSessionOrProfileChange = () => {
+      setCurrentUser(readStoredUser());
+      fetchMyBookings({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleSessionOrProfileChange);
+    window.addEventListener("storage", handleSessionOrProfileChange);
+
+    return () => {
+      window.removeEventListener("auth-change", handleSessionOrProfileChange);
+      window.removeEventListener("storage", handleSessionOrProfileChange);
+    };
   }, [fetchMyBookings]);
 
   const counts = useMemo(() => {
@@ -215,7 +288,11 @@ export default function CustomerMyBookingsPage() {
     setFeedback(null);
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
       const res = await fetch(`${apiUrl}/api/bookings/${id}/cancel`, {
         method: "PATCH",
         headers: {
@@ -274,9 +351,17 @@ export default function CustomerMyBookingsPage() {
     setFeedback(null);
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
       const amount = Number(
-        booking.finalAmount || booking.totalPrice || booking.startingPrice || 0
+        booking.paidAmount ||
+          booking.finalAmount ||
+          booking.totalPrice ||
+          booking.startingPrice ||
+          0
       );
 
       const res = await fetch(`${apiUrl}/api/bookings/${id}/pay`, {
@@ -303,6 +388,7 @@ export default function CustomerMyBookingsPage() {
             ? {
                 ...item,
                 paymentStatus: "paid",
+                paidAmount: updatedBooking.paidAmount ?? amount,
                 transactionId:
                   updatedBooking.transactionId || item.transactionId || "",
                 paidAt: updatedBooking.paidAt || new Date().toISOString(),
@@ -434,9 +520,11 @@ export default function CustomerMyBookingsPage() {
             const status = normalizeStatus(booking?.status);
             const paymentStatus = normalizePaymentStatus(booking?.paymentStatus);
             const busy = actionId === id;
+            const techName = resolveTechnicianName(booking, currentUser);
 
             const amount = Number(
-              booking?.finalAmount ||
+              booking?.paidAmount ||
+                booking?.finalAmount ||
                 booking?.totalPrice ||
                 booking?.startingPrice ||
                 booking?.price ||
@@ -468,7 +556,7 @@ export default function CustomerMyBookingsPage() {
                     </h2>
 
                     <p className="text-xs sm:text-sm text-slate-400 truncate">
-                      {booking?.technicianName || "Technician"}
+                      {techName}
                       {booking?.technicianEmail
                         ? `, ${booking.technicianEmail}`
                         : ""}
