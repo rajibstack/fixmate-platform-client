@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -71,6 +72,7 @@ export default function TechnicianManageRequestsPage() {
   const [loading, setLoading] = useState(true);
   const [actionKey, setActionKey] = useState("");
   const [feedback, setFeedback] = useState(null);
+  const [requestToReject, setRequestToReject] = useState(null);
 
   const fetchTechnicianRequests = useCallback(async () => {
     setLoading(true);
@@ -174,14 +176,22 @@ export default function TechnicianManageRequestsPage() {
         )
       );
 
-      const successMsg = `"${booking.serviceTitle}" moved to ${formatStatusText(
+      const isRejected = nextStatus === "rejected";
+      const toastMsg = isRejected
+        ? "Request rejected."
+        : `"${booking.serviceTitle}" moved to ${formatStatusText(nextStatus)}.`;
+      const bannerMsg = `"${booking.serviceTitle}" moved to ${formatStatusText(
         nextStatus
       )}.`;
+
       setFeedback({
         type: "success",
-        message: successMsg,
+        message: bannerMsg,
       });
-      toast.success(successMsg);
+      toast.success(toastMsg);
+      if (isRejected) {
+        setRequestToReject(null);
+      }
     } catch (err) {
       const errMsg = err.message || "Could not update request status.";
       setFeedback({
@@ -192,6 +202,11 @@ export default function TechnicianManageRequestsPage() {
     } finally {
       setActionKey("");
     }
+  };
+
+  const handleConfirmReject = async () => {
+    if (!requestToReject) return;
+    await handleStatusChange(requestToReject, "rejected");
   };
 
   const tabs = [
@@ -205,6 +220,11 @@ export default function TechnicianManageRequestsPage() {
   if (loading) {
     return <DashboardPageSkeleton />;
   }
+
+  const rejectTargetId = requestToReject?._id || requestToReject?.id;
+  const isRejectingTarget = Boolean(
+    rejectTargetId && actionKey === `${rejectTargetId}:rejected`
+  );
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -453,9 +473,7 @@ export default function TechnicianManageRequestsPage() {
                           <button
                             type="button"
                             disabled={isAnyBusy}
-                            onClick={() =>
-                              handleStatusChange(booking, "rejected")
-                            }
+                            onClick={() => setRequestToReject(booking)}
                             className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                           >
                             {isRejecting ? (
@@ -511,6 +529,23 @@ export default function TechnicianManageRequestsPage() {
           })}
         </div>
       )}
+
+      {/* Reject Request Confirmation Modal */}
+      <ConfirmModal
+        open={Boolean(requestToReject)}
+        variant="warning"
+        title="Reject Repair Request?"
+        description={`Are you sure you want to reject the request from "${
+          requestToReject?.customerName || "Customer"
+        }" for "${requestToReject?.serviceTitle || "this service"}"?`}
+        confirmText="Reject Request"
+        cancelText="Keep Request"
+        loading={isRejectingTarget}
+        onConfirm={handleConfirmReject}
+        onCancel={() => {
+          if (!isRejectingTarget) setRequestToReject(null);
+        }}
+      />
     </div>
   );
 }

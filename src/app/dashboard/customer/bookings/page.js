@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -84,6 +85,7 @@ export default function CustomerMyBookingsPage() {
   const [navigating, setNavigating] = useState(false);
   const [actionId, setActionId] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [bookingToCancel, setBookingToCancel] = useState(null);
 
   const fetchMyBookings = useCallback(async () => {
     setLoading(true);
@@ -177,8 +179,9 @@ export default function CustomerMyBookingsPage() {
     });
   }, [bookings, activeTab]);
 
-  const handleCancelRequest = async (booking) => {
-    const id = booking._id || booking.id;
+  const handleConfirmCancelRequest = async () => {
+    if (!bookingToCancel) return;
+    const id = bookingToCancel._id || bookingToCancel.id;
     setActionId(id);
     setFeedback(null);
 
@@ -204,12 +207,13 @@ export default function CustomerMyBookingsPage() {
             : item
         )
       );
-      const msg = `Request for "${booking.serviceTitle}" has been cancelled.`;
+      const successMsg = "Booking cancelled.";
       setFeedback({
         type: "success",
-        message: msg,
+        message: `Request for "${bookingToCancel.serviceTitle || "service"}" has been cancelled.`,
       });
-      toast.success(msg);
+      toast.success(successMsg);
+      setBookingToCancel(null);
     } catch (err) {
       const errMsg = err.message || "Could not cancel booking request.";
       setFeedback({
@@ -283,6 +287,9 @@ export default function CustomerMyBookingsPage() {
   if (loading || navigating) {
     return <DashboardPageSkeleton />;
   }
+
+  const cancelTargetId = bookingToCancel?._id || bookingToCancel?.id;
+  const isCancellingTarget = Boolean(cancelTargetId && actionId === cancelTargetId);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -483,7 +490,7 @@ export default function CustomerMyBookingsPage() {
                         <button
                           type="button"
                           disabled={busy}
-                          onClick={() => handleCancelRequest(booking)}
+                          onClick={() => setBookingToCancel(booking)}
                           className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           {busy ? (
@@ -518,6 +525,23 @@ export default function CustomerMyBookingsPage() {
           })}
         </div>
       )}
+
+      {/* Cancel Booking Confirmation Modal */}
+      <ConfirmModal
+        open={Boolean(bookingToCancel)}
+        variant="warning"
+        title="Cancel Booking?"
+        description={`Are you sure you want to cancel your booking for "${
+          bookingToCancel?.serviceTitle || "this service"
+        }"?`}
+        confirmText="Cancel Booking"
+        cancelText="Keep Booking"
+        loading={isCancellingTarget}
+        onConfirm={handleConfirmCancelRequest}
+        onCancel={() => {
+          if (!isCancellingTarget) setBookingToCancel(null);
+        }}
+      />
     </div>
   );
 }

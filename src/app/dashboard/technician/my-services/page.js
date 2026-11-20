@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const CATEGORIES = [
   "Smartphone",
@@ -56,6 +57,7 @@ export default function MyServicesPage() {
   const [feedback, setFeedback] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [serviceToDelete, setServiceToDelete] = useState(null);
 
   const [editingService, setEditingService] = useState(null);
   const [editForm, setEditForm] = useState({
@@ -261,12 +263,9 @@ export default function MyServicesPage() {
     }
   };
 
-  const handleDeleteService = async (service) => {
-    const id = service._id || service.id;
-    const confirmed = window.confirm(
-      `Are you sure you want to delete "${service.title}"?`
-    );
-    if (!confirmed) return;
+  const handleConfirmDeleteService = async () => {
+    if (!serviceToDelete) return;
+    const id = serviceToDelete._id || serviceToDelete.id;
 
     setDeletingId(id);
     setFeedback(null);
@@ -288,7 +287,8 @@ export default function MyServicesPage() {
       setServices((prev) =>
         prev.filter((item) => (item._id || item.id) !== id)
       );
-      const successMsg = "Service removed from your listings.";
+      setServiceToDelete(null);
+      const successMsg = "Service deleted successfully.";
       setFeedback({
         type: "success",
         message: successMsg,
@@ -309,6 +309,9 @@ export default function MyServicesPage() {
   if (loading || navigating) {
     return <DashboardPageSkeleton />;
   }
+
+  const deleteTargetId = serviceToDelete?._id || serviceToDelete?.id;
+  const isDeletingTarget = Boolean(deleteTargetId && deletingId === deleteTargetId);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -392,6 +395,7 @@ export default function MyServicesPage() {
                 {services.map((service) => {
                   const id = service._id || service.id;
                   const isAvailable = service.available ?? true;
+                  const isDeleting = deletingId === id;
 
                   return (
                     <tr
@@ -472,18 +476,12 @@ export default function MyServicesPage() {
 
                           <button
                             type="button"
-                            disabled={deletingId === id}
-                            onClick={() => handleDeleteService(service)}
+                            disabled={isDeleting}
+                            onClick={() => setServiceToDelete(service)}
                             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
                           >
-                            {deletingId === id ? (
-                              <FixMateSpinner compact />
-                            ) : (
-                              <Trash2 className="w-3.5 h-3.5" />
-                            )}
-                            <span>
-                              {deletingId === id ? "Deleting..." : "Delete"}
-                            </span>
+                            <Trash2 className="w-3.5 h-3.5" />
+                            <span>{isDeleting ? "Deleting..." : "Delete"}</span>
                           </button>
                         </div>
                       </td>
@@ -495,6 +493,23 @@ export default function MyServicesPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Service Confirmation Modal */}
+      <ConfirmModal
+        open={Boolean(serviceToDelete)}
+        variant="danger"
+        title="Delete Service?"
+        description={`Are you sure you want to delete "${
+          serviceToDelete?.title || "this service"
+        }"? This action cannot be undone.`}
+        confirmText="Delete Service"
+        cancelText="Keep Service"
+        loading={isDeletingTarget}
+        onConfirm={handleConfirmDeleteService}
+        onCancel={() => {
+          if (!isDeletingTarget) setServiceToDelete(null);
+        }}
+      />
 
       {editingService && (
         <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">

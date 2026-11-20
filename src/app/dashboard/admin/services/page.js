@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function formatSubmittedDate(dateStr) {
   if (!dateStr) return "—";
@@ -47,6 +48,7 @@ export default function ManageServicesPage() {
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [feedback, setFeedback] = useState(null);
+  const [serviceToReject, setServiceToReject] = useState(null);
 
   const fetchServices = useCallback(async () => {
     setLoading(true);
@@ -144,6 +146,7 @@ export default function ManageServicesPage() {
         message: msg,
       });
       toast.success(msg);
+      setServiceToReject(null);
     } catch (err) {
       setServices((prev) =>
         prev.map((item) =>
@@ -161,6 +164,11 @@ export default function ManageServicesPage() {
     }
   };
 
+  const handleConfirmReject = async () => {
+    if (!serviceToReject) return;
+    await handleStatusChange(serviceToReject, "rejected");
+  };
+
   const filterTabs = [
     { key: "pending", label: "Pending", count: counts.pending },
     { key: "approved", label: "Approved", count: counts.approved },
@@ -171,6 +179,9 @@ export default function ManageServicesPage() {
   if (loading) {
     return <DashboardPageSkeleton />;
   }
+
+  const rejectTargetId = serviceToReject?._id || serviceToReject?.id;
+  const isRejecting = Boolean(rejectTargetId && updatingId === rejectTargetId);
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -353,7 +364,7 @@ export default function ManageServicesPage() {
                             <button
                               type="button"
                               disabled={busy}
-                              onClick={() => handleStatusChange(service, "rejected")}
+                              onClick={() => setServiceToReject(service)}
                               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-rose-500/15 hover:border-rose-500/30 text-slate-200 hover:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
                             >
                               <X className="w-3.5 h-3.5" />
@@ -370,6 +381,23 @@ export default function ManageServicesPage() {
           </div>
         )}
       </div>
+
+      {/* Reject Service Confirmation Modal */}
+      <ConfirmModal
+        open={Boolean(serviceToReject)}
+        variant="warning"
+        title="Reject Service?"
+        description={`Are you sure you want to reject "${
+          serviceToReject?.title || "this service"
+        }"? It will not appear on the public service listings until approved.`}
+        confirmText="Reject Service"
+        cancelText="Keep"
+        loading={isRejecting}
+        onConfirm={handleConfirmReject}
+        onCancel={() => {
+          if (!isRejecting) setServiceToReject(null);
+        }}
+      />
     </div>
   );
 }
