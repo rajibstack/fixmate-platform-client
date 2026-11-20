@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -20,7 +20,10 @@ import {
   Lock,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import {
+  DashboardPageSkeleton,
+  FixMateSpinner,
+} from "@/components/ui/LoadingState";
 
 const CATEGORIES = [
   "Smartphone",
@@ -43,6 +46,7 @@ export default function AddServicePage() {
   const router = useRouter();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
   const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
+  const redirectTimerRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -58,6 +62,7 @@ export default function AddServicePage() {
   });
 
   const [imagePreview, setImagePreview] = useState("");
+  const [imageFailed, setImageFailed] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [navigating, setNavigating] = useState(false);
@@ -87,6 +92,14 @@ export default function AddServicePage() {
     };
   }, [imagePreview]);
 
+  useEffect(() => {
+    return () => {
+      if (redirectTimerRef.current) {
+        clearTimeout(redirectTimerRef.current);
+      }
+    };
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -95,11 +108,18 @@ export default function AddServicePage() {
 
   const handleImageFile = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
 
     setFeedback(null);
+    setImageFailed(false);
 
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+    ];
     if (!allowedTypes.includes(file.type)) {
       const msg = "Please select a valid JPG, PNG, or WEBP image.";
       setFeedback({
@@ -179,6 +199,7 @@ export default function AddServicePage() {
       URL.revokeObjectURL(imagePreview);
     }
     setImagePreview("");
+    setImageFailed(false);
     setFormData((prev) => ({ ...prev, image: "" }));
   };
 
@@ -244,9 +265,15 @@ export default function AddServicePage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error(
+          "Please sign in as a technician to submit a service."
+        );
+      }
+
       const headers = {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        Authorization: `Bearer ${token}`,
       };
 
       let res = await fetch(`${apiUrl}/api/technician/services`, {
@@ -287,8 +314,9 @@ export default function AddServicePage() {
         image: "",
       }));
       setImagePreview("");
+      setImageFailed(false);
 
-      setTimeout(() => {
+      redirectTimerRef.current = setTimeout(() => {
         setNavigating(true);
         router.push("/dashboard/technician/my-services");
       }, 1200);
@@ -308,7 +336,7 @@ export default function AddServicePage() {
     return <DashboardPageSkeleton />;
   }
 
-  const previewImageSrc = formData.image || imagePreview;
+  const previewImageSrc = !imageFailed ? formData.image || imagePreview : "";
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -616,7 +644,9 @@ export default function AddServicePage() {
           <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-white">Service image</label>
-              <span className="text-[11px] text-slate-400">JPG or PNG, up to 8 MB</span>
+              <span className="text-[11px] text-slate-400">
+                JPG or PNG, up to 8 MB
+              </span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -626,6 +656,7 @@ export default function AddServicePage() {
                     <img
                       src={previewImageSrc}
                       alt="Service preview"
+                      onError={() => setImageFailed(true)}
                       className="w-full h-full object-cover"
                     />
                     <button
@@ -663,7 +694,8 @@ export default function AddServicePage() {
                 </label>
 
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Uploaded through the ImgBB step (simulated). JPG or PNG, up to 8 MB.
+                  Uploaded through the ImgBB step (simulated). JPG or PNG, up to 8
+                  MB.
                 </p>
               </div>
             </div>
@@ -673,7 +705,9 @@ export default function AddServicePage() {
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-sky-400" />
-                <h2 className="text-sm font-bold text-white">Live listing preview</h2>
+                <h2 className="text-sm font-bold text-white">
+                  Live listing preview
+                </h2>
               </div>
               <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
                 Pending
@@ -686,6 +720,7 @@ export default function AddServicePage() {
                   <img
                     src={previewImageSrc}
                     alt={formData.title || "Service preview"}
+                    onError={() => setImageFailed(true)}
                     className="w-full h-full object-cover"
                   />
                 ) : (

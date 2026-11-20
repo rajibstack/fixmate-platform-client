@@ -25,6 +25,31 @@ function getInitials(name = "") {
   );
 }
 
+function readStoredSessionUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem("user");
+    const token =
+      localStorage.getItem("token") ||
+      localStorage.getItem("authToken") ||
+      localStorage.getItem("accessToken");
+
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    if (!parsed || typeof parsed !== "object") return null;
+
+    const hasToken = Boolean(token || parsed.token);
+    if (!hasToken) return null;
+
+    return {
+      ...parsed,
+      role: (parsed.role || "customer").toString().toLowerCase().trim(),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const router = useRouter();
@@ -35,20 +60,9 @@ export default function Navbar() {
   const dropdownRef = useRef(null);
 
   const loadUser = useCallback(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      if (!stored) {
-        setUser(null);
-        setAvatarError(false);
-        return;
-      }
-      const parsed = JSON.parse(stored);
-      setUser(parsed && typeof parsed === "object" ? parsed : null);
-      setAvatarError(false);
-    } catch {
-      setUser(null);
-      setAvatarError(false);
-    }
+    const sessionUser = readStoredSessionUser();
+    setUser(sessionUser);
+    setAvatarError(false);
   }, []);
 
   useEffect(() => {
@@ -76,12 +90,27 @@ export default function Navbar() {
         setMenuOpen(false);
       }
     };
+
+    const handleEscapeKey = (e) => {
+      if (e.key === "Escape") {
+        setMenuOpen(false);
+        setMobileNavOpen(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleOutsideClick);
-    return () => document.removeEventListener("mousedown", handleOutsideClick);
+    document.addEventListener("keydown", handleEscapeKey);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+      document.removeEventListener("keydown", handleEscapeKey);
+    };
   }, []);
 
   const handleSignOut = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
     setUser(null);
     setMenuOpen(false);
@@ -98,6 +127,12 @@ export default function Navbar() {
     { name: "Contact", href: "/contact" },
   ];
 
+  const isNavItemActive = (href) => {
+    if (!pathname) return false;
+    if (href === "/") return pathname === "/";
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
+
   const showAvatarImage = Boolean(user?.avatar) && !avatarError;
 
   return (
@@ -108,7 +143,9 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setMobileNavOpen((prev) => !prev)}
-            aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-label={
+              mobileNavOpen ? "Close navigation menu" : "Open navigation menu"
+            }
             aria-expanded={mobileNavOpen}
             className="md:hidden p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 hover:text-sky-400 transition cursor-pointer shrink-0"
           >
@@ -119,7 +156,10 @@ export default function Navbar() {
             )}
           </button>
 
-          <Link href="/" className="flex items-center gap-2.5 text-xl font-bold shrink-0">
+          <Link
+            href="/"
+            className="flex items-center gap-2.5 text-xl font-bold shrink-0"
+          >
             <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
               <Wrench className="w-5 h-5" />
             </div>
@@ -130,9 +170,12 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Nav Links */}
-        <nav className="hidden md:flex items-center gap-7">
+        <nav
+          aria-label="Primary Navigation"
+          className="hidden md:flex items-center gap-7"
+        >
           {navLinks.map((item) => {
-            const active = pathname === item.href;
+            const active = isNavItemActive(item.href);
             return (
               <Link
                 key={item.href}
@@ -168,6 +211,9 @@ export default function Navbar() {
             <div className="relative" ref={dropdownRef}>
               <button
                 type="button"
+                aria-haspopup="menu"
+                aria-expanded={menuOpen}
+                aria-label="Open account menu"
                 onClick={() => setMenuOpen((prev) => !prev)}
                 className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
               >
@@ -191,7 +237,10 @@ export default function Navbar() {
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50">
+                <div
+                  role="menu"
+                  className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50"
+                >
                   <div className="p-4 border-b border-slate-800 flex items-center gap-3">
                     {showAvatarImage ? (
                       <img
@@ -223,6 +272,7 @@ export default function Navbar() {
                   <div className="py-1.5">
                     <Link
                       href="/dashboard/overview"
+                      role="menuitem"
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800/80 hover:text-sky-400 transition"
                     >
@@ -232,6 +282,7 @@ export default function Navbar() {
 
                     <Link
                       href="/dashboard/profile"
+                      role="menuitem"
                       onClick={() => setMenuOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800/80 hover:text-sky-400 transition"
                     >
@@ -243,6 +294,7 @@ export default function Navbar() {
                   <div className="border-t border-slate-800 py-1.5">
                     <button
                       type="button"
+                      role="menuitem"
                       onClick={handleSignOut}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                     >
@@ -264,7 +316,7 @@ export default function Navbar() {
           className="md:hidden bg-slate-900/95 border-t border-slate-800/90 px-4 py-3 space-y-1"
         >
           {navLinks.map((item) => {
-            const active = pathname === item.href;
+            const active = isNavItemActive(item.href);
             return (
               <Link
                 key={item.href}

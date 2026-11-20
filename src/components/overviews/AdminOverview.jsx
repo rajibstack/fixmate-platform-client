@@ -10,26 +10,36 @@ import {
   ArrowUpRight,
   AlertCircle,
   CalendarCheck,
+  RefreshCw,
 } from "lucide-react";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function getBookingAmount(booking) {
   const raw =
-    booking?.finalAmount ??
-    booking?.totalPrice ??
-    booking?.startingPrice ??
-    booking?.price ??
+    booking?.paidAmount ||
+    booking?.finalAmount ||
+    booking?.totalPrice ||
+    booking?.startingPrice ||
+    booking?.price ||
     0;
   const num = Number(raw);
   return Number.isNaN(num) ? 0 : num;
 }
 
 function formatStatusBadge(status = "") {
-  const normalized = status.toString().toLowerCase().trim().replace(/_/g, "-");
+  const normalized = status
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/_/g, "-");
   if (normalized === "completed") {
     return "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30";
   }
-  if (normalized === "accepted" || normalized === "in-progress" || normalized === "in progress") {
+  if (
+    normalized === "accepted" ||
+    normalized === "in-progress" ||
+    normalized === "in progress"
+  ) {
     return "bg-sky-500/15 text-sky-400 border border-sky-500/30";
   }
   if (normalized === "rejected" || normalized === "cancelled") {
@@ -39,7 +49,11 @@ function formatStatusBadge(status = "") {
 }
 
 function formatStatusLabel(status = "") {
-  const normalized = status.toString().toLowerCase().trim().replace(/_/g, "-");
+  const normalized = status
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/_/g, "-");
   if (normalized === "in-progress" || normalized === "in progress") {
     return "In Progress";
   }
@@ -63,45 +77,80 @@ export default function AdminOverview() {
   const [pendingServicesList, setPendingServicesList] = useState([]);
   const [latestBookingsList, setLatestBookingsList] = useState([]);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const loadAdminOverview = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
       const headers = {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
       const overviewRes = await fetch(`${apiUrl}/api/admin/overview`, {
+        cache: "no-store",
         headers,
       });
 
       if (overviewRes.ok) {
         const overviewData = await overviewRes.json().catch(() => ({}));
-        if (overviewData?.stats) {
-          setStats((prev) => ({ ...prev, ...overviewData.stats }));
-          setPendingServicesList(overviewData.pendingServices || []);
-          setLatestBookingsList(overviewData.recentBookings || []);
+        const payload = overviewData?.data || overviewData;
+        if (payload?.stats && typeof payload.stats === "object") {
+          setStats((prev) => ({
+            ...prev,
+            totalUsers: Number(payload.stats.totalUsers ?? prev.totalUsers) || 0,
+            customerCount:
+              Number(payload.stats.customerCount ?? prev.customerCount) || 0,
+            totalTechnicians:
+              Number(payload.stats.totalTechnicians ?? prev.totalTechnicians) ||
+              0,
+            pendingServices:
+              Number(payload.stats.pendingServices ?? prev.pendingServices) || 0,
+            approvedServices:
+              Number(payload.stats.approvedServices ?? prev.approvedServices) ||
+              0,
+            totalRevenue:
+              Number(payload.stats.totalRevenue ?? prev.totalRevenue) || 0,
+            paymentCount:
+              Number(payload.stats.paymentCount ?? prev.paymentCount) || 0,
+          }));
+          setPendingServicesList(
+            Array.isArray(payload.pendingServices)
+              ? payload.pendingServices.slice(0, 5)
+              : []
+          );
+          setLatestBookingsList(
+            Array.isArray(payload.recentBookings)
+              ? payload.recentBookings.slice(0, 5)
+              : []
+          );
           setLoading(false);
           return;
         }
       }
 
       const [usersRes, servicesRes, bookingsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/admin/users`, { headers }),
-        fetch(`${apiUrl}/api/admin/services`, { headers }),
-        fetch(`${apiUrl}/api/admin/bookings`, { headers }),
+        fetch(`${apiUrl}/api/admin/users`, { cache: "no-store", headers }),
+        fetch(`${apiUrl}/api/admin/services`, { cache: "no-store", headers }),
+        fetch(`${apiUrl}/api/admin/bookings`, { cache: "no-store", headers }),
       ]);
 
       if (!usersRes.ok && !servicesRes.ok && !bookingsRes.ok) {
         throw new Error("Failed to load platform overview data.");
       }
 
-      const usersJson = usersRes.ok ? await usersRes.json().catch(() => ({})) : {};
+      const usersJson = usersRes.ok
+        ? await usersRes.json().catch(() => ({}))
+        : {};
       const servicesJson = servicesRes.ok
         ? await servicesRes.json().catch(() => ({}))
         : {};
@@ -190,9 +239,19 @@ export default function AdminOverview() {
 
       {/* Error Banner */}
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
-          <p className="font-medium flex-1">{error}</p>
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <p className="font-medium">{error}</p>
+          </div>
+          <button
+            type="button"
+            onClick={loadAdminOverview}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
         </div>
       )}
 

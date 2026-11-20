@@ -11,10 +11,13 @@ import {
   User as UserIcon,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import {
+  DashboardPageSkeleton,
+  FixMateSpinner,
+} from "@/components/ui/LoadingState";
 
 function formatRoleLabel(role) {
-  const normalized = (role || "technician").toLowerCase();
+  const normalized = (role || "customer").toLowerCase();
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
@@ -26,13 +29,14 @@ export default function UpdateProfilePage() {
     name: "",
     phone: "",
     email: "",
-    role: "technician",
+    role: "customer",
     area: "",
     bio: "",
     avatar: "",
   });
 
   const [photoPreview, setPhotoPreview] = useState("");
+  const [imgFailed, setImgFailed] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -52,7 +56,7 @@ export default function UpdateProfilePage() {
           name: parsed?.name || "",
           phone: parsed?.phone || "",
           email: parsed?.email || "",
-          role: parsed?.role || "technician",
+          role: parsed?.role || "customer",
           area: parsed?.area || "",
           bio: parsed?.bio || "",
           avatar: parsed?.avatar || "",
@@ -78,6 +82,7 @@ export default function UpdateProfilePage() {
     }
 
     fetch(`${apiUrl}/api/auth/me`, {
+      cache: "no-store",
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -86,6 +91,7 @@ export default function UpdateProfilePage() {
       .then((data) => {
         if (!active) return;
         if (data?.success && data?.user) {
+          const nextAvatar = data.user.avatar || "";
           setFormData((prev) => ({
             ...prev,
             name: data.user.name || prev.name,
@@ -94,11 +100,12 @@ export default function UpdateProfilePage() {
             role: data.user.role || prev.role,
             area: data.user.area || prev.area,
             bio: data.user.bio || prev.bio,
-            avatar: data.user.avatar || prev.avatar,
+            avatar: nextAvatar || prev.avatar,
           }));
-          if (data.user.avatar) {
-            setPhotoPreview(data.user.avatar);
+          if (nextAvatar) {
+            setPhotoPreview(nextAvatar);
           }
+          setImgFailed(false);
         }
       })
       .catch(() => {
@@ -150,11 +157,18 @@ export default function UpdateProfilePage() {
 
   const handlePhotoFile = async (e) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
     if (!file) return;
 
     setFeedback(null);
+    setImgFailed(false);
 
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+    ];
     if (!allowedTypes.includes(file.type)) {
       const msg = "Please select a valid JPG, PNG, or WEBP image.";
       setFeedback({
@@ -228,6 +242,7 @@ export default function UpdateProfilePage() {
       URL.revokeObjectURL(photoPreview);
     }
     setPhotoPreview("");
+    setImgFailed(false);
     setFormData((prev) => ({ ...prev, avatar: "" }));
   };
 
@@ -264,11 +279,15 @@ export default function UpdateProfilePage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please sign in to update your profile.");
+      }
+
       const res = await fetch(`${apiUrl}/api/auth/profile`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
       });
@@ -312,7 +331,7 @@ export default function UpdateProfilePage() {
     return <DashboardPageSkeleton />;
   }
 
-  const displayAvatar = formData.avatar || photoPreview;
+  const displayAvatar = !imgFailed ? formData.avatar || photoPreview : "";
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
@@ -356,6 +375,7 @@ export default function UpdateProfilePage() {
                 <img
                   src={displayAvatar}
                   alt={formData.name || "Profile photo"}
+                  onError={() => setImgFailed(true)}
                   className="w-full h-full object-cover"
                 />
                 <button

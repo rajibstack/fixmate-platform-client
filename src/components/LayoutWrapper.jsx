@@ -4,10 +4,11 @@ import { Suspense } from "react";
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 function LayoutContent({ children }) {
   const pathname = usePathname();
-  const isDashboard = pathname?.startsWith("/dashboard");
+  const isDashboard = Boolean(pathname && pathname.startsWith("/dashboard"));
 
   if (isDashboard) {
     return <>{children}</>;
@@ -16,7 +17,7 @@ function LayoutContent({ children }) {
   return (
     <>
       <Navbar />
-      <main className="flex-grow">{children}</main>
+      <main className="flex-1">{children}</main>
       <Footer />
     </>
   );
@@ -24,7 +25,7 @@ function LayoutContent({ children }) {
 
 export default function LayoutWrapper({ children }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-slate-950" />}>
+    <Suspense fallback={<PublicPageSkeleton cards={6} />}>
       <LayoutContent>{children}</LayoutContent>
     </Suspense>
   );

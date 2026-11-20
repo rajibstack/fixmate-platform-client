@@ -37,10 +37,11 @@ function formatCurrency(value) {
 
 function getBookingAmount(booking) {
   const raw =
-    booking?.finalAmount ??
-    booking?.totalPrice ??
-    booking?.startingPrice ??
-    booking?.price ??
+    booking?.paidAmount ||
+    booking?.finalAmount ||
+    booking?.totalPrice ||
+    booking?.startingPrice ||
+    booking?.price ||
     0;
   const num = Number(raw);
   return Number.isNaN(num) ? 0 : num;
@@ -59,7 +60,9 @@ function getTransactionCode(booking) {
 }
 
 export default function AdminTransactionsPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -71,10 +74,17 @@ export default function AdminTransactionsPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error(
+          "Please sign in as an admin to view platform transactions."
+        );
+      }
+
       const res = await fetch(`${apiUrl}/api/admin/bookings`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -103,7 +113,8 @@ export default function AdminTransactionsPage() {
   const paidTransactions = useMemo(() => {
     return bookings
       .filter(
-        (b) => (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
+        (b) =>
+          (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
       )
       .sort((a, b) => {
         const dateA = new Date(
@@ -149,9 +160,19 @@ export default function AdminTransactionsPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
-          <p className="font-medium flex-1">{error}</p>
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <p className="font-medium">{error}</p>
+          </div>
+          <button
+            type="button"
+            onClick={fetchTransactions}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
         </div>
       )}
 
@@ -168,7 +189,7 @@ export default function AdminTransactionsPage() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : formatCurrency(summary.totalRevenue)}
+              {formatCurrency(summary.totalRevenue)}
             </p>
             <p className="text-xs text-sky-300/80 mt-1.5">
               Settled customer payments
@@ -185,7 +206,7 @@ export default function AdminTransactionsPage() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : summary.paymentCount}
+              {summary.paymentCount}
             </p>
             <p className="text-xs text-slate-500 mt-1.5">
               Completed &amp; paid repair invoices
@@ -202,7 +223,7 @@ export default function AdminTransactionsPage() {
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-white">
-              {loading ? "—" : formatCurrency(summary.averageJob)}
+              {formatCurrency(summary.averageJob)}
             </p>
             <p className="text-xs text-slate-500 mt-1.5">
               Average value per paid job

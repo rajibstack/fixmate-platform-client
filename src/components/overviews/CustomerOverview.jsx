@@ -10,6 +10,7 @@ import {
   ArrowUpRight,
   AlertCircle,
   Wrench,
+  RefreshCw,
 } from "lucide-react";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
@@ -26,10 +27,11 @@ function formatShortDate(dateValue) {
 
 function getBookingAmount(booking) {
   const raw =
-    booking?.finalAmount ??
-    booking?.totalPrice ??
-    booking?.startingPrice ??
-    booking?.price ??
+    booking?.paidAmount ||
+    booking?.finalAmount ||
+    booking?.totalPrice ||
+    booking?.startingPrice ||
+    booking?.price ||
     0;
   const num = Number(raw);
   return Number.isNaN(num) ? 0 : num;
@@ -57,22 +59,34 @@ export default function CustomerOverview({ user }) {
   const [inProgressJobs, setInProgressJobs] = useState([]);
   const [recentPayments, setRecentPayments] = useState([]);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const loadCustomerOverview = useCallback(async () => {
     setLoading(true);
     setError("");
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
       const headers = {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
 
-      let res = await fetch(`${apiUrl}/api/bookings/my`, { headers });
+      let res = await fetch(`${apiUrl}/api/bookings/my`, {
+        cache: "no-store",
+        headers,
+      });
       if (res.status === 404) {
-        res = await fetch(`${apiUrl}/api/customer/bookings`, { headers });
+        res = await fetch(`${apiUrl}/api/customer/bookings`, {
+          cache: "no-store",
+          headers,
+        });
       }
 
       const json = await res.json().catch(() => ({}));
@@ -87,9 +101,15 @@ export default function CustomerOverview({ user }) {
         : [];
 
       const active = list.filter((b) =>
-        ["requested", "pending", "accepted", "in-progress", "in_progress", "in progress", "assigned"].includes(
-          (b?.status || "").toString().toLowerCase().trim()
-        )
+        [
+          "requested",
+          "pending",
+          "accepted",
+          "in-progress",
+          "in_progress",
+          "in progress",
+          "assigned",
+        ].includes((b?.status || "").toString().toLowerCase().trim())
       );
 
       const completed = list.filter(
@@ -106,9 +126,20 @@ export default function CustomerOverview({ user }) {
         0
       );
 
-      const paidList = list.filter(
-        (b) => (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
-      );
+      const paidList = list
+        .filter(
+          (b) =>
+            (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
+        )
+        .sort((a, b) => {
+          const dateA = new Date(
+            a?.paidAt || a?.updatedAt || a?.createdAt || 0
+          ).getTime();
+          const dateB = new Date(
+            b?.paidAt || b?.updatedAt || b?.createdAt || 0
+          ).getTime();
+          return dateB - dateA;
+        });
 
       const spentSum = paidList.reduce(
         (sum, item) => sum + getBookingAmount(item),
@@ -166,9 +197,19 @@ export default function CustomerOverview({ user }) {
       </div>
 
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 text-sm text-rose-300 flex items-center gap-2.5">
-          <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-          <span>{error}</span>
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 text-sm text-rose-300 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{error}</span>
+          </div>
+          <button
+            type="button"
+            onClick={loadCustomerOverview}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
         </div>
       )}
 

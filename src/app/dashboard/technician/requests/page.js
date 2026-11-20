@@ -14,7 +14,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import {
+  DashboardPageSkeleton,
+  FixMateSpinner,
+} from "@/components/ui/LoadingState";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function formatShortDate(dateValue) {
@@ -64,6 +67,27 @@ function formatStatusText(status) {
   return status.charAt(0).toUpperCase() + status.slice(1);
 }
 
+function RequestThumbnail({ src, alt }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [src]);
+
+  if (!src || imgFailed) {
+    return <Wrench className="w-8 h-8 text-sky-400" />;
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setImgFailed(true)}
+      className="w-full h-full object-cover object-center"
+    />
+  );
+}
+
 export default function TechnicianManageRequestsPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -80,10 +104,17 @@ export default function TechnicianManageRequestsPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error(
+          "Please sign in as a technician to view repair requests."
+        );
+      }
+
       const res = await fetch(`${apiUrl}/api/technician/bookings`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -168,10 +199,11 @@ export default function TechnicianManageRequestsPage() {
         throw new Error(data?.message || "Failed to update request status.");
       }
 
+      const updatedDoc = data?.data || {};
       setRequests((prev) =>
         prev.map((item) =>
           (item._id || item.id) === id
-            ? { ...item, status: nextStatus }
+            ? { ...item, ...updatedDoc, status: nextStatus }
             : item
         )
       );
@@ -333,10 +365,10 @@ export default function TechnicianManageRequestsPage() {
               .toLowerCase()
               .trim();
             const amount = Number(
-              booking?.finalAmount ??
-                booking?.totalPrice ??
-                booking?.startingPrice ??
-                booking?.price ??
+              booking?.finalAmount ||
+                booking?.totalPrice ||
+                booking?.startingPrice ||
+                booking?.price ||
                 0
             );
             const amountLabel =
@@ -357,15 +389,10 @@ export default function TechnicianManageRequestsPage() {
                 {/* Left Section: Fixed-Size Service Image + Details with Equal Vertical Spacing */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
                   <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                    {booking?.serviceImage ? (
-                      <img
-                        src={booking.serviceImage}
-                        alt={booking.serviceTitle}
-                        className="w-full h-full object-cover object-center"
-                      />
-                    ) : (
-                      <Wrench className="w-8 h-8 text-sky-400" />
-                    )}
+                    <RequestThumbnail
+                      src={booking?.serviceImage}
+                      alt={booking?.serviceTitle || "Repair Service"}
+                    />
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-3 py-0.5">
@@ -446,7 +473,13 @@ export default function TechnicianManageRequestsPage() {
                         {formatStatusText(status)}
                       </span>
 
-                      <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-800/90 text-slate-300 border-slate-700">
+                      <span
+                        className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+                          paymentStatus === "paid"
+                            ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
+                            : "bg-slate-800/90 text-slate-300 border-slate-700"
+                        }`}
+                      >
                         {paymentStatus === "paid" ? "Paid" : "Unpaid"}
                       </span>
                     </div>

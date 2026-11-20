@@ -23,6 +23,9 @@ import {
 } from "lucide-react";
 import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
+const HERO_FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1000&q=80";
+
 const POPULAR_CATEGORIES = [
   {
     name: "Smartphone",
@@ -130,14 +133,21 @@ function isServiceApprovedAndAvailable(service) {
   return isApproved && isAvailable;
 }
 
-function matchesCategoryFilter(service, selectedCategory) {
-  if (!selectedCategory) return true;
+function matchesCategoryFilter(service, selectedCategoryName) {
+  if (!selectedCategoryName) return true;
+  const catObj = POPULAR_CATEGORIES.find((c) => c.name === selectedCategoryName);
+  const queryVal = (catObj?.queryValue || selectedCategoryName).toLowerCase();
+  const target = selectedCategoryName.toLowerCase();
+
   const cat = (service?.category || "").toLowerCase();
   const title = (service?.title || "").toLowerCase();
-  const target = selectedCategory.toLowerCase();
 
   if (target === "ac") {
-    return cat.includes("ac") || title.includes("ac");
+    return (
+      cat.includes("ac") ||
+      cat.includes("refrigeration") ||
+      title.includes("ac")
+    );
   }
   if (target === "refrigerator") {
     return (
@@ -148,7 +158,11 @@ function matchesCategoryFilter(service, selectedCategory) {
     );
   }
   if (target === "tv") {
-    return cat.includes("tv") || title.includes("tv");
+    return (
+      cat.includes("tv") ||
+      cat.includes("electronics") ||
+      title.includes("tv")
+    );
   }
   if (target === "washing machine") {
     return (
@@ -157,7 +171,32 @@ function matchesCategoryFilter(service, selectedCategory) {
       title.includes("washing")
     );
   }
-  return cat.includes(target) || title.includes(target);
+  return (
+    cat.includes(queryVal) ||
+    cat.includes(target) ||
+    title.includes(target)
+  );
+}
+
+function FeaturedServiceImage({ src, alt }) {
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    setFailed(false);
+  }, [src]);
+
+  if (!src || failed) {
+    return <Wrench className="w-9 h-9 text-sky-400/70" />;
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setFailed(true)}
+      className="w-full h-full object-cover"
+    />
+  );
 }
 
 export default function HomePage() {
@@ -170,6 +209,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
+  const [heroImgSrc, setHeroImgSrc] = useState(HERO_FALLBACK_IMAGE);
 
   const fetchFeaturedServices = useCallback(async () => {
     setLoading(true);
@@ -211,10 +251,18 @@ export default function HomePage() {
 
   const featuredServices = useMemo(() => {
     const filtered = selectedCategory
-      ? allServices.filter((item) => matchesCategoryFilter(item, selectedCategory))
+      ? allServices.filter((item) =>
+          matchesCategoryFilter(item, selectedCategory)
+        )
       : allServices;
     return filtered.slice(0, 6);
   }, [allServices, selectedCategory]);
+
+  const selectedCategoryQueryValue = useMemo(() => {
+    if (!selectedCategory) return "";
+    const found = POPULAR_CATEGORIES.find((c) => c.name === selectedCategory);
+    return found?.queryValue || selectedCategory;
+  }, [selectedCategory]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -318,8 +366,13 @@ export default function HomePage() {
               <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5">
                 <div className="aspect-[16/10] w-full rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden relative flex items-center justify-center">
                   <img
-                    src="https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1000&q=80"
+                    src={heroImgSrc}
                     alt="Technician repairing electronics with precision tools"
+                    onError={() => {
+                      if (heroImgSrc !== HERO_FALLBACK_IMAGE) {
+                        setHeroImgSrc(HERO_FALLBACK_IMAGE);
+                      }
+                    }}
                     className="w-full h-full object-cover"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
@@ -385,8 +438,10 @@ export default function HomePage() {
             )}
             <Link
               href={
-                selectedCategory
-                  ? `/services?category=${encodeURIComponent(selectedCategory)}`
+                selectedCategoryQueryValue
+                  ? `/services?category=${encodeURIComponent(
+                      selectedCategoryQueryValue
+                    )}`
                   : "/services"
               }
               onClick={() => setNavigating(true)}
@@ -438,7 +493,8 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {featuredServices.map((service) => {
               const id = service._id || service.id;
-              const modeLabel = service.mode || service.serviceMode || "Home Visit";
+              const modeLabel =
+                service.mode || service.serviceMode || "Home Visit";
               const techName =
                 service.technicianName ||
                 service.technician?.name ||
@@ -451,15 +507,10 @@ export default function HomePage() {
                 >
                   <div>
                     <div className="h-44 w-full bg-slate-950 border-b border-slate-800/80 overflow-hidden flex items-center justify-center">
-                      {service.image ? (
-                        <img
-                          src={service.image}
-                          alt={service.title}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <Wrench className="w-9 h-9 text-sky-400/70" />
-                      )}
+                      <FeaturedServiceImage
+                        src={service.image}
+                        alt={service.title || "Repair Service"}
+                      />
                     </div>
 
                     <div className="p-5 space-y-3">

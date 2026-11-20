@@ -6,6 +6,7 @@ import {
   Calendar,
   CheckCircle2,
   ClipboardList,
+  RefreshCw,
   RotateCcw,
   User,
   Wrench,
@@ -50,10 +51,11 @@ function normalizePaymentStatus(paymentStatus) {
 
 function getBookingAmount(booking) {
   const raw =
-    booking?.finalAmount ??
-    booking?.totalPrice ??
-    booking?.startingPrice ??
-    booking?.price ??
+    booking?.paidAmount ||
+    booking?.finalAmount ||
+    booking?.totalPrice ||
+    booking?.startingPrice ||
+    booking?.price ||
     0;
   const num = Number(raw);
   return Number.isNaN(num) ? 0 : num;
@@ -107,10 +109,17 @@ export default function AdminAllBookingsPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error(
+          "Please sign in as an admin to view all platform bookings."
+        );
+      }
+
       const res = await fetch(`${apiUrl}/api/admin/bookings`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -229,9 +238,19 @@ export default function AdminAllBookingsPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
-          <p className="font-medium flex-1">{error}</p>
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <p className="font-medium">{error}</p>
+          </div>
+          <button
+            type="button"
+            onClick={fetchAllBookings}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
         </div>
       )}
 
@@ -249,8 +268,8 @@ export default function AdminAllBookingsPage() {
               ? "There are no repair jobs recorded on the platform yet."
               : "There are no repair jobs matching this status filter."}
           </p>
-          {activeTab !== "all" && (
-            <div className="pt-2">
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            {activeTab !== "all" ? (
               <button
                 type="button"
                 onClick={() => setActiveTab("all")}
@@ -259,8 +278,17 @@ export default function AdminAllBookingsPage() {
                 <RotateCcw className="w-4 h-4" />
                 <span>Show all bookings</span>
               </button>
-            </div>
-          )}
+            ) : (
+              <button
+                type="button"
+                onClick={fetchAllBookings}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+              >
+                <RefreshCw className="w-4 h-4 text-sky-400" />
+                <span>Refresh bookings</span>
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <>

@@ -27,18 +27,19 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body
-        className="min-h-full flex flex-col bg-slate-950 text-slate-100"
+        className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col bg-slate-950 text-slate-100 font-sans`}
         suppressHydrationWarning={true}
       >
         <Toaster
           position="top-right"
+          theme="dark"
           richColors
           closeButton
           toastOptions={{
             style: {
-              background: "#07bcff",
-              border: "1px solid #07bcff",
-              color: "#020618",
+              background: "#0EA6F4",
+              border: "1px solid #0EA6F4",
+              color: "#ffffff",
               borderRadius: "14px",
             },
           }}

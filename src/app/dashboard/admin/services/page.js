@@ -40,6 +40,27 @@ function formatStatusLabel(status) {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
+function AdminServiceThumbnail({ src, alt }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [src]);
+
+  if (!src || imgFailed) {
+    return <Wrench className="w-4 h-4 text-sky-400" />;
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setImgFailed(true)}
+      className="w-full h-full object-cover"
+    />
+  );
+}
+
 export default function ManageServicesPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -56,10 +77,15 @@ export default function ManageServicesPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please sign in as an admin to manage services.");
+      }
+
       const res = await fetch(`${apiUrl}/api/admin/services`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -140,7 +166,18 @@ export default function ManageServicesPage() {
         throw new Error(data?.message || "Failed to update service status.");
       }
 
-      const msg = `"${service.title}" marked as ${formatStatusLabel(nextStatus)}.`;
+      const updatedDoc = data?.data || {};
+      setServices((prev) =>
+        prev.map((item) =>
+          (item._id || item.id) === id
+            ? { ...item, ...updatedDoc, status: nextStatus }
+            : item
+        )
+      );
+
+      const msg = `"${service.title}" marked as ${formatStatusLabel(
+        nextStatus
+      )}.`;
       setFeedback({
         type: "success",
         message: msg,
@@ -250,7 +287,9 @@ export default function ManageServicesPage() {
               <Wrench className="w-6 h-6" />
             </div>
             <h2 className="text-base sm:text-lg font-bold text-white">
-              {activeTab === "all" ? "No services submitted yet" : "No services found"}
+              {activeTab === "all"
+                ? "No services submitted yet"
+                : "No services found"}
             </h2>
             <p className="text-sm text-slate-400 max-w-md mx-auto">
               {activeTab === "all"
@@ -298,15 +337,10 @@ export default function ManageServicesPage() {
                       <td className="py-4 px-5">
                         <div className="flex items-center gap-3.5">
                           <div className="w-14 h-11 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                            {service.image ? (
-                              <img
-                                src={service.image}
-                                alt={service.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Wrench className="w-4 h-4 text-sky-400" />
-                            )}
+                            <AdminServiceThumbnail
+                              src={service.image}
+                              alt={service.title}
+                            />
                           </div>
                           <div className="min-w-0">
                             <p className="font-semibold text-white truncate">
@@ -321,7 +355,9 @@ export default function ManageServicesPage() {
 
                       {/* Technician */}
                       <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
-                        {service.technicianName || service.technicianEmail || "—"}
+                        {service.technicianName ||
+                          service.technicianEmail ||
+                          "—"}
                       </td>
 
                       {/* Price */}
@@ -352,7 +388,9 @@ export default function ManageServicesPage() {
                             <button
                               type="button"
                               disabled={busy}
-                              onClick={() => handleStatusChange(service, "approved")}
+                              onClick={() =>
+                                handleStatusChange(service, "approved")
+                              }
                               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition shadow-sm cursor-pointer disabled:opacity-50"
                             >
                               <Check className="w-3.5 h-3.5" />

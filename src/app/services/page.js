@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -14,6 +14,7 @@ import {
   Laptop,
   ChevronLeft,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
@@ -25,6 +26,13 @@ const CATEGORY_OPTIONS = [
   "TV & Electronics",
   "Home Appliances",
   "Electrical",
+];
+
+const MODE_OPTIONS = [
+  "All",
+  "Home Visit",
+  "Workshop Drop-off",
+  "Pickup & Delivery",
 ];
 
 // 4 columns on xl screens * 2 rows = 8 cards per page
@@ -42,40 +50,31 @@ function isServiceApprovedAndAvailable(service) {
   return isApproved && isAvailable;
 }
 
-function matchesSelectedCategory(serviceCategory = "", selectedCategory = "All") {
-  if (!selectedCategory || selectedCategory === "All") return true;
-  const cat = serviceCategory.toLowerCase().trim();
-  const target = selectedCategory.toLowerCase().trim();
+function normalizeCategoryOption(rawCategory = "All") {
+  const trimmed = (rawCategory || "All").toString().trim();
+  if (!trimmed || trimmed.toLowerCase() === "all") return "All";
+  if (trimmed.toLowerCase() === "ac") return "AC & Refrigeration";
+  const matched = CATEGORY_OPTIONS.find(
+    (opt) => opt.toLowerCase() === trimmed.toLowerCase()
+  );
+  return matched || trimmed;
+}
 
-  if (cat === target) return true;
-  if (target === "ac & refrigeration") {
-    return (
-      cat.includes("ac") ||
-      cat.includes("refrigerator") ||
-      cat.includes("fridge") ||
-      cat.includes("cooling")
-    );
+function normalizeModeOption(rawMode = "All") {
+  const trimmed = (rawMode || "All").toString().trim();
+  if (!trimmed || trimmed.toLowerCase() === "all") return "All";
+  const matched = MODE_OPTIONS.find(
+    (opt) => opt.toLowerCase() === trimmed.toLowerCase()
+  );
+  return matched || trimmed;
+}
+
+function normalizeSortOption(rawSort = "newest") {
+  const trimmed = (rawSort || "newest").toString().trim().toLowerCase();
+  if (["newest", "price-asc", "price-desc"].includes(trimmed)) {
+    return trimmed;
   }
-  if (target === "tv & electronics") {
-    return cat.includes("tv") || cat.includes("electronic");
-  }
-  if (target === "home appliances") {
-    return (
-      cat.includes("appliance") ||
-      cat.includes("washing") ||
-      cat.includes("microwave") ||
-      cat.includes("purifier")
-    );
-  }
-  if (target === "laptop & pc") {
-    return (
-      cat.includes("laptop") ||
-      cat.includes("pc") ||
-      cat.includes("computer") ||
-      cat.includes("desktop")
-    );
-  }
-  return cat.includes(target);
+  return "newest";
 }
 
 function ServiceCardImage({ src, alt }) {
@@ -111,126 +110,136 @@ function ServiceCardImage({ src, alt }) {
 function BrowseServicesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
-  const initialQuery = searchParams.get("search") || searchParams.get("q") || "";
-  const initialCategory = searchParams.get("category") || "All";
+  const urlQuery = searchParams.get("search") || searchParams.get("q") || "";
+  const urlCategory = normalizeCategoryOption(
+    searchParams.get("category") || "All"
+  );
+  const urlMode = normalizeModeOption(searchParams.get("mode") || "All");
+  const urlSort = normalizeSortOption(searchParams.get("sort") || "newest");
 
   const [services, setServices] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [fetching, setFetching] = useState(false);
   const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
-  const [searchTerm, setSearchTerm] = useState(initialQuery);
-  const [selectedCategory, setSelectedCategory] = useState(
-    CATEGORY_OPTIONS.some(
-      (opt) => opt.toLowerCase() === initialCategory.toLowerCase()
-    )
-      ? CATEGORY_OPTIONS.find(
-          (opt) => opt.toLowerCase() === initialCategory.toLowerCase()
-        )
-      : initialCategory || "All"
-  );
-  const [sortBy, setSortBy] = useState("newest");
+  const [searchTerm, setSearchTerm] = useState(urlQuery);
+  const [selectedCategory, setSelectedCategory] = useState(urlCategory);
+  const [selectedMode, setSelectedMode] = useState(urlMode);
+  const [sortBy, setSortBy] = useState(urlSort);
+
+  const debounceTimerRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   useEffect(() => {
-    const q = searchParams.get("search") || searchParams.get("q") || "";
-    const cat = searchParams.get("category") || "All";
-    setSearchTerm(q);
-    if (cat) {
-      const matchedOpt = CATEGORY_OPTIONS.find(
-        (opt) => opt.toLowerCase() === cat.toLowerCase()
-      );
-      setSelectedCategory(matchedOpt || cat);
-    }
+    setSearchTerm((prev) => (prev === urlQuery ? prev : urlQuery));
+    setSelectedCategory(urlCategory);
+    setSelectedMode(urlMode);
+    setSortBy(urlSort);
     setCurrentPage(1);
-  }, [searchParams]);
-
-  const fetchServices = useCallback(async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const res = await fetch(`${apiUrl}/api/services`, {
-        cache: "no-store",
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load services.");
-      }
-
-      const rawList = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : [];
-
-      const filteredValid = rawList.filter(isServiceApprovedAndAvailable);
-      setServices(filteredValid);
-    } catch (err) {
-      setError(err.message || "Could not fetch services.");
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+  }, [urlQuery, urlCategory, urlMode, urlSort]);
 
   useEffect(() => {
-    fetchServices();
-  }, [fetchServices]);
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
-  const visibleServices = useMemo(() => {
-    const q = searchTerm.trim().toLowerCase();
+  const syncUrlParams = useCallback(
+    ({ search, category, mode, sort }) => {
+      const params = new URLSearchParams();
+      const trimmedSearch = (search || "").trim();
+      if (trimmedSearch) params.set("search", trimmedSearch);
+      if (category && category !== "All") params.set("category", category);
+      if (mode && mode !== "All") params.set("mode", mode);
+      if (sort && sort !== "newest") params.set("sort", sort);
 
-    const matched = services.filter((service) => {
-      const categoryOk = matchesSelectedCategory(
-        service?.category || "",
-        selectedCategory
-      );
-      if (!categoryOk) return false;
+      const queryString = params.toString();
+      const targetUrl = queryString ? `/services?${queryString}` : "/services";
+      const currentFullUrl =
+        typeof window !== "undefined"
+          ? `${window.location.pathname}${window.location.search}`
+          : "";
 
-      if (!q) return true;
-
-      const title = (service?.title || "").toLowerCase();
-      const category = (service?.category || "").toLowerCase();
-      const area = (service?.area || "").toLowerCase();
-      const mode = (service?.mode || service?.serviceMode || "").toLowerCase();
-      const tech = (
-        service?.technicianName ||
-        service?.technician?.name ||
-        ""
-      ).toLowerCase();
-      const desc = (service?.description || "").toLowerCase();
-
-      return (
-        title.includes(q) ||
-        category.includes(q) ||
-        area.includes(q) ||
-        mode.includes(q) ||
-        tech.includes(q) ||
-        desc.includes(q)
-      );
-    });
-
-    const sorted = [...matched];
-    if (sortBy === "price-asc") {
-      sorted.sort((a, b) => Number(a?.price || 0) - Number(b?.price || 0));
-    } else if (sortBy === "price-desc") {
-      sorted.sort((a, b) => Number(b?.price || 0) - Number(a?.price || 0));
-    } else {
-      sorted.sort(
-        (a, b) =>
-          new Date(b?.createdAt || 0).getTime() -
-          new Date(a?.createdAt || 0).getTime()
-      );
-    }
-
-    return sorted;
-  }, [services, searchTerm, selectedCategory, sortBy]);
-
-  const totalPages = Math.max(
-    1,
-    Math.ceil(visibleServices.length / ITEMS_PER_PAGE)
+      if (targetUrl !== currentFullUrl) {
+        router.replace(targetUrl, { scroll: false });
+      }
+    },
+    [router]
   );
+
+  const fetchServicesFromServer = useCallback(
+    async ({ search, category, mode, sort, isInitial = false }) => {
+      if (isInitial) {
+        setInitialLoading(true);
+      } else {
+        setFetching(true);
+      }
+      setError("");
+
+      try {
+        const params = new URLSearchParams();
+        const trimmedSearch = (search || "").trim();
+        if (trimmedSearch) params.set("search", trimmedSearch);
+        if (category && category !== "All") {
+          params.set("category", category);
+        }
+        if (mode && mode !== "All") {
+          params.set("mode", mode);
+        }
+        if (sort) {
+          params.set("sort", sort);
+        }
+
+        const queryString = params.toString();
+        const endpoint = `${apiUrl}/api/services${
+          queryString ? `?${queryString}` : ""
+        }`;
+
+        const res = await fetch(endpoint, {
+          cache: "no-store",
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.message || "Failed to load services.");
+        }
+
+        const rawList = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+
+        const filteredValid = rawList.filter(isServiceApprovedAndAvailable);
+        setServices(filteredValid);
+      } catch (err) {
+        setError(err.message || "Could not fetch services.");
+      } finally {
+        setInitialLoading(false);
+        setFetching(false);
+      }
+    },
+    [apiUrl]
+  );
+
+  useEffect(() => {
+    fetchServicesFromServer({
+      search: urlQuery,
+      category: urlCategory,
+      mode: urlMode,
+      sort: urlSort,
+      isInitial: initialLoading,
+    });
+  }, [fetchServicesFromServer, urlQuery, urlCategory, urlMode, urlSort, initialLoading]);
+
+  const totalPages = Math.max(1, Math.ceil(services.length / ITEMS_PER_PAGE));
 
   useEffect(() => {
     if (currentPage > totalPages) {
@@ -238,24 +247,77 @@ function BrowseServicesContent() {
     }
   }, [currentPage, totalPages]);
 
-  const paginatedServices = useMemo(() => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return visibleServices.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [visibleServices, currentPage]);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const paginatedServices = services.slice(
+    startIndex,
+    startIndex + ITEMS_PER_PAGE
+  );
 
   const handleSearchChange = (value) => {
     setSearchTerm(value);
     setCurrentPage(1);
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      syncUrlParams({
+        search: value,
+        category: selectedCategory,
+        mode: selectedMode,
+        sort: sortBy,
+      });
+    }, 250);
+  };
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    syncUrlParams({
+      search: searchTerm,
+      category: selectedCategory,
+      mode: selectedMode,
+      sort: sortBy,
+    });
   };
 
   const handleCategoryChange = (category) => {
-    setSelectedCategory(category);
+    const normalized = normalizeCategoryOption(category);
+    setSelectedCategory(normalized);
     setCurrentPage(1);
+    syncUrlParams({
+      search: searchTerm,
+      category: normalized,
+      mode: selectedMode,
+      sort: sortBy,
+    });
+  };
+
+  const handleModeChange = (mode) => {
+    const normalized = normalizeModeOption(mode);
+    setSelectedMode(normalized);
+    setCurrentPage(1);
+    syncUrlParams({
+      search: searchTerm,
+      category: selectedCategory,
+      mode: normalized,
+      sort: sortBy,
+    });
   };
 
   const handleSortChange = (sortValue) => {
-    setSortBy(sortValue);
+    const normalized = normalizeSortOption(sortValue);
+    setSortBy(normalized);
     setCurrentPage(1);
+    syncUrlParams({
+      search: searchTerm,
+      category: selectedCategory,
+      mode: selectedMode,
+      sort: normalized,
+    });
   };
 
   const handlePageChange = (pageNumber) => {
@@ -265,30 +327,30 @@ function BrowseServicesContent() {
   };
 
   const handleResetFilters = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
     setSearchTerm("");
     setSelectedCategory("All");
+    setSelectedMode("All");
     setSortBy("newest");
     setCurrentPage(1);
-    router.replace("/services");
+    router.replace("/services", { scroll: false });
+    searchInputRef.current?.focus();
   };
 
   const hasActiveFilter =
     Boolean(searchTerm.trim()) ||
     (selectedCategory && selectedCategory !== "All") ||
+    (selectedMode && selectedMode !== "All") ||
     sortBy !== "newest";
 
-  if (loading || navigating) {
+  if (initialLoading || navigating) {
     return <PublicPageSkeleton cards={8} />;
   }
 
-  const startItem =
-    visibleServices.length === 0
-      ? 0
-      : (currentPage - 1) * ITEMS_PER_PAGE + 1;
-  const endItem = Math.min(
-    currentPage * ITEMS_PER_PAGE,
-    visibleServices.length
-  );
+  const startItem = services.length === 0 ? 0 : startIndex + 1;
+  const endItem = Math.min(currentPage * ITEMS_PER_PAGE, services.length);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-10 sm:py-14">
@@ -308,30 +370,39 @@ function BrowseServicesContent() {
             </p>
           </div>
 
-          <div className="text-xs sm:text-sm text-slate-400 shrink-0">
-            Showing{" "}
-            <span className="font-bold text-white">
-              {visibleServices.length === 0 ? 0 : `${startItem}-${endItem}`}
-            </span>{" "}
-            of{" "}
-            <span className="font-bold text-white">
-              {visibleServices.length}
-            </span>{" "}
-            {visibleServices.length === 1 ? "service" : "services"}
+          <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-400 shrink-0">
+            {fetching && (
+              <span className="inline-flex items-center gap-1.5 text-sky-400 font-medium">
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Updating...</span>
+              </span>
+            )}
+            <span>
+              Showing{" "}
+              <span className="font-bold text-white">
+                {services.length === 0 ? 0 : `${startItem}-${endItem}`}
+              </span>{" "}
+              of <span className="font-bold text-white">{services.length}</span>{" "}
+              {services.length === 1 ? "service" : "services"}
+            </span>
           </div>
         </div>
 
-        {/* Search, Category Filter & Sort Toolbar */}
+        {/* Search, Category, Service Mode & Sort Toolbar */}
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-12 gap-3.5">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="grid grid-cols-1 md:grid-cols-12 gap-3.5"
+          >
             {/* Search Box */}
-            <div className="md:col-span-6 relative">
+            <div className="md:col-span-4 relative">
               <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
+                ref={searchInputRef}
                 type="text"
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
-                placeholder="Search by device, service title, area, or technician..."
+                placeholder="Search by service title or category..."
                 className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none transition"
               />
             </div>
@@ -357,16 +428,37 @@ function BrowseServicesContent() {
               </select>
             </div>
 
+            {/* Service Mode Dropdown */}
+            <div className="md:col-span-3 relative">
+              <Laptop className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                aria-label="Filter by service mode"
+                value={selectedMode}
+                onChange={(e) => handleModeChange(e.target.value)}
+                className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 pl-10 pr-4 py-2.5 text-sm text-white outline-none transition cursor-pointer"
+              >
+                {MODE_OPTIONS.map((modeOption) => (
+                  <option
+                    key={modeOption}
+                    value={modeOption}
+                    className="bg-slate-900"
+                  >
+                    {modeOption === "All" ? "All Service Modes" : modeOption}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Sort Dropdown */}
-            <div className="md:col-span-3">
+            <div className="md:col-span-2">
               <select
                 aria-label="Sort services"
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 px-4 py-2.5 text-sm text-white outline-none transition cursor-pointer"
+                className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 px-3.5 py-2.5 text-sm text-white outline-none transition cursor-pointer"
               >
                 <option value="newest" className="bg-slate-900">
-                  Sort: Newest First
+                  Newest
                 </option>
                 <option value="price-asc" className="bg-slate-900">
                   Price: Low to High
@@ -376,7 +468,7 @@ function BrowseServicesContent() {
                 </option>
               </select>
             </div>
-          </div>
+          </form>
 
           {/* Quick Category Pills */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1">
@@ -418,13 +510,20 @@ function BrowseServicesContent() {
             <p className="text-sm font-medium text-rose-300">{error}</p>
             <button
               type="button"
-              onClick={fetchServices}
+              onClick={() =>
+                fetchServicesFromServer({
+                  search: searchTerm,
+                  category: selectedCategory,
+                  mode: selectedMode,
+                  sort: sortBy,
+                })
+              }
               className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition cursor-pointer"
             >
               Retry
             </button>
           </div>
-        ) : visibleServices.length === 0 ? (
+        ) : services.length === 0 ? (
           <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3.5">
             <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
               <Wrench className="w-6 h-6" />
@@ -533,8 +632,10 @@ function BrowseServicesContent() {
             {totalPages > 1 && (
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-800/80">
                 <p className="text-xs text-slate-400">
-                  Page <span className="font-semibold text-white">{currentPage}</span>{" "}
-                  of <span className="font-semibold text-white">{totalPages}</span>
+                  Page{" "}
+                  <span className="font-semibold text-white">{currentPage}</span>{" "}
+                  of{" "}
+                  <span className="font-semibold text-white">{totalPages}</span>
                 </p>
 
                 <div className="flex items-center gap-2">

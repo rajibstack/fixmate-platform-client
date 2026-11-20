@@ -12,7 +12,10 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import {
+  DashboardPageSkeleton,
+  FixMateSpinner,
+} from "@/components/ui/LoadingState";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 const CATEGORIES = [
@@ -48,6 +51,27 @@ function formatReviewLabel(status) {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
+function ServiceThumbnail({ src, alt }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [src]);
+
+  if (!src || imgFailed) {
+    return <Wrench className="w-4 h-4 text-sky-400" />;
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setImgFailed(true)}
+      className="w-full h-full object-cover"
+    />
+  );
+}
+
 export default function MyServicesPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -78,13 +102,18 @@ export default function MyServicesPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please sign in as a technician to view your services.");
+      }
+
       const storedUser = localStorage.getItem("user");
       const parsedUser = storedUser ? JSON.parse(storedUser) : null;
 
       const res = await fetch(`${apiUrl}/api/technician/services`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -136,7 +165,7 @@ export default function MyServicesPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${apiUrl}/api/technician/services/${id}`, {
+      const res = await fetch(`${apiUrl}/api/services/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -225,7 +254,7 @@ export default function MyServicesPage() {
         image: editForm.image.trim(),
       };
 
-      const res = await fetch(`${apiUrl}/api/technician/services/${id}`, {
+      const res = await fetch(`${apiUrl}/api/services/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -272,7 +301,7 @@ export default function MyServicesPage() {
 
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`${apiUrl}/api/technician/services/${id}`, {
+      const res = await fetch(`${apiUrl}/api/services/${id}`, {
         method: "DELETE",
         headers: {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -311,7 +340,9 @@ export default function MyServicesPage() {
   }
 
   const deleteTargetId = serviceToDelete?._id || serviceToDelete?.id;
-  const isDeletingTarget = Boolean(deleteTargetId && deletingId === deleteTargetId);
+  const isDeletingTarget = Boolean(
+    deleteTargetId && deletingId === deleteTargetId
+  );
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -405,15 +436,10 @@ export default function MyServicesPage() {
                       <td className="py-4 px-5">
                         <div className="flex items-center gap-3.5">
                           <div className="w-12 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                            {service.image ? (
-                              <img
-                                src={service.image}
-                                alt={service.title}
-                                className="w-full h-full object-cover"
-                              />
-                            ) : (
-                              <Wrench className="w-4 h-4 text-sky-400" />
-                            )}
+                            <ServiceThumbnail
+                              src={service.image}
+                              alt={service.title}
+                            />
                           </div>
                           <span className="font-semibold text-white">
                             {service.title}
@@ -634,6 +660,13 @@ export default function MyServicesPage() {
                   className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-white outline-none transition resize-y"
                 />
               </div>
+
+              {editingService.status === "approved" && (
+                <p className="text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3.5 py-2.5">
+                  Editing service details on an approved listing will set its
+                  review status back to pending for admin re-approval.
+                </p>
+              )}
 
               <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button

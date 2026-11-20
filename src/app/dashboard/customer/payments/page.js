@@ -23,10 +23,11 @@ function formatShortDate(dateValue) {
 
 function getBookingAmount(booking) {
   const raw =
-    booking?.finalAmount ??
-    booking?.totalPrice ??
-    booking?.startingPrice ??
-    booking?.price ??
+    booking?.paidAmount ||
+    booking?.finalAmount ||
+    booking?.totalPrice ||
+    booking?.startingPrice ||
+    booking?.price ||
     0;
   const num = Number(raw);
   return Number.isNaN(num) ? 0 : num;
@@ -57,10 +58,15 @@ export default function CustomerPaymentHistoryPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please sign in to view your payment history.");
+      }
+
       const res = await fetch(`${apiUrl}/api/bookings/my`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -76,7 +82,8 @@ export default function CustomerPaymentHistoryPage() {
         : [];
 
       const paidBookings = allBookings.filter(
-        (b) => (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
+        (b) =>
+          (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
       );
 
       setPayments(paidBookings);
@@ -139,7 +146,7 @@ export default function CustomerPaymentHistoryPage() {
           </p>
           <div className="pt-2">
             <Link
-              href="/dashboard/customer/bookings"
+              href="/dashboard/customer/booking"
               onClick={() => setNavigating(true)}
               className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20"
             >

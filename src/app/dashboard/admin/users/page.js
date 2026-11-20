@@ -39,7 +39,9 @@ function formatRoleLabel(role = "") {
 }
 
 export default function ManageUsersPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [users, setUsers] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
@@ -47,6 +49,7 @@ export default function ManageUsersPage() {
   const [updatingId, setUpdatingId] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [brokenAvatars, setBrokenAvatars] = useState({});
 
   useEffect(() => {
     try {
@@ -65,10 +68,15 @@ export default function ManageUsersPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please sign in as an admin to manage users.");
+      }
+
       const res = await fetch(`${apiUrl}/api/admin/users`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -77,7 +85,12 @@ export default function ManageUsersPage() {
         throw new Error(data?.message || "Failed to load users.");
       }
 
-      setUsers(Array.isArray(data?.data) ? data.data : []);
+      const list = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : [];
+      setUsers(list);
     } catch (err) {
       setFeedback({
         type: "error",
@@ -121,7 +134,9 @@ export default function ManageUsersPage() {
 
   const isSelfUser = (u) => {
     if (!currentUser) return false;
-    if (currentUser._id && u._id && String(currentUser._id) === String(u._id)) {
+    const currentId = currentUser._id || currentUser.id;
+    const targetId = u._id || u.id;
+    if (currentId && targetId && String(currentId) === String(targetId)) {
       return true;
     }
     if (
@@ -175,7 +190,7 @@ export default function ManageUsersPage() {
         throw new Error(data?.message || "Failed to update user role.");
       }
 
-      const msg = `${targetUser.name}'s role updated to ${formatRoleLabel(nextRole)}.`;
+      const msg = `${targetUser.name || "User"}'s role updated to ${formatRoleLabel(nextRole)}.`;
       setFeedback({
         type: "success",
         message: msg,
@@ -313,6 +328,7 @@ export default function ManageUsersPage() {
                   const id = u._id || u.id;
                   const selfRow = isSelfUser(u);
                   const currentRole = (u.role || "customer").toLowerCase();
+                  const showAvatarImg = Boolean(u.avatar) && !brokenAvatars[id];
 
                   return (
                     <tr
@@ -322,10 +338,16 @@ export default function ManageUsersPage() {
                       {/* User Avatar + Name + (you) */}
                       <td className="py-4 px-5 whitespace-nowrap">
                         <div className="flex items-center gap-3.5">
-                          {u.avatar ? (
+                          {showAvatarImg ? (
                             <img
                               src={u.avatar}
                               alt={u.name || "User"}
+                              onError={() =>
+                                setBrokenAvatars((prev) => ({
+                                  ...prev,
+                                  [id]: true,
+                                }))
+                              }
                               className="w-10 h-10 rounded-full object-cover border border-sky-500/30 shrink-0"
                             />
                           ) : (
@@ -371,7 +393,7 @@ export default function ManageUsersPage() {
                       {/* Role Dropdown */}
                       <td className="py-4 px-5 whitespace-nowrap">
                         <select
-                          aria-label={`Change role for ${u.name}`}
+                          aria-label={`Change role for ${u.name || "user"}`}
                           disabled={selfRow || updatingId === id}
                           value={currentRole}
                           onChange={(e) => handleRoleChange(u, e.target.value)}

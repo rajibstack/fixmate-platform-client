@@ -11,7 +11,10 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
-import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
+import {
+  DashboardPageSkeleton,
+  FixMateSpinner,
+} from "@/components/ui/LoadingState";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 
 function formatShortDate(dateValue) {
@@ -76,6 +79,27 @@ function formatPaymentText(paymentStatus) {
   return paymentStatus === "paid" ? "Paid" : "Unpaid";
 }
 
+function BookingThumbnail({ src, alt }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  useEffect(() => {
+    setImgFailed(false);
+  }, [src]);
+
+  if (!src || imgFailed) {
+    return <Wrench className="w-8 h-8 text-sky-400" />;
+  }
+
+  return (
+    <img
+      src={src}
+      alt={alt}
+      onError={() => setImgFailed(true)}
+      className="w-full h-full object-cover object-center"
+    />
+  );
+}
+
 export default function CustomerMyBookingsPage() {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -93,10 +117,15 @@ export default function CustomerMyBookingsPage() {
 
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        throw new Error("Please sign in to view your bookings.");
+      }
+
       const res = await fetch(`${apiUrl}/api/bookings/my`, {
+        cache: "no-store",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -210,7 +239,9 @@ export default function CustomerMyBookingsPage() {
       const successMsg = "Booking cancelled.";
       setFeedback({
         type: "success",
-        message: `Request for "${bookingToCancel.serviceTitle || "service"}" has been cancelled.`,
+        message: `Request for "${
+          bookingToCancel.serviceTitle || "service"
+        }" has been cancelled.`,
       });
       toast.success(successMsg);
       setBookingToCancel(null);
@@ -228,11 +259,26 @@ export default function CustomerMyBookingsPage() {
 
   const handlePayNow = async (booking) => {
     const id = booking._id || booking.id;
+    const status = normalizeStatus(booking?.status);
+    const paymentStatus = normalizePaymentStatus(booking?.paymentStatus);
+
+    if (status !== "completed" || paymentStatus === "paid") {
+      const gateMsg =
+        "Payment is available only once the repair is completed and unpaid.";
+      setFeedback({ type: "error", message: gateMsg });
+      toast.error(gateMsg);
+      return;
+    }
+
     setActionId(id);
     setFeedback(null);
 
     try {
       const token = localStorage.getItem("token");
+      const amount = Number(
+        booking.finalAmount || booking.totalPrice || booking.startingPrice || 0
+      );
+
       const res = await fetch(`${apiUrl}/api/bookings/${id}/pay`, {
         method: "POST",
         headers: {
@@ -240,9 +286,8 @@ export default function CustomerMyBookingsPage() {
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          amount: Number(
-            booking.finalAmount ?? booking.totalPrice ?? booking.startingPrice ?? 0
-          ),
+          bookingId: id,
+          amount,
         }),
       });
 
@@ -251,10 +296,17 @@ export default function CustomerMyBookingsPage() {
         throw new Error(data?.message || "Payment could not be completed.");
       }
 
+      const updatedBooking = data?.data || {};
       setBookings((prev) =>
         prev.map((item) =>
           (item._id || item.id) === id
-            ? { ...item, paymentStatus: "paid" }
+            ? {
+                ...item,
+                paymentStatus: "paid",
+                transactionId:
+                  updatedBooking.transactionId || item.transactionId || "",
+                paidAt: updatedBooking.paidAt || new Date().toISOString(),
+              }
             : item
         )
       );
@@ -289,7 +341,9 @@ export default function CustomerMyBookingsPage() {
   }
 
   const cancelTargetId = bookingToCancel?._id || bookingToCancel?.id;
-  const isCancellingTarget = Boolean(cancelTargetId && actionId === cancelTargetId);
+  const isCancellingTarget = Boolean(
+    cancelTargetId && actionId === cancelTargetId
+  );
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -382,10 +436,10 @@ export default function CustomerMyBookingsPage() {
             const busy = actionId === id;
 
             const amount = Number(
-              booking?.finalAmount ??
-                booking?.totalPrice ??
-                booking?.startingPrice ??
-                booking?.price ??
+              booking?.finalAmount ||
+                booking?.totalPrice ||
+                booking?.startingPrice ||
+                booking?.price ||
                 0
             );
             const amountLabel =
@@ -402,15 +456,10 @@ export default function CustomerMyBookingsPage() {
                 {/* Left Section: Fixed-Size Thumbnail + Info + Problem Description */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
                   <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                    {booking?.serviceImage ? (
-                      <img
-                        src={booking.serviceImage}
-                        alt={booking.serviceTitle}
-                        className="w-full h-full object-cover object-center"
-                      />
-                    ) : (
-                      <Wrench className="w-8 h-8 text-sky-400" />
-                    )}
+                    <BookingThumbnail
+                      src={booking?.serviceImage}
+                      alt={booking?.serviceTitle || "Repair Service"}
+                    />
                   </div>
 
                   <div className="space-y-2 flex-1 min-w-0">

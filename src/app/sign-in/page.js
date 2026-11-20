@@ -38,8 +38,9 @@ const DEMO_ACCOUNTS = [
 ];
 
 function getDashboardPath(role) {
-  if (role === "admin") return "/dashboard/admin";
-  if (role === "technician") return "/dashboard/technician";
+  const normalized = (role || "customer").toString().toLowerCase().trim();
+  if (normalized === "admin") return "/dashboard/admin";
+  if (normalized === "technician") return "/dashboard/technician";
   return "/dashboard/customer";
 }
 
@@ -54,14 +55,22 @@ function LoginContent() {
     password: "",
   });
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("user");
-      if (storedUser) {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken");
+
+      if (storedUser && token) {
         const parsedUser = JSON.parse(storedUser);
-        if (parsedUser?.role) {
+        if (parsedUser && typeof parsedUser === "object" && parsedUser.role) {
           setNavigating(true);
           router.replace(getDashboardPath(parsedUser.role));
         }
@@ -72,9 +81,34 @@ function LoginContent() {
   }, [router]);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-    setError("");
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (error) setError("");
   };
+
+  const completeAuthSession = useCallback(
+    (data, fallbackSuccessMsg) => {
+      if (!data?.token || !data?.user) {
+        throw new Error("Invalid authentication response from server.");
+      }
+
+      const normalizedUser = {
+        ...data.user,
+        role: (data.user.role || "customer").toString().toLowerCase().trim(),
+      };
+
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(normalizedUser));
+      window.dispatchEvent(new Event("auth-change"));
+      toast.success(
+        normalizedUser.name
+          ? `Welcome back, ${normalizedUser.name}!`
+          : fallbackSuccessMsg
+      );
+      setNavigating(true);
+      router.push(getDashboardPath(normalizedUser.role));
+    },
+    [router]
+  );
 
   const authenticateWithEmail = useCallback(
     async (email, password) => {
@@ -88,38 +122,31 @@ function LoginContent() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            email,
+            email: email.trim(),
             password,
           }),
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          const msg = data.message || "Invalid credentials";
+          const msg = data?.message || "Invalid credentials";
           setError(msg);
           toast.error(msg);
           setLoading(false);
           return;
         }
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        window.dispatchEvent(new Event("auth-change"));
-        toast.success(
-          data.user?.name
-            ? `Welcome back, ${data.user.name}!`
-            : "Signed in successfully!"
-        );
-        router.push(getDashboardPath(data.user?.role));
-      } catch {
-        const msg = "Something went wrong. Please try again.";
+        completeAuthSession(data, "Signed in successfully!");
+      } catch (err) {
+        const msg =
+          err?.message || "Something went wrong. Please try again.";
         setError(msg);
         toast.error(msg);
         setLoading(false);
       }
     },
-    [apiUrl, router]
+    [apiUrl, completeAuthSession]
   );
 
   const handleSubmit = async (e) => {
@@ -143,31 +170,24 @@ function LoginContent() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            access_token: tokenResponse.access_token,
+            access_token: tokenResponse?.access_token,
           }),
         });
 
-        const data = await res.json();
+        const data = await res.json().catch(() => ({}));
 
         if (!res.ok) {
-          const msg = data.message || "Google sign-in failed";
+          const msg = data?.message || "Google sign-in failed";
           setError(msg);
           toast.error(msg);
           setGoogleLoading(false);
           return;
         }
 
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data.user));
-        window.dispatchEvent(new Event("auth-change"));
-        toast.success(
-          data.user?.name
-            ? `Welcome back, ${data.user.name}!`
-            : "Signed in with Google successfully!"
-        );
-        router.push(getDashboardPath(data.user?.role));
-      } catch {
-        const msg = "Google authentication failed. Please try again.";
+        completeAuthSession(data, "Signed in with Google successfully!");
+      } catch (err) {
+        const msg =
+          err?.message || "Google authentication failed. Please try again.";
         setError(msg);
         toast.error(msg);
         setGoogleLoading(false);
@@ -240,10 +260,14 @@ function LoginContent() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                <label
+                  htmlFor="signin-email"
+                  className="block text-sm font-medium text-slate-300 mb-1.5"
+                >
                   Email
                 </label>
                 <input
+                  id="signin-email"
                   type="email"
                   name="email"
                   required
@@ -255,10 +279,14 @@ function LoginContent() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5">
+                <label
+                  htmlFor="signin-password"
+                  className="block text-sm font-medium text-slate-300 mb-1.5"
+                >
                   Password
                 </label>
                 <input
+                  id="signin-password"
                   type="password"
                   name="password"
                   required
@@ -277,32 +305,34 @@ function LoginContent() {
                 Sign in
               </button>
 
-              <button
-                type="button"
-                disabled={isBusy}
-                onClick={() => handleGoogleLogin()}
-                className="w-full cursor-pointer disabled:cursor-not-allowed bg-slate-950 hover:bg-slate-800 disabled:opacity-50 border border-slate-800 text-white font-medium py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-3"
-              >
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path
-                    fill="#4285F4"
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                  />
-                  <path
-                    fill="#EA4335"
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                  />
-                </svg>
-                Continue with Google
-              </button>
+              {googleClientId ? (
+                <button
+                  type="button"
+                  disabled={isBusy}
+                  onClick={() => handleGoogleLogin()}
+                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-slate-950 hover:bg-slate-800 disabled:opacity-50 border border-slate-800 text-white font-medium py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-3"
+                >
+                  <svg className="w-5 h-5" viewBox="0 0 24 24">
+                    <path
+                      fill="#4285F4"
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                    />
+                    <path
+                      fill="#EA4335"
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                    />
+                  </svg>
+                  Continue with Google
+                </button>
+              ) : null}
             </form>
           )}
         </div>
@@ -362,7 +392,9 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}>
+    <GoogleOAuthProvider
+      clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
+    >
       <LoginContent />
     </GoogleOAuthProvider>
   );

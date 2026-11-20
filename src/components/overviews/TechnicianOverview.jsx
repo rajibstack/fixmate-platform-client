@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Wrench,
@@ -12,6 +12,8 @@ import {
   Inbox,
   Wallet,
   Plus,
+  AlertCircle,
+  RefreshCw,
 } from "lucide-react";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
@@ -39,10 +41,11 @@ function getTicketCode(booking) {
 
 function getBookingAmount(booking) {
   const rawAmount =
-    booking?.finalAmount ??
-    booking?.totalPrice ??
-    booking?.startingPrice ??
-    booking?.price ??
+    booking?.paidAmount ||
+    booking?.finalAmount ||
+    booking?.totalPrice ||
+    booking?.startingPrice ||
+    booking?.price ||
     0;
   const num = Number(rawAmount);
   return Number.isNaN(num) ? 0 : num;
@@ -62,109 +65,120 @@ export default function TechnicianOverview() {
   const [newRequests, setNewRequests] = useState([]);
   const [recentEarnings, setRecentEarnings] = useState([]);
 
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
-  useEffect(() => {
-    let active = true;
+  const fetchTechnicianData = useCallback(async () => {
+    setLoading(true);
+    setError("");
 
-    const fetchTechnicianData = async () => {
-      setLoading(true);
-      setError("");
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
+      const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      try {
-        const token = localStorage.getItem("token");
-        const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      const [servicesRes, bookingsRes] = await Promise.allSettled([
+        fetch(`${apiUrl}/api/technician/services`, {
+          cache: "no-store",
+          headers,
+        }),
+        fetch(`${apiUrl}/api/technician/bookings`, {
+          cache: "no-store",
+          headers,
+        }),
+      ]);
 
-        const [servicesRes, bookingsRes] = await Promise.allSettled([
-          fetch(`${apiUrl}/api/technician/services`, { headers }),
-          fetch(`${apiUrl}/api/technician/bookings`, { headers }),
-        ]);
+      let servicesList = [];
+      let loadError = "";
 
-        let servicesList = [];
-        let loadError = "";
-
-        if (servicesRes.status === "fulfilled") {
-          const sData = await servicesRes.value.json().catch(() => ({}));
-          if (servicesRes.value.ok) {
-            servicesList = Array.isArray(sData?.data)
-              ? sData.data
-              : Array.isArray(sData)
-              ? sData
-              : [];
-          } else {
-            loadError = sData?.message || "Could not load your services.";
-          }
-        }
-
-        let bookingsList = [];
-        if (bookingsRes.status === "fulfilled") {
-          const bData = await bookingsRes.value.json().catch(() => ({}));
-          if (bookingsRes.value.ok) {
-            bookingsList = Array.isArray(bData?.data)
-              ? bData.data
-              : Array.isArray(bData)
-              ? bData
-              : [];
-          } else if (!loadError) {
-            loadError = bData?.message || "Could not load your bookings.";
-          }
-        }
-
-        if (!active) return;
-
-        if (loadError) {
-          setError(loadError);
-        }
-
-        const approvedCount = servicesList.filter(
-          (s) => (s?.status || "").toString().toLowerCase() === "approved"
-        ).length;
-
-        const pendingReviewCount = servicesList.filter(
-          (s) => (s?.status || "").toString().toLowerCase() === "pending"
-        ).length;
-
-        const requestedBookings = bookingsList.filter(
-          (b) => (b?.status || "").toString().toLowerCase() === "requested"
-        );
-
-        const paidBookings = bookingsList.filter(
-          (b) =>
-            (b?.paymentStatus || "").toString().toLowerCase() === "paid"
-        );
-
-        const earningsSum = paidBookings.reduce(
-          (acc, item) => acc + getBookingAmount(item),
-          0
-        );
-
-        setStats({
-          totalServices: servicesList.length,
-          approvedServices: approvedCount,
-          pendingReviewServices: pendingReviewCount,
-          pendingRequests: requestedBookings.length,
-          totalEarnings: earningsSum,
-        });
-
-        setNewRequests(requestedBookings.slice(0, 4));
-        setRecentEarnings(paidBookings.slice(0, 4));
-      } catch {
-        if (active) {
-          setError("Network error while loading technician overview.");
-        }
-      } finally {
-        if (active) {
-          setLoading(false);
+      if (servicesRes.status === "fulfilled") {
+        const sData = await servicesRes.value.json().catch(() => ({}));
+        if (servicesRes.value.ok) {
+          servicesList = Array.isArray(sData?.data)
+            ? sData.data
+            : Array.isArray(sData)
+            ? sData
+            : [];
+        } else {
+          loadError = sData?.message || "Could not load your services.";
         }
       }
-    };
 
-    fetchTechnicianData();
+      let bookingsList = [];
+      if (bookingsRes.status === "fulfilled") {
+        const bData = await bookingsRes.value.json().catch(() => ({}));
+        if (bookingsRes.value.ok) {
+          bookingsList = Array.isArray(bData?.data)
+            ? bData.data
+            : Array.isArray(bData)
+            ? bData
+            : [];
+        } else if (!loadError) {
+          loadError = bData?.message || "Could not load your bookings.";
+        }
+      }
 
-    return () => {
-      active = false;
-    };
+      if (loadError) {
+        setError(loadError);
+      }
+
+      const approvedCount = servicesList.filter(
+        (s) => (s?.status || "").toString().toLowerCase().trim() === "approved"
+      ).length;
+
+      const pendingReviewCount = servicesList.filter(
+        (s) => (s?.status || "").toString().toLowerCase().trim() === "pending"
+      ).length;
+
+      const requestedBookings = bookingsList.filter(
+        (b) =>
+          (b?.status || "").toString().toLowerCase().trim() === "requested"
+      );
+
+      const paidBookings = bookingsList
+        .filter(
+          (b) =>
+            (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
+        )
+        .sort((a, b) => {
+          const dateA = new Date(
+            a?.paidAt || a?.updatedAt || a?.createdAt || 0
+          ).getTime();
+          const dateB = new Date(
+            b?.paidAt || b?.updatedAt || b?.createdAt || 0
+          ).getTime();
+          return dateB - dateA;
+        });
+
+      const earningsSum = paidBookings.reduce(
+        (acc, item) => acc + getBookingAmount(item),
+        0
+      );
+
+      setStats({
+        totalServices: servicesList.length,
+        approvedServices: approvedCount,
+        pendingReviewServices: pendingReviewCount,
+        pendingRequests: requestedBookings.length,
+        totalEarnings: earningsSum,
+      });
+
+      setNewRequests(requestedBookings.slice(0, 4));
+      setRecentEarnings(paidBookings.slice(0, 4));
+    } catch {
+      setError("Network error while loading technician overview.");
+    } finally {
+      setLoading(false);
+    }
   }, [apiUrl]);
+
+  useEffect(() => {
+    fetchTechnicianData();
+  }, [fetchTechnicianData]);
 
   if (loading || navigating) {
     return <DashboardPageSkeleton />;
@@ -182,8 +196,19 @@ export default function TechnicianOverview() {
       </div>
 
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 text-sm text-rose-300">
-          {error}
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 text-sm text-rose-300 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+            <span>{error}</span>
+          </div>
+          <button
+            type="button"
+            onClick={fetchTechnicianData}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
         </div>
       )}
 
@@ -369,7 +394,9 @@ export default function TechnicianOverview() {
                     </p>
                     <p className="text-xs text-slate-400 mt-1">
                       {item.customerName || "Customer"},{" "}
-                      {formatShortDate(item.updatedAt || item.createdAt)}
+                      {formatShortDate(
+                        item.paidAt || item.updatedAt || item.createdAt
+                      )}
                     </p>
                   </div>
                   <span className="text-base font-bold text-sky-400 shrink-0">

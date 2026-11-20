@@ -60,6 +60,7 @@ export default function ServiceDetailsPage() {
   const [toast, setToast] = useState(null);
   const [formError, setFormError] = useState("");
   const [submittedSuccess, setSubmittedSuccess] = useState(false);
+  const [serviceImageError, setServiceImageError] = useState(false);
   const [techAvatarError, setTechAvatarError] = useState(false);
 
   const todayStr = getTodayDateString();
@@ -167,6 +168,7 @@ export default function ServiceDetailsPage() {
           bio: "",
         }
       );
+      setServiceImageError(false);
       setTechAvatarError(false);
     } catch {
       setNotFound(true);
@@ -180,14 +182,17 @@ export default function ServiceDetailsPage() {
   }, [fetchServiceDetails]);
 
   const role = (sessionUser?.role || "").toLowerCase();
-  const isLoggedIn = Boolean(sessionUser && (sessionUser.email || sessionUser._id));
+  const isLoggedIn = Boolean(
+    sessionUser && (sessionUser.email || sessionUser._id)
+  );
   const isCustomer = isLoggedIn && role === "customer";
   const isRestrictedStaff =
     isLoggedIn && (role === "technician" || role === "admin");
 
   const handleRequestButtonClick = () => {
     setFormError("");
-    if (!isLoggedIn) {
+    const token = localStorage.getItem("token");
+    if (!isLoggedIn || !token) {
       const redirectTarget = encodeURIComponent(`/services/${serviceId}`);
       setNavigating(true);
       router.push(`/sign-in?redirect=${redirectTarget}`);
@@ -238,11 +243,19 @@ export default function ServiceDetailsPage() {
     setSubmitting(true);
     try {
       const token = localStorage.getItem("token");
+      if (!token) {
+        setRequestOpen(false);
+        const redirectTarget = encodeURIComponent(`/services/${serviceId}`);
+        setNavigating(true);
+        router.push(`/sign-in?redirect=${redirectTarget}`);
+        return;
+      }
+
       const res = await fetch(`${apiUrl}/api/bookings`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           serviceId: service._id || serviceId,
@@ -321,6 +334,7 @@ export default function ServiceDetailsPage() {
   const techBio =
     technician?.bio ||
     "Experienced FixMate specialist focused on clean diagnostics, reliable repairs, and transparent communication.";
+  const showServicePhoto = Boolean(service.image) && !serviceImageError;
   const showTechPhoto = Boolean(technician?.avatar) && !techAvatarError;
 
   return (
@@ -408,10 +422,11 @@ export default function ServiceDetailsPage() {
           <div className="lg:col-span-7 space-y-6">
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
               <div className="aspect-[16/10] w-full bg-slate-950 border-b border-slate-800/80 flex items-center justify-center overflow-hidden">
-                {service.image ? (
+                {showServicePhoto ? (
                   <img
                     src={service.image}
                     alt={service.title}
+                    onError={() => setServiceImageError(true)}
                     className="w-full h-full object-cover"
                   />
                 ) : (

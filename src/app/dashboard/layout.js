@@ -47,11 +47,22 @@ export default function DashboardLayout({ children }) {
   const [avatarError, setAvatarError] = useState(false);
 
   const syncUserFromStorage = useCallback(() => {
+    if (typeof window === "undefined") return null;
     try {
       const storedUser = localStorage.getItem("user");
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken");
+
       if (!storedUser) return null;
       const parsed = JSON.parse(storedUser);
-      return parsed && typeof parsed === "object" ? parsed : null;
+      if (!parsed || typeof parsed !== "object") return null;
+
+      const hasToken = Boolean(token || parsed.token);
+      if (!hasToken) return null;
+
+      return parsed;
     } catch {
       return null;
     }
@@ -61,12 +72,14 @@ export default function DashboardLayout({ children }) {
     try {
       const currentUser = syncUserFromStorage();
       if (!currentUser) {
+        setCheckingAuth(false);
         router.replace("/sign-in");
         return;
       }
 
-      const role = currentUser?.role;
+      const role = (currentUser?.role || "").toString().toLowerCase().trim();
       if (!role) {
+        setCheckingAuth(false);
         router.replace("/sign-in");
         return;
       }
@@ -79,7 +92,10 @@ export default function DashboardLayout({ children }) {
           router.replace(getDashboardPath(role));
           return;
         }
-        if (pathname.startsWith("/dashboard/technician") && role !== "technician") {
+        if (
+          pathname.startsWith("/dashboard/technician") &&
+          role !== "technician"
+        ) {
           router.replace(getDashboardPath(role));
           return;
         }
@@ -93,10 +109,11 @@ export default function DashboardLayout({ children }) {
         }
       }
 
-      setUser(currentUser);
+      setUser({ ...currentUser, role });
       setAvatarError(false);
       setCheckingAuth(false);
     } catch {
+      setCheckingAuth(false);
       router.replace("/sign-in");
     }
   }, [pathname, router, syncUserFromStorage]);
@@ -105,8 +122,14 @@ export default function DashboardLayout({ children }) {
     const handleProfileOrAuthSync = () => {
       const updated = syncUserFromStorage();
       if (updated) {
-        setUser(updated);
+        const normalizedRole = (updated.role || "")
+          .toString()
+          .toLowerCase()
+          .trim();
+        setUser({ ...updated, role: normalizedRole || updated.role });
         setAvatarError(false);
+      } else {
+        setUser(null);
       }
     };
 
@@ -133,7 +156,10 @@ export default function DashboardLayout({ children }) {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("accessToken");
     localStorage.removeItem("user");
+    setUser(null);
     window.dispatchEvent(new Event("auth-change"));
     toast.success("Signed out successfully.");
     router.push("/sign-in");
@@ -150,22 +176,58 @@ export default function DashboardLayout({ children }) {
   const menuByRole = {
     customer: [
       { name: "Overview", href: "/dashboard/overview", icon: Home },
-      { name: "My bookings", href: "/dashboard/customer/bookings", icon: CalendarCheck },
-      { name: "Payment history", href: "/dashboard/customer/payments", icon: CreditCard },
+      {
+        name: "My bookings",
+        href: "/dashboard/customer/bookings",
+        icon: CalendarCheck,
+      },
+      {
+        name: "Payment history",
+        href: "/dashboard/customer/payments",
+        icon: CreditCard,
+      },
     ],
     technician: [
       { name: "Overview", href: "/dashboard/overview", icon: Home },
-      { name: "Add a service", href: "/dashboard/technician/add-service", icon: PlusCircle },
-      { name: "My services", href: "/dashboard/technician/my-services", icon: Wrench },
-      { name: "Manage requests", href: "/dashboard/technician/requests", icon: Inbox },
+      {
+        name: "Add a service",
+        href: "/dashboard/technician/add-service",
+        icon: PlusCircle,
+      },
+      {
+        name: "My services",
+        href: "/dashboard/technician/my-services",
+        icon: Wrench,
+      },
+      {
+        name: "Manage requests",
+        href: "/dashboard/technician/requests",
+        icon: Inbox,
+      },
     ],
     admin: [
       { name: "Overview", href: "/dashboard/overview", icon: Home },
       { name: "Manage users", href: "/dashboard/admin/users", icon: Users },
-      { name: "Manage services", href: "/dashboard/admin/services", icon: Settings },
-      { name: "All bookings", href: "/dashboard/admin/bookings", icon: CalendarCheck },
-      { name: "Transactions", href: "/dashboard/admin/transactions", icon: CreditCard },
-      { name: "Messages", href: "/dashboard/admin/messages", icon: MessageSquare },
+      {
+        name: "Manage services",
+        href: "/dashboard/admin/services",
+        icon: Settings,
+      },
+      {
+        name: "All bookings",
+        href: "/dashboard/admin/bookings",
+        icon: CalendarCheck,
+      },
+      {
+        name: "Transactions",
+        href: "/dashboard/admin/transactions",
+        icon: CreditCard,
+      },
+      {
+        name: "Messages",
+        href: "/dashboard/admin/messages",
+        icon: MessageSquare,
+      },
     ],
   };
 
@@ -193,13 +255,17 @@ export default function DashboardLayout({ children }) {
       <aside
         className={`fixed inset-y-0 left-0 z-40 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-all duration-200 ease-out ${
           collapsed ? "lg:w-20" : "lg:w-64"
-        } w-64 ${mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}
+        } w-64 ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
       >
         <div className="flex-1 overflow-y-auto">
           {/* Brand Header */}
           <div
             className={`h-16 flex items-center border-b border-slate-800/80 sticky top-0 bg-slate-900 z-10 ${
-              collapsed ? "lg:justify-center lg:px-2 px-5" : "justify-between px-5"
+              collapsed
+                ? "lg:justify-center lg:px-2 px-5"
+                : "justify-between px-5"
             }`}
           >
             <Link
@@ -241,7 +307,9 @@ export default function DashboardLayout({ children }) {
                   onClick={() => setMobileOpen(false)}
                   title={collapsed ? item.name : undefined}
                   className={`flex items-center rounded-xl text-sm font-medium transition ${
-                    collapsed ? "lg:justify-center lg:px-0 px-3.5 py-3" : "gap-3 px-3.5 py-3"
+                    collapsed
+                      ? "lg:justify-center lg:px-0 px-3.5 py-3"
+                      : "gap-3 px-3.5 py-3"
                   } ${
                     isActive
                       ? "bg-sky-500/15 text-sky-400 border border-sky-500/25 shadow-sm"
@@ -249,7 +317,9 @@ export default function DashboardLayout({ children }) {
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
-                  <span className={`truncate ${collapsed ? "lg:hidden" : "inline"}`}>
+                  <span
+                    className={`truncate ${collapsed ? "lg:hidden" : "inline"}`}
+                  >
                     {item.name}
                   </span>
                 </Link>
@@ -265,7 +335,9 @@ export default function DashboardLayout({ children }) {
             onClick={() => setMobileOpen(false)}
             title={collapsed ? "Back to site" : undefined}
             className={`flex items-center rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition ${
-              collapsed ? "lg:justify-center lg:px-0 px-3.5 py-2.5" : "gap-3 px-3.5 py-2.5"
+              collapsed
+                ? "lg:justify-center lg:px-0 px-3.5 py-2.5"
+                : "gap-3 px-3.5 py-2.5"
             }`}
           >
             <ChevronLeft className="w-4 h-4 shrink-0" />
@@ -279,7 +351,9 @@ export default function DashboardLayout({ children }) {
             onClick={handleLogout}
             title={collapsed ? "Sign out" : undefined}
             className={`w-full cursor-pointer flex items-center rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition ${
-              collapsed ? "lg:justify-center lg:px-0 px-3.5 py-2.5" : "gap-3 px-3.5 py-2.5"
+              collapsed
+                ? "lg:justify-center lg:px-0 px-3.5 py-2.5"
+                : "gap-3 px-3.5 py-2.5"
             }`}
           >
             <LogOut className="w-4 h-4 shrink-0" />

@@ -52,9 +52,16 @@ export default function AdminMessagesPage() {
     setError("");
     try {
       const token = getAuthToken();
+      if (!token) {
+        throw new Error(
+          "Please sign in as an admin to view contact messages."
+        );
+      }
+
       const res = await fetch(`${apiUrl}/api/admin/messages`, {
+        cache: "no-store",
         headers: {
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -63,7 +70,12 @@ export default function AdminMessagesPage() {
         throw new Error(data?.message || "Failed to load contact messages.");
       }
 
-      setMessages(Array.isArray(data?.data) ? data.data : []);
+      const list = Array.isArray(data?.data)
+        ? data.data
+        : Array.isArray(data)
+        ? data
+        : [];
+      setMessages(list);
     } catch (err) {
       setError(err.message || "Could not fetch messages.");
     } finally {
@@ -89,12 +101,19 @@ export default function AdminMessagesPage() {
       });
 
       const data = await res.json().catch(() => ({}));
-      if (!res.ok || !data?.data) {
+      if (!res.ok) {
         throw new Error(data?.message || "Failed to update message status.");
       }
 
+      const updatedItem = data?.data || data?.message;
       setMessages((prev) =>
-        prev.map((msg) => (msg._id === id ? data.data : msg))
+        prev.map((msg) => {
+          const currentId = msg._id || msg.id;
+          if (currentId !== id) return msg;
+          return updatedItem && typeof updatedItem === "object"
+            ? { ...msg, ...updatedItem, status: updatedItem.status || nextStatus }
+            : { ...msg, status: nextStatus };
+        })
       );
       toast.success(`Message marked as ${nextStatus}.`);
     } catch (err) {
@@ -107,7 +126,7 @@ export default function AdminMessagesPage() {
   const filteredMessages =
     filter === "all"
       ? messages
-      : messages.filter((m) => (m.status || "unread") === filter);
+      : messages.filter((m) => (m?.status || "unread") === filter);
 
   if (loading) {
     return <DashboardPageSkeleton />;
@@ -157,8 +176,16 @@ export default function AdminMessagesPage() {
 
       {/* Content */}
       {error ? (
-        <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl p-5 text-sm">
-          {error}
+        <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl p-5 text-sm flex items-center justify-between gap-3">
+          <span>{error}</span>
+          <button
+            type="button"
+            onClick={fetchMessages}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+          >
+            <RefreshCw className="w-3.5 h-3.5" />
+            <span>Retry</span>
+          </button>
         </div>
       ) : filteredMessages.length === 0 ? (
         <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-12 text-center space-y-3 shadow-xl">
@@ -199,76 +226,90 @@ export default function AdminMessagesPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredMessages.map((msg) => (
-            <div
-              key={msg._id}
-              className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-2xl p-5 sm:p-6 space-y-4 transition"
-            >
-              <div className="flex flex-wrap items-start justify-between gap-3">
-                <div className="space-y-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-bold text-white">
-                      <User className="w-4 h-4 text-sky-400" />
-                      {msg.name}
-                    </span>
-                    <span className="text-slate-600">•</span>
-                    <a
-                      href={`mailto:${msg.email}`}
-                      className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-sky-400 hover:underline"
-                    >
-                      <Mail className="w-3.5 h-3.5" />
-                      {msg.email}
-                    </a>
-                  </div>
+          {filteredMessages.map((msg) => {
+            const id = msg._id || msg.id;
+            const currentStatus = msg.status || "unread";
 
-                  <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-400">
-                    <span className="px-2.5 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-slate-300 font-medium">
-                      {msg.topic || "General Inquiry"}
-                    </span>
-                    {msg.createdAt && (
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="w-3.5 h-3.5" />
-                        {new Date(msg.createdAt).toLocaleString()}
+            return (
+              <div
+                key={id}
+                className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-2xl p-5 sm:p-6 space-y-4 transition"
+              >
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center gap-1.5 text-sm font-bold text-white">
+                        <User className="w-4 h-4 text-sky-400" />
+                        {msg.name || "Anonymous User"}
                       </span>
-                    )}
+                      <span className="text-slate-600">•</span>
+                      {msg.email ? (
+                        <a
+                          href={`mailto:${msg.email}`}
+                          className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-sky-400 hover:underline"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                          {msg.email}
+                        </a>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-400">
+                          <Mail className="w-3.5 h-3.5" />
+                          No email provided
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-400">
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-slate-300 font-medium">
+                        {msg.topic || "General Inquiry"}
+                      </span>
+                      {msg.createdAt && (
+                        <span className="inline-flex items-center gap-1">
+                          <Clock className="w-3.5 h-3.5" />
+                          {new Date(msg.createdAt).toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${
+                        statusStyles[currentStatus] || statusStyles.unread
+                      }`}
+                    >
+                      {currentStatus}
+                    </span>
+
+                    <select
+                      aria-label="Update message status"
+                      disabled={updatingId === id}
+                      value={currentStatus}
+                      onChange={(e) =>
+                        handleStatusChange(id, e.target.value)
+                      }
+                      className="rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 px-2.5 py-1.5 focus:border-sky-500 focus:outline-none cursor-pointer"
+                    >
+                      <option value="unread">Unread</option>
+                      <option value="read">Read</option>
+                      <option value="replied">Replied</option>
+                    </select>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-semibold border capitalize ${
-                      statusStyles[msg.status] || statusStyles.unread
-                    }`}
-                  >
-                    {msg.status || "unread"}
-                  </span>
+                <p className="text-sm text-slate-300 bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 leading-relaxed whitespace-pre-line">
+                  {msg.message}
+                </p>
 
-                  <select
-                    aria-label="Update message status"
-                    disabled={updatingId === msg._id}
-                    value={msg.status || "unread"}
-                    onChange={(e) => handleStatusChange(msg._id, e.target.value)}
-                    className="rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 px-2.5 py-1.5 focus:border-sky-500 focus:outline-none cursor-pointer"
-                  >
-                    <option value="unread">Unread</option>
-                    <option value="read">Read</option>
-                    <option value="replied">Replied</option>
-                  </select>
-                </div>
+                {currentStatus === "replied" && (
+                  <div className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Marked as replied</span>
+                  </div>
+                )}
               </div>
-
-              <p className="text-sm text-slate-300 bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 leading-relaxed whitespace-pre-line">
-                {msg.message}
-              </p>
-
-              {msg.status === "replied" && (
-                <div className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Marked as replied</span>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
