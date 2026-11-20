@@ -8,6 +8,7 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function formatSubmittedDate(dateStr) {
@@ -136,20 +137,24 @@ export default function ManageServicesPage() {
         throw new Error(data?.message || "Failed to update service status.");
       }
 
+      const msg = `"${service.title}" marked as ${formatStatusLabel(nextStatus)}.`;
       setFeedback({
         type: "success",
-        message: `"${service.title}" marked as ${formatStatusLabel(nextStatus)}.`,
+        message: msg,
       });
+      toast.success(msg);
     } catch (err) {
       setServices((prev) =>
         prev.map((item) =>
           (item._id || item.id) === id ? { ...item, status: prevStatus } : item
         )
       );
+      const errMsg = err.message || "Could not update service status.";
       setFeedback({
         type: "error",
-        message: err.message || "Could not update service status.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setUpdatingId(null);
     }

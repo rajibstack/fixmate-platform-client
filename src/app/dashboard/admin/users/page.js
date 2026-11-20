@@ -7,6 +7,7 @@ import {
   AlertCircle,
   MapPin,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function getInitials(name = "") {
@@ -137,10 +138,12 @@ export default function ManageUsersPage() {
     const prevRole = targetUser.role;
 
     if (isSelfUser(targetUser)) {
+      const msg = "Your own role cannot be changed here.";
       setFeedback({
         type: "error",
-        message: "Your own role cannot be changed here.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -171,20 +174,24 @@ export default function ManageUsersPage() {
         throw new Error(data?.message || "Failed to update user role.");
       }
 
+      const msg = `${targetUser.name}'s role updated to ${formatRoleLabel(nextRole)}.`;
       setFeedback({
         type: "success",
-        message: `${targetUser.name}'s role updated to ${formatRoleLabel(nextRole)}.`,
+        message: msg,
       });
+      toast.success(msg);
     } catch (err) {
       setUsers((prev) =>
         prev.map((item) =>
           (item._id || item.id) === id ? { ...item, role: prevRole } : item
         )
       );
+      const errMsg = err.message || "Could not update user role.";
       setFeedback({
         type: "error",
-        message: err.message || "Could not update user role.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setUpdatingId(null);
     }

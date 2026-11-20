@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Wrench } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+import { toast } from "sonner";
 import { FixMateSpinner, PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 function getDashboardPath(role) {
@@ -57,7 +58,9 @@ function SignUpContent() {
       !/[A-Z]/.test(formData.password) ||
       !/[a-z]/.test(formData.password)
     ) {
-      setError("Please meet all password requirements.");
+      const msg = "Please meet all password requirements.";
+      setError(msg);
+      toast.error(msg);
       return;
     }
 
@@ -80,7 +83,9 @@ function SignUpContent() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Registration failed");
+        const msg = data.message || "Registration failed";
+        setError(msg);
+        toast.error(msg);
         setLoading(false);
         return;
       }
@@ -88,9 +93,16 @@ function SignUpContent() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("auth-change"));
+      toast.success(
+        data.user?.name
+          ? `Account created! Welcome to FixMate, ${data.user.name}.`
+          : "Account created successfully!"
+      );
       router.push(getDashboardPath(data.user?.role));
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      const msg = "Something went wrong. Please try again.";
+      setError(msg);
+      toast.error(msg);
       setLoading(false);
     }
   };
@@ -114,7 +126,9 @@ function SignUpContent() {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.message || "Google sign-up failed");
+          const msg = data.message || "Google sign-up failed";
+          setError(msg);
+          toast.error(msg);
           setGoogleLoading(false);
           return;
         }
@@ -122,14 +136,23 @@ function SignUpContent() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         window.dispatchEvent(new Event("auth-change"));
+        toast.success(
+          data.user?.name
+            ? `Welcome to FixMate, ${data.user.name}!`
+            : "Signed up with Google successfully!"
+        );
         router.push(getDashboardPath(data.user?.role));
       } catch (err) {
-        setError("Google authentication failed. Please try again.");
+        const msg = "Google authentication failed. Please try again.";
+        setError(msg);
+        toast.error(msg);
         setGoogleLoading(false);
       }
     },
     onError: () => {
-      setError("Google sign-in popup closed or failed.");
+      const msg = "Google sign-in popup closed or failed.";
+      setError(msg);
+      toast.error(msg);
       setGoogleLoading(false);
     },
   });

@@ -9,6 +9,7 @@ import {
   RefreshCw,
   User,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 const statusStyles = {
@@ -87,11 +88,16 @@ export default function AdminMessagesPage() {
       });
 
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data?.data) {
-        setMessages((prev) =>
-          prev.map((msg) => (msg._id === id ? data.data : msg))
-        );
+      if (!res.ok || !data?.data) {
+        throw new Error(data?.message || "Failed to update message status.");
       }
+
+      setMessages((prev) =>
+        prev.map((msg) => (msg._id === id ? data.data : msg))
+      );
+      toast.success(`Message marked as ${nextStatus}.`);
+    } catch (err) {
+      toast.error(err.message || "Could not update message status.");
     } finally {
       setUpdatingId(null);
     }

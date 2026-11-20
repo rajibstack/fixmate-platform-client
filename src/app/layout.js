@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { PublicPageSkeleton } from "@/components/ui/LoadingState";
@@ -29,6 +30,19 @@ export default function RootLayout({ children }) {
         className="min-h-full flex flex-col bg-slate-950 text-slate-100"
         suppressHydrationWarning={true}
       >
+        <Toaster
+          position="bottom-right"
+          richColors
+          closeButton
+          toastOptions={{
+            style: {
+              background: "#07bcff",
+              border: "1px solid #07bcff",
+              color: "#020618",
+              borderRadius: "14px",
+            },
+          }}
+        />
         <LayoutWrapper>
           <Suspense fallback={<PublicPageSkeleton cards={6} />}>
             {children}

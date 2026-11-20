@@ -11,6 +11,7 @@ import {
   CheckCheck,
   Wrench,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
@@ -171,17 +172,21 @@ export default function TechnicianManageRequestsPage() {
         )
       );
 
+      const successMsg = `"${booking.serviceTitle}" moved to ${formatStatusText(
+        nextStatus
+      )}.`;
       setFeedback({
         type: "success",
-        message: `"${booking.serviceTitle}" moved to ${formatStatusText(
-          nextStatus
-        )}.`,
+        message: successMsg,
       });
+      toast.success(successMsg);
     } catch (err) {
+      const errMsg = err.message || "Could not update request status.";
       setFeedback({
         type: "error",
-        message: err.message || "Could not update request status.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setActionKey("");
     }

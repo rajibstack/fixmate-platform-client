@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Wrench,
 } from "lucide-react";
+import { toast } from "sonner";
 import { FixMateSpinner, PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 const contactMethods = [
@@ -94,19 +95,23 @@ export default function ContactPage() {
       !formData.email.trim() ||
       !formData.message.trim()
     ) {
+      const msg = "Please fill in your name, email address, and message.";
       setFeedback({
         type: "error",
-        message: "Please fill in your name, email address, and message.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
     if (formData.message.trim().length < 15) {
+      const msg =
+        "Please write at least 15 characters so we can assist you properly.";
       setFeedback({
         type: "error",
-        message:
-          "Please write at least 15 characters so we can assist you properly.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -129,11 +134,13 @@ export default function ContactPage() {
         throw new Error(data?.message || "Could not send your message.");
       }
 
+      const successMsg =
+        "Thanks for reaching out! Your message has been saved and our team will get back to you shortly.";
       setFeedback({
         type: "success",
-        message:
-          "Thanks for reaching out! Your message has been saved and our team will get back to you shortly.",
+        message: successMsg,
       });
+      toast.success("Message sent! Our team will get back to you shortly.");
       setFormData({
         name: "",
         email: "",
@@ -141,10 +148,12 @@ export default function ContactPage() {
         message: "",
       });
     } catch (err) {
+      const errMsg = err.message || "Something went wrong. Please try again.";
       setFeedback({
         type: "error",
-        message: err.message || "Something went wrong. Please try again.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setSubmitting(false);
     }

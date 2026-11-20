@@ -19,6 +19,7 @@ import {
   X,
   MessageSquare,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function getDashboardPath() {
@@ -134,6 +135,7 @@ export default function DashboardLayout({ children }) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.dispatchEvent(new Event("auth-change"));
+    toast.success("Signed out successfully.");
     router.push("/sign-in");
   };
 

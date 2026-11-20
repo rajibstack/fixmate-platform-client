@@ -10,6 +10,7 @@ import {
   CreditCard,
   ArrowRight,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 function formatShortDate(dateValue) {
@@ -203,15 +204,19 @@ export default function CustomerMyBookingsPage() {
             : item
         )
       );
+      const msg = `Request for "${booking.serviceTitle}" has been cancelled.`;
       setFeedback({
         type: "success",
-        message: `Request for "${booking.serviceTitle}" has been cancelled.`,
+        message: msg,
       });
+      toast.success(msg);
     } catch (err) {
+      const errMsg = err.message || "Could not cancel booking request.";
       setFeedback({
         type: "error",
-        message: err.message || "Could not cancel booking request.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setActionId(null);
     }
@@ -249,15 +254,19 @@ export default function CustomerMyBookingsPage() {
             : item
         )
       );
+      const msg = `Payment completed for "${booking.serviceTitle}".`;
       setFeedback({
         type: "success",
-        message: `Payment completed for "${booking.serviceTitle}".`,
+        message: msg,
       });
+      toast.success(msg);
     } catch (err) {
+      const errMsg = err.message || "Could not process payment.";
       setFeedback({
         type: "error",
-        message: err.message || "Could not process payment.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setActionId(null);
     }

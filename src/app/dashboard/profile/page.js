@@ -10,6 +10,7 @@ import {
   Save,
   User as UserIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 function formatRoleLabel(role) {
@@ -155,19 +156,23 @@ export default function UpdateProfilePage() {
 
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
+      const msg = "Please select a valid JPG, PNG, or WEBP image.";
       setFeedback({
         type: "error",
-        message: "Please select a valid JPG, PNG, or WEBP image.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
     const maxSizeBytes = 8 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
+      const msg = "Photo size must be 8 MB or smaller.";
       setFeedback({
         type: "error",
-        message: "Photo size must be 8 MB or smaller.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -183,10 +188,12 @@ export default function UpdateProfilePage() {
         const compressed = await compressImageToDataUrl(file);
         setFormData((prev) => ({ ...prev, avatar: compressed }));
       } catch {
+        const msg = "Could not process the selected photo.";
         setFeedback({
           type: "error",
-          message: "Could not process the selected photo.",
+          message: msg,
         });
+        toast.error(msg);
       }
       return;
     }
@@ -229,15 +236,19 @@ export default function UpdateProfilePage() {
     setFeedback(null);
 
     if (!formData.name.trim()) {
-      setFeedback({ type: "error", message: "Full name is required." });
+      const msg = "Full name is required.";
+      setFeedback({ type: "error", message: msg });
+      toast.error(msg);
       return;
     }
 
     if (uploadingPhoto) {
+      const msg = "Please wait until the photo finishes uploading.";
       setFeedback({
         type: "error",
-        message: "Please wait until the photo finishes uploading.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -279,15 +290,19 @@ export default function UpdateProfilePage() {
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new Event("auth-change"));
 
+      const successMsg = "Profile updated successfully.";
       setFeedback({
         type: "success",
-        message: "Profile updated successfully.",
+        message: successMsg,
       });
+      toast.success(successMsg);
     } catch (err) {
+      const errMsg = err.message || "Something went wrong while saving profile.";
       setFeedback({
         type: "error",
-        message: err.message || "Something went wrong while saving profile.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setSaving(false);
     }

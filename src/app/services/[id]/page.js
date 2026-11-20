@@ -20,6 +20,7 @@ import {
   ShieldAlert,
   ExternalLink,
 } from "lucide-react";
+import { toast as sonnerToast } from "sonner";
 import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 function getInitials(name = "") {
@@ -72,6 +73,11 @@ export default function ServiceDetailsPage() {
 
   const showToast = useCallback((type, message) => {
     setToast({ type, message });
+    if (type === "success") {
+      sonnerToast.success(message);
+    } else {
+      sonnerToast.error(message);
+    }
   }, []);
 
   useEffect(() => {

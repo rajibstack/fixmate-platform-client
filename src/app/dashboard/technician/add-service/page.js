@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Lock,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 const CATEGORIES = [
@@ -100,19 +101,23 @@ export default function AddServicePage() {
 
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
+      const msg = "Please select a valid JPG, PNG, or WEBP image.";
       setFeedback({
         type: "error",
-        message: "Please select a valid JPG, PNG, or WEBP image.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
     const maxSizeBytes = 8 * 1024 * 1024;
     if (file.size > maxSizeBytes) {
+      const msg = "Image size must be 8 MB or smaller.";
       setFeedback({
         type: "error",
-        message: "Image size must be 8 MB or smaller.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -149,16 +154,21 @@ export default function AddServicePage() {
       if (res.ok && data?.success && data?.data?.display_url) {
         setFormData((prev) => ({ ...prev, image: data.data.display_url }));
       } else {
+        const msg =
+          data?.error?.message || "Image upload failed. Please try again.";
         setFeedback({
           type: "error",
-          message: data?.error?.message || "Image upload failed. Please try again.",
+          message: msg,
         });
+        toast.error(msg);
       }
     } catch {
+      const msg = "Network error while uploading image.";
       setFeedback({
         type: "error",
-        message: "Network error while uploading image.",
+        message: msg,
       });
+      toast.error(msg);
     } finally {
       setUploadingImage(false);
     }
@@ -177,32 +187,42 @@ export default function AddServicePage() {
     setFeedback(null);
 
     if (!formData.title.trim()) {
-      setFeedback({ type: "error", message: "Service title is required." });
+      const msg = "Service title is required.";
+      setFeedback({ type: "error", message: msg });
+      toast.error(msg);
       return;
     }
     if (!formData.price || Number(formData.price) <= 0) {
+      const msg = "Please enter a valid base price greater than 0.";
       setFeedback({
         type: "error",
-        message: "Please enter a valid base price greater than 0.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
     if (!formData.area.trim()) {
-      setFeedback({ type: "error", message: "Service area is required." });
+      const msg = "Service area is required.";
+      setFeedback({ type: "error", message: msg });
+      toast.error(msg);
       return;
     }
     if (!formData.description.trim()) {
+      const msg = "Please provide a short service description.";
       setFeedback({
         type: "error",
-        message: "Please provide a short service description.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
     if (uploadingImage) {
+      const msg = "Please wait until the service image finishes uploading.";
       setFeedback({
         type: "error",
-        message: "Please wait until the service image finishes uploading.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -249,11 +269,13 @@ export default function AddServicePage() {
         throw new Error(data?.message || "Failed to submit service for review.");
       }
 
+      const successMsg =
+        "Service submitted for review! It will stay pending until an admin approves it.";
       setFeedback({
         type: "success",
-        message:
-          "Service submitted for review! It will stay pending until an admin approves it.",
+        message: successMsg,
       });
+      toast.success("Service submitted for admin review!");
 
       setFormData((prev) => ({
         ...prev,
@@ -271,10 +293,12 @@ export default function AddServicePage() {
         router.push("/dashboard/technician/my-services");
       }, 1200);
     } catch (err) {
+      const errMsg = err.message || "Something went wrong while saving service.";
       setFeedback({
         type: "error",
-        message: err.message || "Something went wrong while saving service.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setSubmitting(false);
     }

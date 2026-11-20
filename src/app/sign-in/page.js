@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Wrench } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
+import { toast } from "sonner";
 import { FixMateSpinner, PublicPageSkeleton } from "@/components/ui/LoadingState";
 
 function getDashboardPath(role) {
@@ -66,7 +67,9 @@ function LoginContent() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.message || "Invalid credentials");
+        const msg = data.message || "Invalid credentials";
+        setError(msg);
+        toast.error(msg);
         setLoading(false);
         return;
       }
@@ -74,9 +77,16 @@ function LoginContent() {
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
       window.dispatchEvent(new Event("auth-change"));
+      toast.success(
+        data.user?.name
+          ? `Welcome back, ${data.user.name}!`
+          : "Signed in successfully!"
+      );
       router.push(getDashboardPath(data.user?.role));
     } catch (err) {
-      setError("Something went wrong. Please try again.");
+      const msg = "Something went wrong. Please try again.";
+      setError(msg);
+      toast.error(msg);
       setLoading(false);
     }
   };
@@ -99,7 +109,9 @@ function LoginContent() {
         const data = await res.json();
 
         if (!res.ok) {
-          setError(data.message || "Google sign-in failed");
+          const msg = data.message || "Google sign-in failed";
+          setError(msg);
+          toast.error(msg);
           setGoogleLoading(false);
           return;
         }
@@ -107,14 +119,23 @@ function LoginContent() {
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
         window.dispatchEvent(new Event("auth-change"));
+        toast.success(
+          data.user?.name
+            ? `Welcome back, ${data.user.name}!`
+            : "Signed in with Google successfully!"
+        );
         router.push(getDashboardPath(data.user?.role));
       } catch (err) {
-        setError("Google authentication failed. Please try again.");
+        const msg = "Google authentication failed. Please try again.";
+        setError(msg);
+        toast.error(msg);
         setGoogleLoading(false);
       }
     },
     onError: () => {
-      setError("Google sign-in popup closed or failed.");
+      const msg = "Google sign-in popup closed or failed.";
+      setError(msg);
+      toast.error(msg);
       setGoogleLoading(false);
     },
   });

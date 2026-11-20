@@ -3,7 +3,16 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Wrench, ChevronDown, LayoutDashboard, User, LogOut } from "lucide-react";
+import {
+  Wrench,
+  ChevronDown,
+  LayoutDashboard,
+  User,
+  LogOut,
+  Menu,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
 
 function getInitials(name = "") {
   return (
@@ -21,6 +30,7 @@ export default function Navbar() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -43,6 +53,8 @@ export default function Navbar() {
 
   useEffect(() => {
     loadUser();
+    setMobileNavOpen(false);
+    setMenuOpen(false);
 
     const handleAuthChange = () => {
       loadUser();
@@ -73,7 +85,9 @@ export default function Navbar() {
     localStorage.removeItem("user");
     setUser(null);
     setMenuOpen(false);
+    setMobileNavOpen(false);
     window.dispatchEvent(new Event("auth-change"));
+    toast.success("Signed out successfully.");
     router.push("/sign-in");
   };
 
@@ -87,17 +101,35 @@ export default function Navbar() {
   const showAvatarImage = Boolean(user?.avatar) && !avatarError;
 
   return (
-    <header className="sticky top-0 z-40 h-16 bg-slate-950/85 backdrop-blur border-b border-slate-800/80 text-slate-100">
-      <div className="max-w-7xl mx-auto h-full px-4 sm:px-8 flex items-center justify-between gap-4">
-        <Link href="/" className="flex items-center gap-2.5 text-xl font-bold shrink-0">
-          <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
-            <Wrench className="w-5 h-5" />
-          </div>
-          <span className="tracking-tight text-white">
-            Fix<span className="text-sky-400">Mate</span>
-          </span>
-        </Link>
+    <header className="sticky top-0 z-40 bg-slate-950/85 backdrop-blur border-b border-slate-800/80 text-slate-100">
+      <div className="max-w-7xl mx-auto h-16 px-4 sm:px-8 flex items-center justify-between gap-3">
+        {/* Left: Mobile Toggle + Brand */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={() => setMobileNavOpen((prev) => !prev)}
+            aria-label={mobileNavOpen ? "Close navigation menu" : "Open navigation menu"}
+            aria-expanded={mobileNavOpen}
+            className="md:hidden p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 hover:text-sky-400 transition cursor-pointer shrink-0"
+          >
+            {mobileNavOpen ? (
+              <X className="w-5 h-5" />
+            ) : (
+              <Menu className="w-5 h-5" />
+            )}
+          </button>
 
+          <Link href="/" className="flex items-center gap-2.5 text-xl font-bold shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+              <Wrench className="w-5 h-5" />
+            </div>
+            <span className="tracking-tight text-white">
+              Fix<span className="text-sky-400">Mate</span>
+            </span>
+          </Link>
+        </div>
+
+        {/* Desktop Nav Links */}
         <nav className="hidden md:flex items-center gap-7">
           {navLinks.map((item) => {
             const active = pathname === item.href;
@@ -115,18 +147,19 @@ export default function Navbar() {
           })}
         </nav>
 
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Right: Auth / Profile Dropdown */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
           {!user ? (
             <>
               <Link
                 href="/sign-in"
-                className="text-sm font-medium text-slate-300 hover:text-white px-3 py-2 rounded-lg transition"
+                className="text-sm font-medium text-slate-300 hover:text-white px-2.5 sm:px-3 py-2 rounded-lg transition"
               >
                 Sign in
               </Link>
               <Link
                 href="/sign-up"
-                className="text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-slate-950 px-4 py-2 rounded-xl transition shadow-md shadow-sky-500/20"
+                className="text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-slate-950 px-3.5 sm:px-4 py-2 rounded-xl transition shadow-md shadow-sky-500/20"
               >
                 Sign Up
               </Link>
@@ -223,6 +256,32 @@ export default function Navbar() {
           )}
         </div>
       </div>
+
+      {/* Mobile Navigation Drawer / Dropdown */}
+      {mobileNavOpen && (
+        <nav
+          aria-label="Mobile Navigation"
+          className="md:hidden bg-slate-900/95 border-t border-slate-800/90 px-4 py-3 space-y-1"
+        >
+          {navLinks.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => setMobileNavOpen(false)}
+                className={`block px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
+                  active
+                    ? "bg-sky-500/15 text-sky-400 border border-sky-500/25 font-semibold"
+                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                }`}
+              >
+                {item.name}
+              </Link>
+            );
+          })}
+        </nav>
+      )}
     </header>
   );
 }

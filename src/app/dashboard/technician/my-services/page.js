@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
 
 const CATEGORIES = [
@@ -146,6 +147,12 @@ export default function MyServicesPage() {
       if (!res.ok) {
         throw new Error(data?.message || "Failed to update availability.");
       }
+
+      toast.success(
+        `"${service.title}" marked as ${
+          nextAvailable ? "available" : "unavailable"
+        }.`
+      );
     } catch (err) {
       setServices((prev) =>
         prev.map((item) =>
@@ -154,10 +161,12 @@ export default function MyServicesPage() {
             : item
         )
       );
+      const errMsg = err.message || "Could not update availability status.";
       setFeedback({
         type: "error",
-        message: err.message || "Could not update availability status.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setTogglingId(null);
     }
@@ -189,10 +198,12 @@ export default function MyServicesPage() {
 
     const id = editingService._id || editingService.id;
     if (!editForm.title.trim() || Number(editForm.price) <= 0) {
+      const msg = "Title and a valid price greater than 0 are required.";
       setFeedback({
         type: "error",
-        message: "Title and a valid price greater than 0 are required.",
+        message: msg,
       });
+      toast.error(msg);
       return;
     }
 
@@ -232,15 +243,19 @@ export default function MyServicesPage() {
         prev.map((item) => ((item._id || item.id) === id ? updatedDoc : item))
       );
       setEditingService(null);
+      const successMsg = "Service updated successfully.";
       setFeedback({
         type: "success",
-        message: "Service updated successfully.",
+        message: successMsg,
       });
+      toast.success(successMsg);
     } catch (err) {
+      const errMsg = err.message || "Error updating service.";
       setFeedback({
         type: "error",
-        message: err.message || "Error updating service.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setSavingEdit(false);
     }
@@ -273,15 +288,19 @@ export default function MyServicesPage() {
       setServices((prev) =>
         prev.filter((item) => (item._id || item.id) !== id)
       );
+      const successMsg = "Service removed from your listings.";
       setFeedback({
         type: "success",
-        message: "Service removed from your listings.",
+        message: successMsg,
       });
+      toast.success(successMsg);
     } catch (err) {
+      const errMsg = err.message || "Could not delete service.";
       setFeedback({
         type: "error",
-        message: err.message || "Could not delete service.",
+        message: errMsg,
       });
+      toast.error(errMsg);
     } finally {
       setDeletingId(null);
     }
