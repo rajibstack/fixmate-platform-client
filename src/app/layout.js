@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
         suppressHydrationWarning={true}
       >
         <Toaster
-          position="bottom-right"
+          position="top-right"
           richColors
           closeButton
           toastOptions={{
