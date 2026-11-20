@@ -1,12 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import {
   AlertCircle,
+  ArrowRight,
   Calendar,
   CreditCard,
   DollarSign,
   Receipt,
+  RefreshCw,
   TrendingUp,
   User,
   Wrench,
@@ -210,16 +213,34 @@ export default function AdminTransactionsPage() {
 
       {/* Transactions Table / Cards */}
       {paidTransactions.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-2.5">
-          <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
             <Receipt className="w-6 h-6" />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-white">
             No transactions yet
           </h2>
           <p className="text-sm text-slate-400 max-w-md mx-auto">
-            Completed and paid customer repair invoices will appear here.
+            Completed and paid customer repair invoices will appear here once
+            payments are settled.
           </p>
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            <Link
+              href="/dashboard/admin/bookings"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20"
+            >
+              <span>View all bookings</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+            <button
+              type="button"
+              onClick={fetchTransactions}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+            >
+              <RefreshCw className="w-4 h-4 text-sky-400" />
+              <span>Refresh</span>
+            </button>
+          </div>
         </div>
       ) : (
         <>

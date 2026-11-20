@@ -11,6 +11,7 @@ import {
   Calendar,
   Inbox,
   Wallet,
+  Plus,
 } from "lucide-react";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
@@ -279,14 +280,24 @@ export default function TechnicianOverview() {
           </div>
 
           {newRequests.length === 0 ? (
-            <div className="py-10 text-center space-y-2">
-              <Inbox className="w-6 h-6 text-slate-500 mx-auto" />
+            <div className="py-10 px-5 text-center border border-dashed border-slate-800 rounded-2xl space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+                <Inbox className="w-5 h-5" />
+              </div>
               <p className="text-sm font-medium text-slate-300">
                 No pending requests
               </p>
               <p className="text-xs text-slate-500">
                 New customer repair requests will appear here.
               </p>
+              <Link
+                href="/dashboard/technician/my-services"
+                onClick={() => setNavigating(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-xs font-semibold text-white transition"
+              >
+                <span>View my services</span>
+                <ArrowUpRight className="w-3.5 h-3.5 text-sky-400" />
+              </Link>
             </div>
           ) : (
             <div className="divide-y divide-slate-800/80">
@@ -326,14 +337,24 @@ export default function TechnicianOverview() {
           </div>
 
           {recentEarnings.length === 0 ? (
-            <div className="py-10 text-center space-y-2">
-              <Wallet className="w-6 h-6 text-slate-500 mx-auto" />
+            <div className="py-10 px-5 text-center border border-dashed border-slate-800 rounded-2xl space-y-3">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+                <Wallet className="w-5 h-5" />
+              </div>
               <p className="text-sm font-medium text-slate-300">
                 No settled earnings yet
               </p>
               <p className="text-xs text-slate-500">
                 Paid completed repairs will show up here.
               </p>
+              <Link
+                href="/dashboard/technician/add-service"
+                onClick={() => setNavigating(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition shadow-md shadow-sky-500/15"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Add a service</span>
+              </Link>
             </div>
           ) : (
             <div className="divide-y divide-slate-800/80">

@@ -10,6 +10,8 @@ import {
   Play,
   CheckCheck,
   Wrench,
+  RotateCcw,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageSkeleton, FixMateSpinner } from "@/components/ui/LoadingState";
@@ -265,16 +267,41 @@ export default function TechnicianManageRequestsPage() {
 
       {/* Requests List / States */}
       {filteredRequests.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-2.5">
-          <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
             <Inbox className="w-6 h-6" />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-white">
-            No repair requests found
+            {activeTab === "all"
+              ? "No repair requests yet"
+              : "No repair requests found"}
           </h2>
           <p className="text-sm text-slate-400 max-w-md mx-auto">
-            There are no customer requests in this stage right now.
+            {activeTab === "all"
+              ? "Customer booking requests for your approved services will appear here."
+              : "There are no customer requests in this stage right now."}
           </p>
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
+            {activeTab !== "all" ? (
+              <button
+                type="button"
+                onClick={() => setActiveTab("all")}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Show all requests</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={fetchTechnicianRequests}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+              >
+                <RefreshCw className="w-4 h-4 text-sky-400" />
+                <span>Refresh requests</span>
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="space-y-4">

@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Check,
+  RotateCcw,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -233,14 +234,30 @@ export default function ManageServicesPage() {
       {/* Services Table Card */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
         {filteredServices.length === 0 ? (
-          <div className="py-16 px-6 text-center space-y-2.5">
-            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
+          <div className="py-16 px-6 text-center space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
               <Wrench className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-bold text-white">No services found</h2>
+            <h2 className="text-base sm:text-lg font-bold text-white">
+              {activeTab === "all" ? "No services submitted yet" : "No services found"}
+            </h2>
             <p className="text-sm text-slate-400 max-w-md mx-auto">
-              There are no services in this status category right now.
+              {activeTab === "all"
+                ? "Technician service listings will appear here for review once submitted."
+                : "There are no services in this status category right now."}
             </p>
+            {activeTab !== "all" && (
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("all")}
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
+                >
+                  <RotateCcw className="w-4 h-4" />
+                  <span>Show all services</span>
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="overflow-x-auto">

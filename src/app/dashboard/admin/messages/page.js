@@ -7,6 +7,7 @@ import {
   Mail,
   MessageSquare,
   RefreshCw,
+  RotateCcw,
   User,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -160,8 +161,41 @@ export default function AdminMessagesPage() {
           {error}
         </div>
       ) : filteredMessages.length === 0 ? (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-10 text-center text-slate-400 text-sm">
-          No contact messages found for this filter.
+        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-12 text-center space-y-3 shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+            <MessageSquare className="w-6 h-6" />
+          </div>
+          <h2 className="text-base sm:text-lg font-bold text-white">
+            {filter === "all"
+              ? "No contact messages yet"
+              : `No ${filter} messages`}
+          </h2>
+          <p className="text-sm text-slate-400 max-w-md mx-auto">
+            {filter === "all"
+              ? "Submissions from the Contact Us page will show up here for review."
+              : `There are currently no messages marked as ${filter}.`}
+          </p>
+          <div className="pt-2">
+            {filter !== "all" ? (
+              <button
+                type="button"
+                onClick={() => setFilter("all")}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Show all messages</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={fetchMessages}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+              >
+                <RefreshCw className="w-4 h-4 text-sky-400" />
+                <span>Refresh inbox</span>
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
