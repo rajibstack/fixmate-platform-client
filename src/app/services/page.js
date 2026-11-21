@@ -35,18 +35,21 @@ const MODE_OPTIONS = [
   "Pickup & Delivery",
 ];
 
-// 4 columns on xl screens * 2 rows = 8 cards per page
 const ITEMS_PER_PAGE = 8;
 const FALLBACK_SERVICE_IMAGE =
   "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80";
 
 function isServiceApprovedAndAvailable(service) {
   if (!service || typeof service !== "object") return false;
-  const status = (service?.status || service?.approvalStatus || "approved")
+  const status = (
+    service?.status ||
+    service?.approvalStatus ||
+    "approved"
+  )
     .toString()
     .toLowerCase()
     .trim();
-  const isApproved = status === "approved";
+  const isApproved = ["approved", "active", "published", ""].includes(status);
   const isAvailable =
     service?.available !== false && service?.isAvailable !== false;
   return isApproved && isAvailable;
@@ -79,68 +82,9 @@ function normalizeSortOption(rawSort = "newest") {
   return "newest";
 }
 
-function applyClientFiltersAndSort(list, { search, category, mode, sort }) {
-  const q = (search || "").toString().trim().toLowerCase();
-  const cat = (category || "All").toString().trim().toLowerCase();
-  const srvMode = (mode || "All").toString().trim().toLowerCase();
-
-  let filtered = list.filter((item) => {
-    if (cat && cat !== "all") {
-      const itemCat = (item?.category || "").toString().toLowerCase();
-      const matchesCat =
-        itemCat === cat ||
-        itemCat.includes(cat) ||
-        (cat === "ac & refrigeration" &&
-          (itemCat.includes("ac") || itemCat.includes("refrigerator")));
-      if (!matchesCat) return false;
-    }
-
-    if (srvMode && srvMode !== "all") {
-      const itemMode = (item?.mode || item?.serviceMode || "Home Visit")
-        .toString()
-        .toLowerCase();
-      if (itemMode !== srvMode && !itemMode.includes(srvMode)) {
-        return false;
-      }
-    }
-
-    if (q) {
-      const title = (item?.title || "").toString().toLowerCase();
-      const itemCat = (item?.category || "").toString().toLowerCase();
-      const area = (item?.area || item?.serviceArea || "")
-        .toString()
-        .toLowerCase();
-      const desc = (item?.description || "").toString().toLowerCase();
-      if (
-        !title.includes(q) &&
-        !itemCat.includes(q) &&
-        !area.includes(q) &&
-        !desc.includes(q)
-      ) {
-        return false;
-      }
-    }
-
-    return true;
-  });
-
-  if (sort === "price-asc") {
-    filtered = [...filtered].sort(
-      (a, b) => Number(a?.price || 0) - Number(b?.price || 0)
-    );
-  } else if (sort === "price-desc") {
-    filtered = [...filtered].sort(
-      (a, b) => Number(b?.price || 0) - Number(a?.price || 0)
-    );
-  } else {
-    filtered = [...filtered].sort(
-      (a, b) =>
-        new Date(b?.createdAt || 0).getTime() -
-        new Date(a?.createdAt || 0).getTime()
-    );
-  }
-
-  return filtered;
+function normalizePageOption(rawPage = "1") {
+  const parsed = Number.parseInt(String(rawPage || "1"), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
 }
 
 function readStoredUser() {
@@ -233,14 +177,16 @@ function BrowseServicesContent() {
   );
   const urlMode = normalizeModeOption(searchParams.get("mode") || "All");
   const urlSort = normalizeSortOption(searchParams.get("sort") || "newest");
+  const urlPage = normalizePageOption(searchParams.get("page") || "1");
 
   const [services, setServices] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const [currentUser, setCurrentUser] = useState(null);
   const [initialLoading, setInitialLoading] = useState(true);
   const [fetching, setFetching] = useState(false);
-  const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [currentPage, setCurrentPage] = useState(urlPage);
 
   const [searchTerm, setSearchTerm] = useState(urlQuery);
   const [selectedCategory, setSelectedCategory] = useState(urlCategory);
@@ -256,8 +202,8 @@ function BrowseServicesContent() {
     setSelectedCategory(urlCategory);
     setSelectedMode(urlMode);
     setSortBy(urlSort);
-    setCurrentPage(1);
-  }, [urlQuery, urlCategory, urlMode, urlSort]);
+    setCurrentPage(urlPage);
+  }, [urlQuery, urlCategory, urlMode, urlSort, urlPage]);
 
   useEffect(() => {
     return () => {
@@ -268,13 +214,16 @@ function BrowseServicesContent() {
   }, []);
 
   const syncUrlParams = useCallback(
-    ({ search, category, mode, sort }) => {
+    ({ search, category, mode, sort, page = 1 }) => {
       const params = new URLSearchParams();
       const trimmedSearch = (search || "").trim();
+      const safePage = normalizePageOption(page);
+
       if (trimmedSearch) params.set("search", trimmedSearch);
       if (category && category !== "All") params.set("category", category);
       if (mode && mode !== "All") params.set("mode", mode);
       if (sort && sort !== "newest") params.set("sort", sort);
+      if (safePage > 1) params.set("page", String(safePage));
 
       const queryString = params.toString();
       const targetUrl = queryString
@@ -293,7 +242,15 @@ function BrowseServicesContent() {
   );
 
   const fetchServicesFromServer = useCallback(
-    async ({ search, category, mode, sort, isInitial = false }) => {
+    async ({
+      search,
+      category,
+      mode,
+      sort,
+      page = 1,
+      limit = ITEMS_PER_PAGE,
+      isInitial = false,
+    }) => {
       if (isInitial) {
         setInitialLoading(true);
       } else {
@@ -304,6 +261,8 @@ function BrowseServicesContent() {
       try {
         const params = new URLSearchParams();
         const trimmedSearch = (search || "").trim();
+        const safePage = normalizePageOption(page);
+
         if (trimmedSearch) params.set("search", trimmedSearch);
         if (category && category !== "All") {
           params.set("category", category);
@@ -314,11 +273,10 @@ function BrowseServicesContent() {
         if (sort) {
           params.set("sort", sort);
         }
+        params.set("page", String(safePage));
+        params.set("limit", String(limit));
 
-        const queryString = params.toString();
-        const endpoint = `${apiUrl}/api/services${
-          queryString ? `?${queryString}` : ""
-        }`;
+        const endpoint = `${apiUrl}/api/services?${params.toString()}`;
 
         const res = await fetch(endpoint, {
           cache: "no-store",
@@ -335,14 +293,20 @@ function BrowseServicesContent() {
           : [];
 
         const approvedValid = rawList.filter(isServiceApprovedAndAvailable);
-        const finalList = applyClientFiltersAndSort(approvedValid, {
-          search: trimmedSearch,
-          category,
-          mode,
-          sort,
-        });
+        const serverTotalCount = Number.isFinite(Number(data?.totalCount))
+          ? Number(data.totalCount)
+          : approvedValid.length;
+        const serverTotalPages = Number.isFinite(Number(data?.totalPages))
+          ? Math.max(1, Number(data.totalPages))
+          : Math.max(1, Math.ceil(serverTotalCount / limit));
+        const serverPage = Number.isFinite(Number(data?.page))
+          ? Math.min(Math.max(1, Number(data.page)), serverTotalPages)
+          : Math.min(safePage, serverTotalPages);
 
-        setServices(finalList);
+        setServices(approvedValid);
+        setTotalCount(serverTotalCount);
+        setTotalPages(serverTotalPages);
+        setCurrentPage(serverPage);
       } catch (err) {
         setError(err.message || "Could not fetch services.");
       } finally {
@@ -360,9 +324,18 @@ function BrowseServicesContent() {
       category: urlCategory,
       mode: urlMode,
       sort: urlSort,
+      page: urlPage,
+      limit: ITEMS_PER_PAGE,
       isInitial: !hasLoadedOnceRef.current,
     });
-  }, [fetchServicesFromServer, urlQuery, urlCategory, urlMode, urlSort]);
+  }, [
+    fetchServicesFromServer,
+    urlQuery,
+    urlCategory,
+    urlMode,
+    urlSort,
+    urlPage,
+  ]);
 
   useEffect(() => {
     setCurrentUser(readStoredUser());
@@ -380,20 +353,6 @@ function BrowseServicesContent() {
     };
   }, []);
 
-  const totalPages = Math.max(1, Math.ceil(services.length / ITEMS_PER_PAGE));
-
-  useEffect(() => {
-    if (currentPage > totalPages) {
-      setCurrentPage(totalPages);
-    }
-  }, [currentPage, totalPages]);
-
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const paginatedServices = services.slice(
-    startIndex,
-    startIndex + ITEMS_PER_PAGE
-  );
-
   const handleSearchChange = (value) => {
     setSearchTerm(value);
     setCurrentPage(1);
@@ -408,6 +367,7 @@ function BrowseServicesContent() {
         category: selectedCategory,
         mode: selectedMode,
         sort: sortBy,
+        page: 1,
       });
     }, 250);
   };
@@ -417,11 +377,13 @@ function BrowseServicesContent() {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
+    setCurrentPage(1);
     syncUrlParams({
       search: searchTerm,
       category: selectedCategory,
       mode: selectedMode,
       sort: sortBy,
+      page: 1,
     });
   };
 
@@ -434,6 +396,7 @@ function BrowseServicesContent() {
       category: normalized,
       mode: selectedMode,
       sort: sortBy,
+      page: 1,
     });
   };
 
@@ -446,6 +409,7 @@ function BrowseServicesContent() {
       category: selectedCategory,
       mode: normalized,
       sort: sortBy,
+      page: 1,
     });
   };
 
@@ -458,12 +422,20 @@ function BrowseServicesContent() {
       category: selectedCategory,
       mode: selectedMode,
       sort: normalized,
+      page: 1,
     });
   };
 
   const handlePageChange = (pageNumber) => {
     const safePage = Math.min(Math.max(1, pageNumber), totalPages);
     setCurrentPage(safePage);
+    syncUrlParams({
+      search: searchTerm,
+      category: selectedCategory,
+      mode: selectedMode,
+      sort: sortBy,
+      page: safePage,
+    });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -486,12 +458,13 @@ function BrowseServicesContent() {
     (selectedMode && selectedMode !== "All") ||
     sortBy !== "newest";
 
-  if (initialLoading || navigating) {
+  if (initialLoading) {
     return <PublicPageSkeleton cards={8} />;
   }
 
-  const startItem = services.length === 0 ? 0 : startIndex + 1;
-  const endItem = Math.min(currentPage * ITEMS_PER_PAGE, services.length);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const startItem = totalCount === 0 ? 0 : startIndex + 1;
+  const endItem = Math.min(startIndex + services.length, totalCount);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-10 sm:py-14">
@@ -521,10 +494,10 @@ function BrowseServicesContent() {
             <span>
               Showing{" "}
               <span className="font-bold text-white">
-                {services.length === 0 ? 0 : `${startItem}-${endItem}`}
+                {totalCount === 0 ? 0 : `${startItem}-${endItem}`}
               </span>{" "}
-              of <span className="font-bold text-white">{services.length}</span>{" "}
-              {services.length === 1 ? "service" : "services"}
+              of <span className="font-bold text-white">{totalCount}</span>{" "}
+              {totalCount === 1 ? "service" : "services"}
             </span>
           </div>
         </div>
@@ -657,6 +630,8 @@ function BrowseServicesContent() {
                   category: selectedCategory,
                   mode: selectedMode,
                   sort: sortBy,
+                  page: currentPage,
+                  limit: ITEMS_PER_PAGE,
                 })
               }
               className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition cursor-pointer"
@@ -686,8 +661,8 @@ function BrowseServicesContent() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedServices.map((service, index) => {
-                const rawId = service?._id || service?.id;
+              {services.map((service, index) => {
+                const rawId = service?._id || service?.id || service?.slug;
                 const id = rawId ? String(rawId).trim() : "";
                 const modeLabel =
                   service?.mode || service?.serviceMode || "Home Visit";
@@ -755,8 +730,7 @@ function BrowseServicesContent() {
 
                       {id ? (
                         <Link
-                          href={`/services/${id}`}
-                          onClick={() => setNavigating(true)}
+                          href={`/services/${encodeURIComponent(id)}`}
                           className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
                         >
                           <span>View Details</span>
@@ -778,7 +752,7 @@ function BrowseServicesContent() {
               })}
             </div>
 
-            {/* Pagination Bar (2 rows per page = 8 items/page) */}
+            {/* Server-Side Pagination Bar */}
             {totalPages > 1 && (
               <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-800/80">
                 <p className="text-xs text-slate-400">
@@ -791,7 +765,7 @@ function BrowseServicesContent() {
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    disabled={currentPage === 1}
+                    disabled={currentPage === 1 || fetching}
                     onClick={() => handlePageChange(currentPage - 1)}
                     className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 hover:border-sky-500/40 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
                   >
@@ -807,13 +781,14 @@ function BrowseServicesContent() {
                         <button
                           key={pageNum}
                           type="button"
+                          disabled={fetching}
                           onClick={() => handlePageChange(pageNum)}
                           aria-label={`Page ${pageNum}`}
                           aria-current={isActive ? "page" : undefined}
                           className={`w-9 h-9 rounded-xl text-xs font-bold transition cursor-pointer border ${
                             isActive
                               ? "bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20"
-                              : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white"
+                              : "bg-slate-900 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white disabled:opacity-50"
                           }`}
                         >
                           {pageNum}
@@ -824,7 +799,7 @@ function BrowseServicesContent() {
 
                   <button
                     type="button"
-                    disabled={currentPage === totalPages}
+                    disabled={currentPage === totalPages || fetching}
                     onClick={() => handlePageChange(currentPage + 1)}
                     className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-semibold text-slate-200 hover:border-sky-500/40 hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
                   >
