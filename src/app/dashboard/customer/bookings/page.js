@@ -9,6 +9,8 @@ import {
   XCircle,
   CreditCard,
   ArrowRight,
+  Star,
+  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -103,6 +105,19 @@ function normalizePaymentStatus(paymentStatus) {
   return (paymentStatus || "unpaid").toString().toLowerCase().trim();
 }
 
+function getBookingRating(booking) {
+  const raw =
+    booking?.rating ?? booking?.reviewRating ?? booking?.stars ?? null;
+  const num = Number(raw);
+  return Number.isFinite(num) && num >= 1 && num <= 5 ? Math.round(num) : 0;
+}
+
+function getBookingReviewText(booking) {
+  return String(
+    booking?.review ?? booking?.reviewText ?? booking?.comment ?? ""
+  ).trim();
+}
+
 function getStatusBadgeStyle(status) {
   switch (status) {
     case "accepted":
@@ -171,6 +186,13 @@ export default function CustomerMyBookingsPage() {
   const [actionId, setActionId] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [bookingToCancel, setBookingToCancel] = useState(null);
+
+  const [reviewBooking, setReviewBooking] = useState(null);
+  const [ratingValue, setRatingValue] = useState(5);
+  const [hoverRating, setHoverRating] = useState(0);
+  const [reviewText, setReviewText] = useState("");
+  const [reviewError, setReviewError] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
 
   const fetchMyBookings = useCallback(
     async ({ silent = false } = {}) => {
@@ -454,6 +476,112 @@ export default function CustomerMyBookingsPage() {
     }
   };
 
+  const openReviewModal = (booking) => {
+    const existingRating = getBookingRating(booking);
+    const existingReview = getBookingReviewText(booking);
+    setReviewBooking(booking);
+    setRatingValue(existingRating || 5);
+    setHoverRating(0);
+    setReviewText(existingReview);
+    setReviewError("");
+  };
+
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+    if (!reviewBooking) return;
+
+    const id = reviewBooking._id || reviewBooking.id;
+    const paymentStatus = normalizePaymentStatus(reviewBooking?.paymentStatus);
+    const trimmedReview = reviewText.trim();
+
+    if (paymentStatus !== "paid") {
+      setReviewError("You can leave a rating and review after payment is completed.");
+      return;
+    }
+
+    if (ratingValue < 1 || ratingValue > 5) {
+      setReviewError("Please select a rating between 1 and 5 stars.");
+      return;
+    }
+
+    if (!trimmedReview) {
+      setReviewError("Please write a short review.");
+      return;
+    }
+
+    setSubmittingReview(true);
+    setReviewError("");
+    setFeedback(null);
+
+    try {
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
+
+      const reviewPayload = {
+        rating: Number(ratingValue),
+        review: trimmedReview,
+      };
+
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
+
+      let res = await fetch(`${apiUrl}/api/bookings/${id}/review`, {
+        method: "POST",
+        headers,
+        body: JSON.stringify(reviewPayload),
+      });
+
+      if (res.status === 404) {
+        res = await fetch(`${apiUrl}/api/bookings/${id}`, {
+          method: "PATCH",
+          headers,
+          body: JSON.stringify(reviewPayload),
+        });
+      }
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to save rating and review.");
+      }
+
+      const updatedDoc = data?.data || {};
+      const finalRating = Number(updatedDoc.rating ?? ratingValue);
+      const finalReview = String(
+        updatedDoc.review ?? updatedDoc.reviewText ?? trimmedReview
+      ).trim();
+
+      setBookings((prev) =>
+        prev.map((item) =>
+          (item._id || item.id) === id
+            ? {
+                ...item,
+                ...updatedDoc,
+                rating: finalRating,
+                review: finalReview,
+                reviewedAt: updatedDoc.reviewedAt || new Date().toISOString(),
+              }
+            : item
+        )
+      );
+
+      setReviewBooking(null);
+      const successMsg = `Rating & review saved for "${reviewBooking.serviceTitle}".`;
+      setFeedback({ type: "success", message: successMsg });
+      toast.success("Thank you for your rating and review!");
+    } catch (err) {
+      const errMsg = err.message || "Could not submit review.";
+      setReviewError(errMsg);
+      toast.error(errMsg);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
   const tabs = [
     { key: "all", label: "All", count: counts.all },
     { key: "active", label: "Active", count: counts.active },
@@ -575,13 +703,18 @@ export default function CustomerMyBookingsPage() {
 
             const canCancel = status === "requested";
             const canPay = status === "completed" && paymentStatus !== "paid";
+            const canReview = paymentStatus === "paid";
+
+            const savedRating = getBookingRating(booking);
+            const savedReview = getBookingReviewText(booking);
+            const hasReview = savedRating > 0 || Boolean(savedReview);
 
             return (
               <div
                 key={id}
                 className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
               >
-                {/* Left Section: Fixed-Size Thumbnail + Info + Problem Description */}
+                {/* Left Section: Fixed-Size Thumbnail + Info + Problem Description + Saved Review */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
                   <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     <BookingThumbnail
@@ -621,6 +754,31 @@ export default function CustomerMyBookingsPage() {
                       <p className="text-xs sm:text-sm text-slate-300/90 pt-1 leading-relaxed">
                         {booking.problemDescription}
                       </p>
+                    )}
+
+                    {hasReview && (
+                      <div className="mt-2 rounded-2xl bg-slate-950/80 border border-amber-400/20 px-3.5 py-2.5 space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star
+                              key={star}
+                              className={`w-3.5 h-3.5 ${
+                                star <= savedRating
+                                  ? "text-amber-400 fill-amber-400"
+                                  : "text-slate-700"
+                              }`}
+                            />
+                          ))}
+                          <span className="text-xs font-semibold text-amber-300 ml-1">
+                            {savedRating}/5
+                          </span>
+                        </div>
+                        {savedReview && (
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            “{savedReview}”
+                          </p>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -694,12 +852,138 @@ export default function CustomerMyBookingsPage() {
                           <span>Pay now</span>
                         </button>
                       )}
+
+                      {canReview && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => openReviewModal(booking)}
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/35 text-sky-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                        >
+                          <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                          <span>{hasReview ? "Edit review" : "Rate & review"}</span>
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Rating & Review Modal (After Booking Is Paid) */}
+      {reviewBooking && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+                  Paid Booking Review
+                </p>
+                <h2 className="text-lg font-bold text-white mt-0.5">
+                  Rate &amp; Review — {reviewBooking.serviceTitle || "Service"}
+                </h2>
+              </div>
+              <button
+                type="button"
+                disabled={submittingReview}
+                onClick={() => setReviewBooking(null)}
+                aria-label="Close review modal"
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {reviewError && (
+              <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-3.5 py-2.5 text-xs text-rose-300 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                <span>{reviewError}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmitReview} className="space-y-4">
+              <div>
+                <span className="block text-xs font-semibold text-slate-300 mb-2">
+                  Select Star Rating (1–5) *
+                </span>
+                <div className="flex items-center gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => {
+                    const activeStar = star <= (hoverRating || ratingValue);
+                    return (
+                      <button
+                        key={star}
+                        type="button"
+                        onMouseEnter={() => setHoverRating(star)}
+                        onMouseLeave={() => setHoverRating(0)}
+                        onClick={() => {
+                          setRatingValue(star);
+                          if (reviewError) setReviewError("");
+                        }}
+                        aria-label={`Rate ${star} out of 5 stars`}
+                        className="p-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-400/40 transition cursor-pointer"
+                      >
+                        <Star
+                          className={`w-6 h-6 transition ${
+                            activeStar
+                              ? "text-amber-400 fill-amber-400"
+                              : "text-slate-600"
+                          }`}
+                        />
+                      </button>
+                    );
+                  })}
+                  <span className="text-sm font-bold text-amber-300 ml-2">
+                    {ratingValue} / 5
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="booking-review-text"
+                  className="block text-xs font-semibold text-slate-300 mb-1.5"
+                >
+                  Short Review *
+                </label>
+                <textarea
+                  id="booking-review-text"
+                  rows={3}
+                  required
+                  value={reviewText}
+                  onChange={(e) => {
+                    setReviewText(e.target.value);
+                    if (reviewError) setReviewError("");
+                  }}
+                  placeholder="Share your experience with the repair and technician..."
+                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 p-3 text-sm text-white placeholder:text-slate-500 outline-none transition resize-none"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+                <button
+                  type="button"
+                  disabled={submittingReview}
+                  onClick={() => setReviewBooking(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs sm:text-sm font-medium text-slate-200 transition cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingReview}
+                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer disabled:opacity-60"
+                >
+                  {submittingReview && <FixMateSpinner compact />}
+                  <span>
+                    {submittingReview ? "Submitting..." : "Submit Review"}
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 

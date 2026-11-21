@@ -20,6 +20,8 @@ import {
   ShieldAlert,
   ExternalLink,
   Crown,
+  Star,
+  MessageSquareQuote,
 } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import { PublicPageSkeleton } from "@/components/ui/LoadingState";
@@ -37,6 +39,17 @@ function getInitials(name = "") {
       .map((part) => part[0]?.toUpperCase() || "")
       .join("") || "FM"
   );
+}
+
+function formatReviewDate(dateValue) {
+  if (!dateValue) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }
 
 function getTodayDateString() {
@@ -220,6 +233,34 @@ function normalizeTechnicianData(rawData, serviceItem) {
   };
 }
 
+function computeRatingStats(reviewList = []) {
+  const valid = Array.isArray(reviewList)
+    ? reviewList
+        .map((r) => ({
+          ...r,
+          rating: Number(r?.rating ?? r?.reviewRating ?? r?.stars ?? 0),
+          review: String(
+            r?.review ?? r?.reviewText ?? r?.comment ?? ""
+          ).trim(),
+        }))
+        .filter(
+          (r) => Number.isFinite(r.rating) && r.rating >= 1 && r.rating <= 5
+        )
+    : [];
+
+  const count = valid.length;
+  if (count === 0) {
+    return { averageRating: 0, reviewCount: 0, reviews: [] };
+  }
+
+  const sum = valid.reduce((acc, item) => acc + item.rating, 0);
+  return {
+    averageRating: Number((sum / count).toFixed(1)),
+    reviewCount: count,
+    reviews: valid,
+  };
+}
+
 export default function ServiceDetailsPage() {
   const params = useParams();
   const router = useRouter();
@@ -231,6 +272,9 @@ export default function ServiceDetailsPage() {
 
   const [service, setService] = useState(null);
   const [technician, setTechnician] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -267,6 +311,93 @@ export default function ServiceDetailsPage() {
     const timer = setTimeout(() => setToast(null), 5000);
     return () => clearTimeout(timer);
   }, [toast]);
+
+  const syncCustomerBookingReviews = useCallback(
+    async (targetServiceId, currentReviews = [], currentUserObj = null) => {
+      const token = getAuthToken();
+      if (!token || !targetServiceId) {
+        return computeRatingStats(currentReviews);
+      }
+
+      const roleLower = String(currentUserObj?.role || "").toLowerCase();
+      if (roleLower && roleLower !== "customer") {
+        return computeRatingStats(currentReviews);
+      }
+
+      try {
+        const res = await fetch(`${apiUrl}/api/bookings/my`, {
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (!res.ok) {
+          return computeRatingStats(currentReviews);
+        }
+
+        const data = await res.json().catch(() => ({}));
+        const allBookings = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+
+        const reviewedMatchingBookings = allBookings.filter((b) => {
+          const bServiceId = String(
+            b?.serviceId?._id ||
+              b?.serviceId ||
+              b?.service?._id ||
+              b?.service ||
+              ""
+          ).trim();
+          const rating = Number(b?.rating ?? b?.reviewRating ?? b?.stars ?? 0);
+          return (
+            bServiceId === String(targetServiceId).trim() &&
+            Number.isFinite(rating) &&
+            rating >= 1 &&
+            rating <= 5
+          );
+        });
+
+        if (reviewedMatchingBookings.length > 0) {
+          const mergedMap = new Map();
+          for (const r of currentReviews) {
+            const rId = String(r?._id || r?.id || r?.bookingId || "");
+            if (rId) mergedMap.set(rId, r);
+          }
+
+          for (const b of reviewedMatchingBookings) {
+            const bId = String(b._id || b.id);
+            const rating = Math.round(
+              Number(b?.rating ?? b?.reviewRating ?? b?.stars ?? 0)
+            );
+            const reviewText = String(
+              b?.review ?? b?.reviewText ?? b?.comment ?? ""
+            ).trim();
+            mergedMap.set(bId, {
+              _id: bId,
+              bookingId: bId,
+              rating,
+              review: reviewText,
+              customerName:
+                b?.customerName || currentUserObj?.name || "Customer",
+              reviewedAt:
+                b?.reviewedAt || b?.updatedAt || new Date().toISOString(),
+            });
+          }
+
+          return computeRatingStats(Array.from(mergedMap.values()));
+        }
+      } catch {
+        // Ignore booking sync failure
+      }
+
+      return computeRatingStats(currentReviews);
+    },
+    [apiUrl]
+  );
 
   const fetchServiceDetails = useCallback(
     async ({ silent = false } = {}) => {
@@ -325,6 +456,13 @@ export default function ServiceDetailsPage() {
           return;
         }
 
+        const incomingReviews = Array.isArray(data?.reviews)
+          ? data.reviews
+          : Array.isArray(item?.reviews)
+          ? item.reviews
+          : [];
+
+        let localUser = null;
         let normalizedTech = normalizeTechnicianData(data, item);
 
         if (typeof window !== "undefined") {
@@ -332,6 +470,7 @@ export default function ServiceDetailsPage() {
             const rawUser = localStorage.getItem("user");
             const validUser = rawUser ? JSON.parse(rawUser) : null;
             if (validUser && typeof validUser === "object") {
+              localUser = validUser;
               normalizedTech = mergeUserIntoTechnician(
                 normalizedTech,
                 validUser,
@@ -384,8 +523,31 @@ export default function ServiceDetailsPage() {
           }
         }
 
+        const syncedStats = await syncCustomerBookingReviews(
+          serviceId,
+          incomingReviews,
+          localUser
+        );
+
+        const backendCount = Number(data?.reviewCount ?? item?.reviewCount ?? 0);
+        const backendAvg = Number(data?.averageRating ?? item?.averageRating ?? 0);
+
+        const finalReviews =
+          syncedStats.reviewCount > 0 ? syncedStats.reviews : incomingReviews;
+        const finalCount =
+          syncedStats.reviewCount > 0 ? syncedStats.reviewCount : backendCount;
+        const finalAvg =
+          syncedStats.reviewCount > 0
+            ? syncedStats.averageRating
+            : Number.isFinite(backendAvg)
+            ? Number(backendAvg.toFixed(1))
+            : 0;
+
         setService(item);
         setTechnician(normalizedTech);
+        setReviews(finalReviews);
+        setReviewCount(finalCount);
+        setAverageRating(finalAvg);
         setServiceImageError(false);
         setTechAvatarError(false);
       } catch {
@@ -398,7 +560,7 @@ export default function ServiceDetailsPage() {
         }
       }
     },
-    [apiUrl, serviceId]
+    [apiUrl, serviceId, syncCustomerBookingReviews]
   );
 
   const syncSession = useCallback(() => {
@@ -407,18 +569,18 @@ export default function ServiceDetailsPage() {
       const rawUser = localStorage.getItem("user");
       if (!rawUser) {
         setSessionUser(null);
-        return;
-      }
-      const parsed = JSON.parse(rawUser);
-      const validUser = parsed && typeof parsed === "object" ? parsed : null;
-      setSessionUser(validUser);
+      } else {
+        const parsed = JSON.parse(rawUser);
+        const validUser = parsed && typeof parsed === "object" ? parsed : null;
+        setSessionUser(validUser);
 
-      if (validUser) {
-        setFormData((prev) => ({
-          ...prev,
-          phone: validUser.phone || prev.phone || "",
-          address: validUser.area || prev.address || "",
-        }));
+        if (validUser) {
+          setFormData((prev) => ({
+            ...prev,
+            phone: validUser.phone || prev.phone || "",
+            address: validUser.area || prev.address || "",
+          }));
+        }
       }
     } catch {
       setSessionUser(null);
@@ -440,12 +602,14 @@ export default function ServiceDetailsPage() {
     window.addEventListener("auth-change", syncSession);
     window.addEventListener("storage", syncSession);
     window.addEventListener("focus", handleFocusOrVisible);
+    window.addEventListener("pageshow", handleFocusOrVisible);
     document.addEventListener("visibilitychange", handleFocusOrVisible);
 
     return () => {
       window.removeEventListener("auth-change", syncSession);
       window.removeEventListener("storage", syncSession);
       window.removeEventListener("focus", handleFocusOrVisible);
+      window.removeEventListener("pageshow", handleFocusOrVisible);
       document.removeEventListener("visibilitychange", handleFocusOrVisible);
     };
   }, [syncSession, fetchServiceDetails]);
@@ -458,7 +622,6 @@ export default function ServiceDetailsPage() {
   const isLoggedIn = Boolean(
     sessionUser && (sessionUser.email || sessionUser._id || sessionUser.id)
   );
-  const isCustomer = isLoggedIn && role === "customer";
   const isRestrictedStaff =
     isLoggedIn && (role === "technician" || role === "admin");
 
@@ -619,6 +782,7 @@ export default function ServiceDetailsPage() {
 
   const showServicePhoto = Boolean(serviceImageUrl) && !serviceImageError;
   const showTechPhoto = Boolean(technician?.avatar) && !techAvatarError;
+  const filledStarsCount = Math.round(averageRating);
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 py-10 sm:py-14">
@@ -701,7 +865,7 @@ export default function ServiceDetailsPage() {
 
         {/* Main Details Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Large Service Image + Description */}
+          {/* Left Column: Large Service Image + Description + Technician + Reviews */}
           <div className="lg:col-span-7 space-y-6">
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
               <div className="aspect-[16/10] w-full bg-slate-950 border-b border-slate-800/80 flex items-center justify-center overflow-hidden">
@@ -718,13 +882,26 @@ export default function ServiceDetailsPage() {
               </div>
 
               <div className="p-6 sm:p-8 space-y-4">
-                <div className="flex flex-wrap items-center gap-2.5">
-                  <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/25 text-xs font-semibold">
-                    {service.category || "General Repair"}
-                  </span>
-                  <span className="px-3 py-1 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700/80 text-xs font-medium">
-                    {modeLabel}
-                  </span>
+                <div className="flex flex-wrap items-center justify-between gap-2.5">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/25 text-xs font-semibold">
+                      {service.category || "General Repair"}
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700/80 text-xs font-medium">
+                      {modeLabel}
+                    </span>
+                  </div>
+
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
+                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    <span>
+                      {reviewCount > 0
+                        ? `${averageRating.toFixed(1)} (${reviewCount} ${
+                            reviewCount === 1 ? "review" : "reviews"
+                          })`
+                        : "No ratings yet"}
+                    </span>
+                  </div>
                 </div>
 
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
@@ -788,6 +965,89 @@ export default function ServiceDetailsPage() {
                 </div>
               </div>
             </div>
+
+            {/* Customer Ratings & Reviews Card */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
+                <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <MessageSquareQuote className="w-5 h-5 text-amber-400" />
+                  <span>Customer Reviews</span>
+                </h2>
+
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-0.5">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <Star
+                        key={star}
+                        className={`w-4 h-4 ${
+                          star <= filledStarsCount
+                            ? "text-amber-400 fill-amber-400"
+                            : "text-slate-700"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-sm font-bold text-white">
+                    {reviewCount > 0 ? `${averageRating.toFixed(1)}/5` : "0.0/5"}
+                  </span>
+                  <span className="text-xs text-slate-400">
+                    ({reviewCount})
+                  </span>
+                </div>
+              </div>
+
+              {reviews.length === 0 ? (
+                <p className="text-sm text-slate-400">
+                  No customer reviews yet.
+                </p>
+              ) : (
+                <div className="space-y-3.5">
+                  {reviews.map((item, index) => {
+                    const itemRating = Math.min(
+                      5,
+                      Math.max(1, Number(item?.rating || 5))
+                    );
+                    const formattedDate = formatReviewDate(item?.reviewedAt);
+                    return (
+                      <div
+                        key={item?._id || item?.bookingId || index}
+                        className="rounded-2xl bg-slate-950/75 border border-slate-800/90 p-4 space-y-2"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs sm:text-sm font-semibold text-white">
+                              {item?.customerName || "Customer"}
+                            </span>
+                            <div className="flex items-center gap-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-3.5 h-3.5 ${
+                                    star <= itemRating
+                                      ? "text-amber-400 fill-amber-400"
+                                      : "text-slate-700"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          {formattedDate && (
+                            <span className="text-[11px] text-slate-500">
+                              {formattedDate}
+                            </span>
+                          )}
+                        </div>
+                        {item?.review && (
+                          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                            “{item.review}”
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Right Column: Pricing, Specs & Request Repair Action */}
@@ -802,9 +1062,19 @@ export default function ServiceDetailsPage() {
                     ${Number(service.price || 0)}
                   </p>
                 </div>
-                <span className="text-xs text-slate-400">
-                  Pay after completion
-                </span>
+                <div className="text-right space-y-1">
+                  <div className="inline-flex items-center gap-1 text-xs font-semibold text-amber-300">
+                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                    <span>
+                      {reviewCount > 0
+                        ? `${averageRating.toFixed(1)} (${reviewCount})`
+                        : "New"}
+                    </span>
+                  </div>
+                  <span className="block text-xs text-slate-400">
+                    Pay after completion
+                  </span>
+                </div>
               </div>
 
               <div className="space-y-3.5 text-sm">
