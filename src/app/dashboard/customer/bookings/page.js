@@ -11,6 +11,9 @@ import {
   ArrowRight,
   Star,
   X,
+  Check,
+  Clock,
+  Ban,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -18,6 +21,14 @@ import {
   FixMateSpinner,
 } from "@/components/ui/LoadingState";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+
+const TIMELINE_STEPS = [
+  { key: "requested", label: "Requested" },
+  { key: "accepted", label: "Accepted" },
+  { key: "in-progress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+  { key: "paid", label: "Paid" },
+];
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -27,6 +38,18 @@ function formatShortDate(dateValue) {
     day: "numeric",
     month: "short",
     year: "numeric",
+  });
+}
+
+function formatTimelineTimestamp(dateValue) {
+  if (!dateValue) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -98,7 +121,8 @@ function resolveTechnicianName(booking, lookup) {
 }
 
 function normalizeStatus(status) {
-  return (status || "requested").toString().toLowerCase().trim();
+  const clean = (status || "requested").toString().toLowerCase().trim();
+  return clean === "in progress" ? "in-progress" : clean;
 }
 
 function normalizePaymentStatus(paymentStatus) {
@@ -149,6 +173,159 @@ function getPaymentBadgeStyle(paymentStatus) {
 
 function formatPaymentText(paymentStatus) {
   return paymentStatus === "paid" ? "Paid" : "Unpaid";
+}
+
+function buildTimelineState(booking) {
+  const status = normalizeStatus(booking?.status);
+  const paymentStatus = normalizePaymentStatus(booking?.paymentStatus);
+  const rawHistory = Array.isArray(booking?.statusHistory)
+    ? booking.statusHistory
+    : [];
+
+  const historyMap = new Map();
+  for (const item of rawHistory) {
+    if (!item) continue;
+    const stepKey = normalizeStatus(
+      typeof item === "string" ? item : item.status
+    );
+    if (!stepKey) continue;
+    historyMap.set(stepKey, item?.changedAt || null);
+  }
+
+  if (!historyMap.has("requested")) {
+    historyMap.set("requested", booking?.createdAt || null);
+  }
+
+  if (paymentStatus === "paid" && !historyMap.has("paid")) {
+    historyMap.set("paid", booking?.paidAt || booking?.updatedAt || null);
+  }
+
+  const isClosed = status === "cancelled" || status === "rejected";
+  let highestReachedIndex = -1;
+
+  if (paymentStatus === "paid") {
+    highestReachedIndex = 4;
+  } else if (status === "completed") {
+    highestReachedIndex = 3;
+  } else if (status === "in-progress") {
+    highestReachedIndex = 2;
+  } else if (status === "accepted") {
+    highestReachedIndex = 1;
+  } else if (status === "requested") {
+    highestReachedIndex = 0;
+  }
+
+  for (let i = 0; i < TIMELINE_STEPS.length; i++) {
+    if (historyMap.has(TIMELINE_STEPS[i].key) && i > highestReachedIndex) {
+      highestReachedIndex = i;
+    }
+  }
+
+  const activeStepIndex = isClosed
+    ? -1
+    : paymentStatus === "paid"
+    ? 4
+    : highestReachedIndex;
+
+  return {
+    isClosed,
+    closedStatus: status,
+    closedAt: historyMap.get(status) || booking?.updatedAt || null,
+    activeStepIndex,
+    steps: TIMELINE_STEPS.map((step, idx) => {
+      const hasHistoryEntry = historyMap.has(step.key);
+      const isCompleted =
+        !isClosed && (idx < activeStepIndex || (idx === 4 && paymentStatus === "paid"));
+      const isCurrent =
+        !isClosed && idx === activeStepIndex && !(idx === 4 && paymentStatus === "paid");
+      const isReached = isCompleted || isCurrent || hasHistoryEntry;
+
+      return {
+        ...step,
+        isCompleted,
+        isCurrent,
+        isReached,
+        changedAt: historyMap.get(step.key) || null,
+      };
+    }),
+  };
+}
+
+function JobTimelineTracker({ booking }) {
+  const timeline = useMemo(() => buildTimelineState(booking), [booking]);
+
+  return (
+    <div className="mt-4 pt-3.5 border-t border-slate-800/80 space-y-2.5">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+          Job Timeline
+        </span>
+
+        {timeline.isClosed ? (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-300">
+            <Ban className="w-3 h-3 text-rose-400" />
+            <span>
+              {formatStatusText(timeline.closedStatus)}
+              {timeline.closedAt
+                ? ` • ${formatTimelineTimestamp(timeline.closedAt)}`
+                : ""}
+            </span>
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-400">
+            Step {Math.min(timeline.activeStepIndex + 1, 5)} of{" "}
+            {TIMELINE_STEPS.length}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {timeline.steps.map((step, index) => {
+          const timestampLabel = formatTimelineTimestamp(step.changedAt);
+
+          let cardStyle =
+            "bg-slate-950/60 border-slate-800/80 text-slate-500";
+          if (step.isCompleted) {
+            cardStyle =
+              "bg-emerald-500/10 border-emerald-500/30 text-emerald-200";
+          } else if (step.isCurrent) {
+            cardStyle = "bg-sky-500/15 border-sky-400/50 text-sky-200";
+          }
+
+          return (
+            <div
+              key={step.key}
+              className={`rounded-xl border px-2.5 py-2 transition ${cardStyle}`}
+            >
+              <div className="flex items-center gap-1.5">
+                {step.isCompleted ? (
+                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                  </span>
+                ) : step.isCurrent ? (
+                  <span className="w-4 h-4 rounded-full bg-sky-400/20 border border-sky-400 text-sky-300 flex items-center justify-center shrink-0">
+                    <Clock className="w-2.5 h-2.5" />
+                  </span>
+                ) : (
+                  <span className="w-4 h-4 rounded-full bg-slate-900 border border-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center shrink-0">
+                    {index + 1}
+                  </span>
+                )}
+
+                <span className="text-xs font-semibold truncate">
+                  {step.label}
+                </span>
+              </div>
+
+              <p className="text-[10px] text-slate-400 mt-1 pl-5.5 truncate">
+                {timestampLabel || (step.isReached ? "Recorded" : "Pending")}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function BookingThumbnail({ src, alt }) {
@@ -368,13 +545,31 @@ export default function CustomerMyBookingsPage() {
         throw new Error(data?.message || "Failed to cancel booking request.");
       }
 
+      const updatedDoc = data?.data || {};
+      const nowIso = new Date().toISOString();
+
       setBookings((prev) =>
-        prev.map((item) =>
-          (item._id || item.id) === id
-            ? { ...item, status: "cancelled" }
-            : item
-        )
+        prev.map((item) => {
+          if ((item._id || item.id) !== id) return item;
+          const prevHistory = Array.isArray(item.statusHistory)
+            ? item.statusHistory
+            : [];
+          return {
+            ...item,
+            ...updatedDoc,
+            status: "cancelled",
+            statusHistory:
+              Array.isArray(updatedDoc.statusHistory) &&
+              updatedDoc.statusHistory.length > 0
+                ? updatedDoc.statusHistory
+                : [
+                    ...prevHistory,
+                    { status: "cancelled", changedAt: nowIso },
+                  ],
+          };
+        })
       );
+
       const successMsg = "Booking cancelled.";
       setFeedback({
         type: "success",
@@ -444,20 +639,31 @@ export default function CustomerMyBookingsPage() {
       }
 
       const updatedBooking = data?.data || {};
+      const paidAtIso = updatedBooking.paidAt || new Date().toISOString();
+
       setBookings((prev) =>
-        prev.map((item) =>
-          (item._id || item.id) === id
-            ? {
-                ...item,
-                paymentStatus: "paid",
-                paidAmount: updatedBooking.paidAmount ?? amount,
-                transactionId:
-                  updatedBooking.transactionId || item.transactionId || "",
-                paidAt: updatedBooking.paidAt || new Date().toISOString(),
-              }
-            : item
-        )
+        prev.map((item) => {
+          if ((item._id || item.id) !== id) return item;
+          const prevHistory = Array.isArray(item.statusHistory)
+            ? item.statusHistory
+            : [];
+          return {
+            ...item,
+            ...updatedBooking,
+            paymentStatus: "paid",
+            paidAmount: updatedBooking.paidAmount ?? amount,
+            transactionId:
+              updatedBooking.transactionId || item.transactionId || "",
+            paidAt: paidAtIso,
+            statusHistory:
+              Array.isArray(updatedBooking.statusHistory) &&
+              updatedBooking.statusHistory.length > 0
+                ? updatedBooking.statusHistory
+                : [...prevHistory, { status: "paid", changedAt: paidAtIso }],
+          };
+        })
       );
+
       const msg = `Payment completed for "${booking.serviceTitle}".`;
       setFeedback({
         type: "success",
@@ -495,7 +701,9 @@ export default function CustomerMyBookingsPage() {
     const trimmedReview = reviewText.trim();
 
     if (paymentStatus !== "paid") {
-      setReviewError("You can leave a rating and review after payment is completed.");
+      setReviewError(
+        "You can leave a rating and review after payment is completed."
+      );
       return;
     }
 
@@ -714,7 +922,7 @@ export default function CustomerMyBookingsPage() {
                 key={id}
                 className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
               >
-                {/* Left Section: Fixed-Size Thumbnail + Info + Problem Description + Saved Review */}
+                {/* Left Section: Fixed-Size Thumbnail + Info + Problem Description + Saved Review + Job Timeline */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
                   <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     <BookingThumbnail
@@ -780,6 +988,8 @@ export default function CustomerMyBookingsPage() {
                         )}
                       </div>
                     )}
+
+                    <JobTimelineTracker booking={booking} />
                   </div>
                 </div>
 
@@ -861,7 +1071,9 @@ export default function CustomerMyBookingsPage() {
                           className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/35 text-sky-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
-                          <span>{hasReview ? "Edit review" : "Rate & review"}</span>
+                          <span>
+                            {hasReview ? "Edit review" : "Rate & review"}
+                          </span>
                         </button>
                       )}
                     </div>
