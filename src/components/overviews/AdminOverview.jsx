@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -61,10 +61,71 @@ function formatStatusLabel(status = "") {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
-export default function AdminOverview() {
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildUserLookup(users = [], activeUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (activeUser && typeof activeUser === "object") {
+    allUsers.push(activeUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveName(
+  record,
+  { idKeys = [], emailKeys = [], fallbackKeys = [], defaultLabel },
+  lookup
+) {
+  for (const key of idKeys) {
+    const val = String(record?.[key] || "").trim();
+    if (val && lookup?.byId?.get(val)?.name) {
+      return lookup.byId.get(val).name;
+    }
+  }
+
+  for (const key of emailKeys) {
+    const val = String(record?.[key] || "").trim().toLowerCase();
+    if (val && lookup?.byEmail?.get(val)?.name) {
+      return lookup.byEmail.get(val).name;
+    }
+  }
+
+  for (const key of fallbackKeys) {
+    const val = String(record?.[key] || "").trim();
+    if (val) return val;
+  }
+
+  return defaultLabel;
+}
+
+export default function AdminOverview({ user: propUser = null, syncVersion = 0 }) {
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
+  const [users, setUsers] = useState([]);
+  const [storedUser, setStoredUser] = useState(propUser);
   const [stats, setStats] = useState({
     totalUsers: 0,
     customerCount: 0,
@@ -81,145 +142,188 @@ export default function AdminOverview() {
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
   ).replace(/\/+$/, "");
 
-  const loadAdminOverview = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  const loadAdminOverview = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setError("");
+      }
 
-    try {
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        localStorage.getItem("accessToken") ||
-        "";
-      const headers = {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      };
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        const headers = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
 
-      const overviewRes = await fetch(`${apiUrl}/api/admin/overview`, {
-        cache: "no-store",
-        headers,
-      });
+        const usersRes = await fetch(`${apiUrl}/api/admin/users`, {
+          cache: "no-store",
+          headers,
+        });
+        const usersJson = usersRes.ok
+          ? await usersRes.json().catch(() => ({}))
+          : {};
+        const users = Array.isArray(usersJson?.data)
+          ? usersJson.data
+          : Array.isArray(usersJson)
+          ? usersJson
+          : [];
+        if (users.length > 0) {
+          setUsers(users);
+        }
 
-      if (overviewRes.ok) {
-        const overviewData = await overviewRes.json().catch(() => ({}));
-        const payload = overviewData?.data || overviewData;
-        if (payload?.stats && typeof payload.stats === "object") {
-          setStats((prev) => ({
-            ...prev,
-            totalUsers: Number(payload.stats.totalUsers ?? prev.totalUsers) || 0,
-            customerCount:
-              Number(payload.stats.customerCount ?? prev.customerCount) || 0,
-            totalTechnicians:
-              Number(payload.stats.totalTechnicians ?? prev.totalTechnicians) ||
-              0,
-            pendingServices:
-              Number(payload.stats.pendingServices ?? prev.pendingServices) || 0,
-            approvedServices:
-              Number(payload.stats.approvedServices ?? prev.approvedServices) ||
-              0,
-            totalRevenue:
-              Number(payload.stats.totalRevenue ?? prev.totalRevenue) || 0,
-            paymentCount:
-              Number(payload.stats.paymentCount ?? prev.paymentCount) || 0,
-          }));
-          setPendingServicesList(
-            Array.isArray(payload.pendingServices)
-              ? payload.pendingServices.slice(0, 5)
-              : []
-          );
-          setLatestBookingsList(
-            Array.isArray(payload.recentBookings)
-              ? payload.recentBookings.slice(0, 5)
-              : []
-          );
+        const overviewRes = await fetch(`${apiUrl}/api/admin/overview`, {
+          cache: "no-store",
+          headers,
+        });
+
+        if (overviewRes.ok) {
+          const overviewData = await overviewRes.json().catch(() => ({}));
+          const payload = overviewData?.data || overviewData;
+          if (payload?.stats && typeof payload.stats === "object") {
+            setStats((prev) => ({
+              ...prev,
+              totalUsers:
+                Number(payload.stats.totalUsers ?? prev.totalUsers) || 0,
+              customerCount:
+                Number(payload.stats.customerCount ?? prev.customerCount) || 0,
+              totalTechnicians:
+                Number(
+                  payload.stats.totalTechnicians ?? prev.totalTechnicians
+                ) || 0,
+              pendingServices:
+                Number(payload.stats.pendingServices ?? prev.pendingServices) ||
+                0,
+              approvedServices:
+                Number(
+                  payload.stats.approvedServices ?? prev.approvedServices
+                ) || 0,
+              totalRevenue:
+                Number(payload.stats.totalRevenue ?? prev.totalRevenue) || 0,
+              paymentCount:
+                Number(payload.stats.paymentCount ?? prev.paymentCount) || 0,
+            }));
+            setPendingServicesList(
+              Array.isArray(payload.pendingServices)
+                ? payload.pendingServices.slice(0, 5)
+                : []
+            );
+            setLatestBookingsList(
+              Array.isArray(payload.recentBookings)
+                ? payload.recentBookings.slice(0, 5)
+                : []
+            );
+            if (!silent) setLoading(false);
+            return;
+          }
+        }
+
+        const [servicesRes, bookingsRes] = await Promise.all([
+          fetch(`${apiUrl}/api/admin/services`, { cache: "no-store", headers }),
+          fetch(`${apiUrl}/api/admin/bookings`, { cache: "no-store", headers }),
+        ]);
+
+        if (!usersRes.ok && !servicesRes.ok && !bookingsRes.ok) {
+          throw new Error("Failed to load platform overview data.");
+        }
+
+        const servicesJson = servicesRes.ok
+          ? await servicesRes.json().catch(() => ({}))
+          : {};
+        const bookingsJson = bookingsRes.ok
+          ? await bookingsRes.json().catch(() => ({}))
+          : {};
+
+        const services = Array.isArray(servicesJson?.data)
+          ? servicesJson.data
+          : Array.isArray(servicesJson)
+          ? servicesJson
+          : [];
+        const bookings = Array.isArray(bookingsJson?.data)
+          ? bookingsJson.data
+          : Array.isArray(bookingsJson)
+          ? bookingsJson
+          : [];
+
+        const customerCount = users.filter(
+          (u) => (u?.role || "").toLowerCase().trim() === "customer"
+        ).length;
+        const totalTechnicians = users.filter(
+          (u) => (u?.role || "").toLowerCase().trim() === "technician"
+        ).length;
+
+        const pendingList = services.filter(
+          (s) => (s?.status || "").toLowerCase().trim() === "pending"
+        );
+        const approvedCount = services.filter(
+          (s) =>
+            (s?.status || "approved").toString().toLowerCase().trim() ===
+            "approved"
+        ).length;
+
+        const paidBookings = bookings.filter(
+          (b) => (b?.paymentStatus || "").toLowerCase().trim() === "paid"
+        );
+        const totalRevenue = paidBookings.reduce(
+          (sum, item) => sum + getBookingAmount(item),
+          0
+        );
+
+        setStats({
+          totalUsers: users.length,
+          customerCount,
+          totalTechnicians,
+          pendingServices: pendingList.length,
+          approvedServices: approvedCount,
+          totalRevenue,
+          paymentCount: paidBookings.length,
+        });
+
+        setPendingServicesList(pendingList.slice(0, 5));
+        setLatestBookingsList(bookings.slice(0, 5));
+      } catch (err) {
+        if (!silent) {
+          setError(err.message || "Could not load platform overview.");
+        }
+      } finally {
+        if (!silent) {
           setLoading(false);
-          return;
         }
       }
-
-      const [usersRes, servicesRes, bookingsRes] = await Promise.all([
-        fetch(`${apiUrl}/api/admin/users`, { cache: "no-store", headers }),
-        fetch(`${apiUrl}/api/admin/services`, { cache: "no-store", headers }),
-        fetch(`${apiUrl}/api/admin/bookings`, { cache: "no-store", headers }),
-      ]);
-
-      if (!usersRes.ok && !servicesRes.ok && !bookingsRes.ok) {
-        throw new Error("Failed to load platform overview data.");
-      }
-
-      const usersJson = usersRes.ok
-        ? await usersRes.json().catch(() => ({}))
-        : {};
-      const servicesJson = servicesRes.ok
-        ? await servicesRes.json().catch(() => ({}))
-        : {};
-      const bookingsJson = bookingsRes.ok
-        ? await bookingsRes.json().catch(() => ({}))
-        : {};
-
-      const users = Array.isArray(usersJson?.data)
-        ? usersJson.data
-        : Array.isArray(usersJson)
-        ? usersJson
-        : [];
-      const services = Array.isArray(servicesJson?.data)
-        ? servicesJson.data
-        : Array.isArray(servicesJson)
-        ? servicesJson
-        : [];
-      const bookings = Array.isArray(bookingsJson?.data)
-        ? bookingsJson.data
-        : Array.isArray(bookingsJson)
-        ? bookingsJson
-        : [];
-
-      const customerCount = users.filter(
-        (u) => (u?.role || "").toLowerCase().trim() === "customer"
-      ).length;
-      const totalTechnicians = users.filter(
-        (u) => (u?.role || "").toLowerCase().trim() === "technician"
-      ).length;
-
-      const pendingList = services.filter(
-        (s) => (s?.status || "").toLowerCase().trim() === "pending"
-      );
-      const approvedCount = services.filter(
-        (s) =>
-          (s?.status || "approved").toString().toLowerCase().trim() ===
-          "approved"
-      ).length;
-
-      const paidBookings = bookings.filter(
-        (b) => (b?.paymentStatus || "").toLowerCase().trim() === "paid"
-      );
-      const totalRevenue = paidBookings.reduce(
-        (sum, item) => sum + getBookingAmount(item),
-        0
-      );
-
-      setStats({
-        totalUsers: users.length,
-        customerCount,
-        totalTechnicians,
-        pendingServices: pendingList.length,
-        approvedServices: approvedCount,
-        totalRevenue,
-        paymentCount: paidBookings.length,
-      });
-
-      setPendingServicesList(pendingList.slice(0, 5));
-      setLatestBookingsList(bookings.slice(0, 5));
-    } catch (err) {
-      setError(err.message || "Could not load platform overview.");
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
-    loadAdminOverview();
+    setStoredUser(propUser || readStoredUser());
+  }, [propUser]);
+
+  useEffect(() => {
+    loadAdminOverview({ silent: syncVersion > 0 });
+  }, [loadAdminOverview, syncVersion]);
+
+  useEffect(() => {
+    const handleLiveSync = () => {
+      setStoredUser(readStoredUser());
+      loadAdminOverview({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [loadAdminOverview]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, storedUser),
+    [users, storedUser]
+  );
 
   if (loading || navigating) {
     return <DashboardPageSkeleton />;
@@ -246,7 +350,7 @@ export default function AdminOverview() {
           </div>
           <button
             type="button"
-            onClick={loadAdminOverview}
+            onClick={() => loadAdminOverview()}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -371,10 +475,17 @@ export default function AdminOverview() {
               <div className="divide-y divide-slate-800/80">
                 {pendingServicesList.map((srv) => {
                   const id = srv._id || srv.id;
-                  const metaParts = [
-                    srv.technicianName || "Technician",
-                    srv.category,
-                  ].filter(Boolean);
+                  const techName = resolveName(
+                    srv,
+                    {
+                      idKeys: ["technicianId"],
+                      emailKeys: ["technicianEmail"],
+                      fallbackKeys: ["technicianName"],
+                      defaultLabel: "Technician",
+                    },
+                    userLookup
+                  );
+                  const metaParts = [techName, srv.category].filter(Boolean);
 
                   return (
                     <div
@@ -443,8 +554,26 @@ export default function AdminOverview() {
               <div className="divide-y divide-slate-800/80">
                 {latestBookingsList.map((booking) => {
                   const id = booking._id || booking.id;
-                  const customerName = booking.customerName || "Customer";
-                  const techName = booking.technicianName || "Technician";
+                  const customerName = resolveName(
+                    booking,
+                    {
+                      idKeys: ["customerId", "userId"],
+                      emailKeys: ["customerEmail", "userEmail"],
+                      fallbackKeys: ["customerName", "userName"],
+                      defaultLabel: "Customer",
+                    },
+                    userLookup
+                  );
+                  const techName = resolveName(
+                    booking,
+                    {
+                      idKeys: ["technicianId"],
+                      emailKeys: ["technicianEmail"],
+                      fallbackKeys: ["technicianName"],
+                      defaultLabel: "Technician",
+                    },
+                    userLookup
+                  );
 
                   return (
                     <div

@@ -38,6 +38,28 @@ function formatRoleLabel(role = "") {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem("user");
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAuthToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
 export default function ManageUsersPage() {
   const apiUrl = (
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
@@ -51,58 +73,69 @@ export default function ManageUsersPage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [brokenAvatars, setBrokenAvatars] = useState({});
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      if (stored) {
-        setCurrentUser(JSON.parse(stored));
-      }
-    } catch {
-      setCurrentUser(null);
-    }
-  }, []);
-
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    setFeedback(null);
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Please sign in as an admin to manage users.");
+  const fetchUsers = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setFeedback(null);
       }
 
-      const res = await fetch(`${apiUrl}/api/admin/users`, {
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      try {
+        const token = getAuthToken();
+        if (!token) {
+          throw new Error("Please sign in as an admin to manage users.");
+        }
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load users.");
+        const res = await fetch(`${apiUrl}/api/admin/users`, {
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.message || "Failed to load users.");
+        }
+
+        const list = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setUsers(list);
+      } catch (err) {
+        if (!silent) {
+          setFeedback({
+            type: "error",
+            message: err.message || "Could not fetch users list.",
+          });
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-
-      const list = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : [];
-      setUsers(list);
-    } catch (err) {
-      setFeedback({
-        type: "error",
-        message: err.message || "Could not fetch users list.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setCurrentUser(readStoredUser());
     fetchUsers();
+
+    const handleLiveSync = () => {
+      setCurrentUser(readStoredUser());
+      fetchUsers({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [fetchUsers]);
 
   const counts = useMemo(() => {
@@ -132,22 +165,25 @@ export default function ManageUsersPage() {
     );
   }, [users, activeTab]);
 
-  const isSelfUser = (u) => {
-    if (!currentUser) return false;
-    const currentId = currentUser._id || currentUser.id;
-    const targetId = u._id || u.id;
-    if (currentId && targetId && String(currentId) === String(targetId)) {
-      return true;
-    }
-    if (
-      currentUser.email &&
-      u.email &&
-      currentUser.email.toLowerCase() === u.email.toLowerCase()
-    ) {
-      return true;
-    }
-    return false;
-  };
+  const isSelfUser = useCallback(
+    (u) => {
+      if (!currentUser) return false;
+      const currentId = currentUser._id || currentUser.id;
+      const targetId = u._id || u.id;
+      if (currentId && targetId && String(currentId) === String(targetId)) {
+        return true;
+      }
+      if (
+        currentUser.email &&
+        u.email &&
+        currentUser.email.toLowerCase() === u.email.toLowerCase()
+      ) {
+        return true;
+      }
+      return false;
+    },
+    [currentUser]
+  );
 
   const handleRoleChange = async (targetUser, nextRole) => {
     const id = targetUser._id || targetUser.id;
@@ -175,7 +211,7 @@ export default function ManageUsersPage() {
     );
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       const res = await fetch(`${apiUrl}/api/admin/users/${id}/role`, {
         method: "PATCH",
         headers: {
@@ -190,7 +226,9 @@ export default function ManageUsersPage() {
         throw new Error(data?.message || "Failed to update user role.");
       }
 
-      const msg = `${targetUser.name || "User"}'s role updated to ${formatRoleLabel(nextRole)}.`;
+      const msg = `${targetUser.name || "User"}'s role updated to ${formatRoleLabel(
+        nextRole
+      )}.`;
       setFeedback({
         type: "success",
         message: msg,
@@ -327,8 +365,15 @@ export default function ManageUsersPage() {
                 {filteredUsers.map((u) => {
                   const id = u._id || u.id;
                   const selfRow = isSelfUser(u);
+                  const displayName =
+                    (selfRow && currentUser?.name) || u.name || "Unnamed User";
+                  const displayAvatar =
+                    (selfRow && currentUser?.avatar) || u.avatar || "";
+                  const displayArea =
+                    (selfRow && currentUser?.area) || u.area || "";
                   const currentRole = (u.role || "customer").toLowerCase();
-                  const showAvatarImg = Boolean(u.avatar) && !brokenAvatars[id];
+                  const showAvatarImg =
+                    Boolean(displayAvatar) && !brokenAvatars[id];
 
                   return (
                     <tr
@@ -340,8 +385,8 @@ export default function ManageUsersPage() {
                         <div className="flex items-center gap-3.5">
                           {showAvatarImg ? (
                             <img
-                              src={u.avatar}
-                              alt={u.name || "User"}
+                              src={displayAvatar}
+                              alt={displayName}
                               onError={() =>
                                 setBrokenAvatars((prev) => ({
                                   ...prev,
@@ -352,12 +397,12 @@ export default function ManageUsersPage() {
                             />
                           ) : (
                             <span className="w-10 h-10 rounded-full bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
-                              {getInitials(u.name)}
+                              {getInitials(displayName)}
                             </span>
                           )}
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-white">
-                              {u.name || "Unnamed User"}
+                              {displayName}
                             </span>
                             {selfRow && (
                               <span className="text-xs text-slate-400 font-normal">
@@ -375,10 +420,10 @@ export default function ManageUsersPage() {
 
                       {/* Area */}
                       <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
-                        {u.area ? (
+                        {displayArea ? (
                           <span className="inline-flex items-center gap-1.5">
                             <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
-                            <span>{u.area}</span>
+                            <span>{displayArea}</span>
                           </span>
                         ) : (
                           <span className="text-slate-500">—</span>
@@ -393,7 +438,7 @@ export default function ManageUsersPage() {
                       {/* Role Dropdown */}
                       <td className="py-4 px-5 whitespace-nowrap">
                         <select
-                          aria-label={`Change role for ${u.name || "user"}`}
+                          aria-label={`Change role for ${displayName}`}
                           disabled={selfRow || updatingId === id}
                           value={currentRole}
                           onChange={(e) => handleRoleChange(u, e.target.value)}

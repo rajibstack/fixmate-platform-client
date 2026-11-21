@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   ClipboardList,
@@ -44,10 +44,65 @@ function formatStatusLabel(status = "") {
   return lower.charAt(0).toUpperCase() + lower.slice(1);
 }
 
-export default function CustomerOverview({ user }) {
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildUserLookup(users = [], activeUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (activeUser && typeof activeUser === "object") {
+    allUsers.push(activeUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveTechnicianName(record, lookup) {
+  const id = String(
+    record?.technicianId || record?.technician?._id || ""
+  ).trim();
+  const email = String(
+    record?.technicianEmail || record?.technician?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    record?.technician?.name ||
+    record?.technicianName ||
+    "Technician"
+  );
+}
+
+export default function CustomerOverview({ user: propUser }) {
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
+  const [storedUser, setStoredUser] = useState(propUser || null);
+  const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({
     totalRequests: 0,
     activeJobs: 0,
@@ -63,110 +118,160 @@ export default function CustomerOverview({ user }) {
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
   ).replace(/\/+$/, "");
 
-  const loadCustomerOverview = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  const loadCustomerOverview = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setError("");
+      }
 
-    try {
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        localStorage.getItem("accessToken") ||
-        "";
-      const headers = {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      };
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        const headers = {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
 
-      let res = await fetch(`${apiUrl}/api/bookings/my`, {
-        cache: "no-store",
-        headers,
-      });
-      if (res.status === 404) {
-        res = await fetch(`${apiUrl}/api/customer/bookings`, {
+        let res = await fetch(`${apiUrl}/api/bookings/my`, {
           cache: "no-store",
           headers,
         });
-      }
+        if (res.status === 404) {
+          res = await fetch(`${apiUrl}/api/customer/bookings`, {
+            cache: "no-store",
+            headers,
+          });
+        }
 
-      const json = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(json?.message || "Failed to load overview data.");
-      }
+        const json = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(json?.message || "Failed to load overview data.");
+        }
 
-      const list = Array.isArray(json?.data)
-        ? json.data
-        : Array.isArray(json)
-        ? json
-        : [];
+        const usersRes = await fetch(`${apiUrl}/api/admin/users`, {
+          cache: "no-store",
+          headers,
+        }).catch(() => null);
 
-      const active = list.filter((b) =>
-        [
-          "requested",
-          "pending",
-          "accepted",
-          "in-progress",
-          "in_progress",
-          "in progress",
-          "assigned",
-        ].includes((b?.status || "").toString().toLowerCase().trim())
-      );
+        if (usersRes && usersRes.ok) {
+          const uJson = await usersRes.json().catch(() => ({}));
+          const uList = Array.isArray(uJson?.data)
+            ? uJson.data
+            : Array.isArray(uJson)
+            ? uJson
+            : [];
+          if (uList.length > 0) {
+            setUsers(uList);
+          }
+        }
 
-      const completed = list.filter(
-        (b) => (b?.status || "").toString().toLowerCase().trim() === "completed"
-      );
+        const list = Array.isArray(json?.data)
+          ? json.data
+          : Array.isArray(json)
+          ? json
+          : [];
 
-      const unpaidCompleted = completed.filter(
-        (b) =>
-          (b?.paymentStatus || "").toString().toLowerCase().trim() !== "paid"
-      );
+        const active = list.filter((b) =>
+          [
+            "requested",
+            "pending",
+            "accepted",
+            "in-progress",
+            "in_progress",
+            "in progress",
+            "assigned",
+          ].includes((b?.status || "").toString().toLowerCase().trim())
+        );
 
-      const unpaidSum = unpaidCompleted.reduce(
-        (sum, item) => sum + getBookingAmount(item),
-        0
-      );
-
-      const paidList = list
-        .filter(
+        const completed = list.filter(
           (b) =>
-            (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
-        )
-        .sort((a, b) => {
-          const dateA = new Date(
-            a?.paidAt || a?.updatedAt || a?.createdAt || 0
-          ).getTime();
-          const dateB = new Date(
-            b?.paidAt || b?.updatedAt || b?.createdAt || 0
-          ).getTime();
-          return dateB - dateA;
+            (b?.status || "").toString().toLowerCase().trim() === "completed"
+        );
+
+        const unpaidCompleted = completed.filter(
+          (b) =>
+            (b?.paymentStatus || "").toString().toLowerCase().trim() !== "paid"
+        );
+
+        const unpaidSum = unpaidCompleted.reduce(
+          (sum, item) => sum + getBookingAmount(item),
+          0
+        );
+
+        const paidList = list
+          .filter(
+            (b) =>
+              (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
+          )
+          .sort((a, b) => {
+            const dateA = new Date(
+              a?.paidAt || a?.updatedAt || a?.createdAt || 0
+            ).getTime();
+            const dateB = new Date(
+              b?.paidAt || b?.updatedAt || b?.createdAt || 0
+            ).getTime();
+            return dateB - dateA;
+          });
+
+        const spentSum = paidList.reduce(
+          (sum, item) => sum + getBookingAmount(item),
+          0
+        );
+
+        setStats({
+          totalRequests: list.length,
+          activeJobs: active.length,
+          completedJobs: completed.length,
+          totalSpent: spentSum,
+          unpaidCompletedCount: unpaidCompleted.length,
+          unpaidAmount: unpaidSum,
         });
 
-      const spentSum = paidList.reduce(
-        (sum, item) => sum + getBookingAmount(item),
-        0
-      );
-
-      setStats({
-        totalRequests: list.length,
-        activeJobs: active.length,
-        completedJobs: completed.length,
-        totalSpent: spentSum,
-        unpaidCompletedCount: unpaidCompleted.length,
-        unpaidAmount: unpaidSum,
-      });
-
-      setInProgressJobs(active.slice(0, 4));
-      setRecentPayments(paidList.slice(0, 4));
-    } catch (err) {
-      setError(err.message || "Could not load your overview.");
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+        setInProgressJobs(active.slice(0, 4));
+        setRecentPayments(paidList.slice(0, 4));
+      } catch (err) {
+        if (!silent) {
+          setError(err.message || "Could not load your overview.");
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setStoredUser(propUser || readStoredUser());
+  }, [propUser]);
+
+  useEffect(() => {
+    setStoredUser(readStoredUser());
     loadCustomerOverview();
+
+    const handleLiveSync = () => {
+      setStoredUser(readStoredUser());
+      loadCustomerOverview({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [loadCustomerOverview]);
+
+  const activeCustomer = storedUser || propUser || null;
+  const userLookup = useMemo(
+    () => buildUserLookup(users, activeCustomer),
+    [users, activeCustomer]
+  );
 
   const formatStatusBadge = (status = "") => {
     const lower = status.toString().toLowerCase().trim();
@@ -192,7 +297,8 @@ export default function CustomerOverview({ user }) {
           Overview
         </h1>
         <p className="text-slate-400 text-sm mt-1">
-          Your repair jobs at a glance{user?.name ? ` — ${user.name}` : ""}.
+          Your repair jobs at a glance
+          {activeCustomer?.name ? ` — ${activeCustomer.name}` : ""}.
         </p>
       </div>
 
@@ -204,7 +310,7 @@ export default function CustomerOverview({ user }) {
           </div>
           <button
             type="button"
-            onClick={loadCustomerOverview}
+            onClick={() => loadCustomerOverview()}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -353,30 +459,33 @@ export default function CustomerOverview({ user }) {
               </div>
             ) : (
               <div className="divide-y divide-slate-800/80">
-                {inProgressJobs.map((job) => (
-                  <div
-                    key={job._id || job.id}
-                    className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-semibold text-white text-sm truncate">
-                        {job.serviceTitle || "Repair Service"}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {job.technicianName || "Technician"}, preferred{" "}
-                        {formatShortDate(job.preferredDate)}
-                      </p>
-                    </div>
-                    <span
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full shrink-0 ${formatStatusBadge(
-                        job.status
-                      )}`}
+                {inProgressJobs.map((job) => {
+                  const techName = resolveTechnicianName(job, userLookup);
+                  return (
+                    <div
+                      key={job._id || job.id}
+                      className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                      {formatStatusLabel(job.status)}
-                    </span>
-                  </div>
-                ))}
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white text-sm truncate">
+                          {job.serviceTitle || "Repair Service"}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {techName}, preferred{" "}
+                          {formatShortDate(job.preferredDate)}
+                        </p>
+                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full shrink-0 ${formatStatusBadge(
+                          job.status
+                        )}`}
+                      >
+                        <span className="w-1.5 h-1.5 rounded-full bg-current" />
+                        {formatStatusLabel(job.status)}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -420,27 +529,30 @@ export default function CustomerOverview({ user }) {
               </div>
             ) : (
               <div className="divide-y divide-slate-800/80">
-                {recentPayments.map((pay) => (
-                  <div
-                    key={pay._id || pay.id}
-                    className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
-                  >
-                    <div className="min-w-0">
-                      <p className="font-semibold text-white text-sm truncate">
-                        {pay.serviceTitle || "Repair Service"}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {pay.technicianName || "Technician"}, paid{" "}
-                        {formatShortDate(
-                          pay.paidAt || pay.updatedAt || pay.createdAt
-                        )}
-                      </p>
+                {recentPayments.map((pay) => {
+                  const techName = resolveTechnicianName(pay, userLookup);
+                  return (
+                    <div
+                      key={pay._id || pay.id}
+                      className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-semibold text-white text-sm truncate">
+                          {pay.serviceTitle || "Repair Service"}
+                        </p>
+                        <p className="text-xs text-slate-400 mt-1">
+                          {techName}, paid{" "}
+                          {formatShortDate(
+                            pay.paidAt || pay.updatedAt || pay.createdAt
+                          )}
+                        </p>
+                      </div>
+                      <span className="text-base font-bold text-sky-400 shrink-0">
+                        {`$${getBookingAmount(pay)}`}
+                      </span>
                     </div>
-                    <span className="text-base font-bold text-sky-400 shrink-0">
-                      {`$${getBookingAmount(pay)}`}
-                    </span>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

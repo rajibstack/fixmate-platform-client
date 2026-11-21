@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   Wrench,
@@ -51,10 +51,66 @@ function getBookingAmount(booking) {
   return Number.isNaN(num) ? 0 : num;
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildUserLookup(users = [], storedUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (storedUser && typeof storedUser === "object") {
+    allUsers.push(storedUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveCustomerName(record, lookup) {
+  const id = String(
+    record?.customerId || record?.userId || record?.customer?._id || ""
+  ).trim();
+  const email = String(
+    record?.customerEmail || record?.userEmail || record?.customer?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    record?.customer?.name ||
+    record?.customerName ||
+    record?.userName ||
+    "Customer"
+  );
+}
+
 export default function TechnicianOverview() {
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
+  const [users, setUsers] = useState([]);
+  const [storedUser, setStoredUser] = useState(null);
   const [stats, setStats] = useState({
     totalServices: 0,
     approvedServices: 0,
@@ -69,116 +125,160 @@ export default function TechnicianOverview() {
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
   ).replace(/\/+$/, "");
 
-  const fetchTechnicianData = useCallback(async () => {
-    setLoading(true);
-    setError("");
+  const fetchTechnicianData = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setError("");
+      }
 
-    try {
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        localStorage.getItem("accessToken") ||
-        "";
-      const headers = token ? { Authorization: `Bearer ${token}` } : {};
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        const headers = token ? { Authorization: `Bearer ${token}` } : {};
 
-      const [servicesRes, bookingsRes] = await Promise.allSettled([
-        fetch(`${apiUrl}/api/technician/services`, {
-          cache: "no-store",
-          headers,
-        }),
-        fetch(`${apiUrl}/api/technician/bookings`, {
-          cache: "no-store",
-          headers,
-        }),
-      ]);
+        const [servicesRes, bookingsRes, usersRes] = await Promise.allSettled([
+          fetch(`${apiUrl}/api/technician/services`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/technician/bookings`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/users`, {
+            cache: "no-store",
+            headers,
+          }),
+        ]);
 
-      let servicesList = [];
-      let loadError = "";
+        let servicesList = [];
+        let loadError = "";
 
-      if (servicesRes.status === "fulfilled") {
-        const sData = await servicesRes.value.json().catch(() => ({}));
-        if (servicesRes.value.ok) {
-          servicesList = Array.isArray(sData?.data)
-            ? sData.data
-            : Array.isArray(sData)
-            ? sData
-            : [];
-        } else {
-          loadError = sData?.message || "Could not load your services.";
+        if (servicesRes.status === "fulfilled") {
+          const sData = await servicesRes.value.json().catch(() => ({}));
+          if (servicesRes.value.ok) {
+            servicesList = Array.isArray(sData?.data)
+              ? sData.data
+              : Array.isArray(sData)
+              ? sData
+              : [];
+          } else {
+            loadError = sData?.message || "Could not load your services.";
+          }
         }
-      }
 
-      let bookingsList = [];
-      if (bookingsRes.status === "fulfilled") {
-        const bData = await bookingsRes.value.json().catch(() => ({}));
-        if (bookingsRes.value.ok) {
-          bookingsList = Array.isArray(bData?.data)
-            ? bData.data
-            : Array.isArray(bData)
-            ? bData
-            : [];
-        } else if (!loadError) {
-          loadError = bData?.message || "Could not load your bookings.";
+        let bookingsList = [];
+        if (bookingsRes.status === "fulfilled") {
+          const bData = await bookingsRes.value.json().catch(() => ({}));
+          if (bookingsRes.value.ok) {
+            bookingsList = Array.isArray(bData?.data)
+              ? bData.data
+              : Array.isArray(bData)
+              ? bData
+              : [];
+          } else if (!loadError) {
+            loadError = bData?.message || "Could not load your bookings.";
+          }
         }
-      }
 
-      if (loadError) {
-        setError(loadError);
-      }
+        if (usersRes.status === "fulfilled" && usersRes.value.ok) {
+          const uData = await usersRes.value.json().catch(() => ({}));
+          const userList = Array.isArray(uData?.data)
+            ? uData.data
+            : Array.isArray(uData)
+            ? uData
+            : [];
+          if (userList.length > 0) {
+            setUsers(userList);
+          }
+        }
 
-      const approvedCount = servicesList.filter(
-        (s) => (s?.status || "").toString().toLowerCase().trim() === "approved"
-      ).length;
+        if (loadError && !silent) {
+          setError(loadError);
+        }
 
-      const pendingReviewCount = servicesList.filter(
-        (s) => (s?.status || "").toString().toLowerCase().trim() === "pending"
-      ).length;
+        const approvedCount = servicesList.filter(
+          (s) =>
+            (s?.status || "").toString().toLowerCase().trim() === "approved"
+        ).length;
 
-      const requestedBookings = bookingsList.filter(
-        (b) =>
-          (b?.status || "").toString().toLowerCase().trim() === "requested"
-      );
+        const pendingReviewCount = servicesList.filter(
+          (s) => (s?.status || "").toString().toLowerCase().trim() === "pending"
+        ).length;
 
-      const paidBookings = bookingsList
-        .filter(
+        const requestedBookings = bookingsList.filter(
           (b) =>
-            (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
-        )
-        .sort((a, b) => {
-          const dateA = new Date(
-            a?.paidAt || a?.updatedAt || a?.createdAt || 0
-          ).getTime();
-          const dateB = new Date(
-            b?.paidAt || b?.updatedAt || b?.createdAt || 0
-          ).getTime();
-          return dateB - dateA;
+            (b?.status || "").toString().toLowerCase().trim() === "requested"
+        );
+
+        const paidBookings = bookingsList
+          .filter(
+            (b) =>
+              (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
+          )
+          .sort((a, b) => {
+            const dateA = new Date(
+              a?.paidAt || a?.updatedAt || a?.createdAt || 0
+            ).getTime();
+            const dateB = new Date(
+              b?.paidAt || b?.updatedAt || b?.createdAt || 0
+            ).getTime();
+            return dateB - dateA;
+          });
+
+        const earningsSum = paidBookings.reduce(
+          (acc, item) => acc + getBookingAmount(item),
+          0
+        );
+
+        setStats({
+          totalServices: servicesList.length,
+          approvedServices: approvedCount,
+          pendingReviewServices: pendingReviewCount,
+          pendingRequests: requestedBookings.length,
+          totalEarnings: earningsSum,
         });
 
-      const earningsSum = paidBookings.reduce(
-        (acc, item) => acc + getBookingAmount(item),
-        0
-      );
-
-      setStats({
-        totalServices: servicesList.length,
-        approvedServices: approvedCount,
-        pendingReviewServices: pendingReviewCount,
-        pendingRequests: requestedBookings.length,
-        totalEarnings: earningsSum,
-      });
-
-      setNewRequests(requestedBookings.slice(0, 4));
-      setRecentEarnings(paidBookings.slice(0, 4));
-    } catch {
-      setError("Network error while loading technician overview.");
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+        setNewRequests(requestedBookings.slice(0, 4));
+        setRecentEarnings(paidBookings.slice(0, 4));
+      } catch {
+        if (!silent) {
+          setError("Network error while loading technician overview.");
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setStoredUser(readStoredUser());
     fetchTechnicianData();
+
+    const handleLiveSync = () => {
+      setStoredUser(readStoredUser());
+      fetchTechnicianData({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [fetchTechnicianData]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, storedUser),
+    [users, storedUser]
+  );
 
   if (loading || navigating) {
     return <DashboardPageSkeleton />;
@@ -203,7 +303,7 @@ export default function TechnicianOverview() {
           </div>
           <button
             type="button"
-            onClick={fetchTechnicianData}
+            onClick={() => fetchTechnicianData()}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -326,28 +426,31 @@ export default function TechnicianOverview() {
             </div>
           ) : (
             <div className="divide-y divide-slate-800/80">
-              {newRequests.map((req) => (
-                <div
-                  key={req._id || req.id}
-                  className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
-                >
-                  <div className="min-w-0">
-                    <p className="font-semibold text-white text-sm truncate">
-                      {req.serviceTitle || "Repair Service"}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-1.5">
-                      <span>{req.customerName || "Customer"},</span>
-                      <span className="inline-flex items-center gap-1 text-slate-300">
-                        <Calendar className="w-3 h-3 text-sky-400" />
-                        preferred {formatShortDate(req.preferredDate)}
-                      </span>
-                    </p>
+              {newRequests.map((req) => {
+                const customerName = resolveCustomerName(req, userLookup);
+                return (
+                  <div
+                    key={req._id || req.id}
+                    className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-semibold text-white text-sm truncate">
+                        {req.serviceTitle || "Repair Service"}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-1.5">
+                        <span>{customerName},</span>
+                        <span className="inline-flex items-center gap-1 text-slate-300">
+                          <Calendar className="w-3 h-3 text-sky-400" />
+                          preferred {formatShortDate(req.preferredDate)}
+                        </span>
+                      </p>
+                    </div>
+                    <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 shrink-0">
+                      {getTicketCode(req)}
+                    </span>
                   </div>
-                  <span className="text-xs font-mono px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-800 text-slate-300 shrink-0">
-                    {getTicketCode(req)}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -383,27 +486,30 @@ export default function TechnicianOverview() {
             </div>
           ) : (
             <div className="divide-y divide-slate-800/80">
-              {recentEarnings.map((item) => (
-                <div
-                  key={item._id || item.id}
-                  className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
-                >
-                  <div className="min-w-0">
-                    <p className="font-semibold text-white text-sm truncate">
-                      {item.serviceTitle || "Repair Service"}
-                    </p>
-                    <p className="text-xs text-slate-400 mt-1">
-                      {item.customerName || "Customer"},{" "}
-                      {formatShortDate(
-                        item.paidAt || item.updatedAt || item.createdAt
-                      )}
-                    </p>
+              {recentEarnings.map((item) => {
+                const customerName = resolveCustomerName(item, userLookup);
+                return (
+                  <div
+                    key={item._id || item.id}
+                    className="py-4 first:pt-0 last:pb-0 flex items-center justify-between gap-4"
+                  >
+                    <div className="min-w-0">
+                      <p className="font-semibold text-white text-sm truncate">
+                        {item.serviceTitle || "Repair Service"}
+                      </p>
+                      <p className="text-xs text-slate-400 mt-1">
+                        {customerName},{" "}
+                        {formatShortDate(
+                          item.paidAt || item.updatedAt || item.createdAt
+                        )}
+                      </p>
+                    </div>
+                    <span className="text-base font-bold text-sky-400 shrink-0">
+                      {`$${getBookingAmount(item)}`}
+                    </span>
                   </div>
-                  <span className="text-base font-bold text-sky-400 shrink-0">
-                    {`$${getBookingAmount(item)}`}
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>

@@ -19,9 +19,14 @@ import {
   X,
   ShieldAlert,
   ExternalLink,
+  Crown,
 } from "lucide-react";
 import { toast as sonnerToast } from "sonner";
 import { PublicPageSkeleton } from "@/components/ui/LoadingState";
+
+const DEFAULT_TECH_BIO =
+  "Experienced FixMate specialist focused on clean diagnostics, reliable repairs, and transparent communication.";
+const DEFAULT_TECH_AREA = "Service Area Available";
 
 function getInitials(name = "") {
   return (
@@ -42,11 +47,187 @@ function getTodayDateString() {
   return `${year}-${month}-${day}`;
 }
 
+function getAuthToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
+function resolvePlan(rawPlan, isVerifiedPro) {
+  if (isVerifiedPro === true) return "pro";
+  return String(rawPlan || "free").toLowerCase().trim() === "pro"
+    ? "pro"
+    : "free";
+}
+
+function isSameTechnician(userObj, techObj, serviceItem) {
+  if (!userObj || typeof userObj !== "object") return false;
+
+  const userEmail = String(userObj.email || "").toLowerCase().trim();
+  const techEmail = String(
+    techObj?.email || serviceItem?.technicianEmail || ""
+  )
+    .toLowerCase()
+    .trim();
+
+  if (userEmail && techEmail && userEmail === techEmail) {
+    return true;
+  }
+
+  const userId = String(userObj._id || userObj.id || "").trim();
+  const techId = String(
+    techObj?._id || techObj?.id || serviceItem?.technicianId || ""
+  ).trim();
+
+  if (userId && techId && userId === techId) {
+    return true;
+  }
+
+  return false;
+}
+
+function mergeUserIntoTechnician(baseTech, userObj, serviceItem) {
+  if (!isSameTechnician(userObj, baseTech, serviceItem)) {
+    return baseTech;
+  }
+
+  const nextAvatar =
+    userObj.avatar !== undefined
+      ? userObj.avatar
+      : userObj.photo ?? userObj.profileImage ?? baseTech.avatar ?? "";
+
+  const nextArea =
+    userObj.area !== undefined && String(userObj.area).trim()
+      ? String(userObj.area).trim()
+      : baseTech.area || serviceItem?.area || DEFAULT_TECH_AREA;
+
+  const nextBio =
+    userObj.bio !== undefined && String(userObj.bio).trim()
+      ? String(userObj.bio).trim()
+      : baseTech.bio || DEFAULT_TECH_BIO;
+
+  const nextPlan = resolvePlan(
+    userObj.plan,
+    userObj.isVerifiedPro ?? baseTech.isVerifiedPro
+  );
+
+  return {
+    ...baseTech,
+    _id: baseTech._id || userObj._id || userObj.id || "",
+    name:
+      (userObj.name && String(userObj.name).trim()) ||
+      baseTech.name ||
+      "Verified Technician",
+    email: userObj.email || baseTech.email || "",
+    avatar: nextAvatar,
+    area: nextArea,
+    bio: nextBio,
+    plan: nextPlan,
+    isVerifiedPro: nextPlan === "pro",
+  };
+}
+
+function normalizeTechnicianData(rawData, serviceItem) {
+  const nestedTech =
+    (rawData?.technician && typeof rawData.technician === "object"
+      ? rawData.technician
+      : null) ||
+    (serviceItem?.technician && typeof serviceItem.technician === "object"
+      ? serviceItem.technician
+      : null) ||
+    (serviceItem?.technicianInfo && typeof serviceItem.technicianInfo === "object"
+      ? serviceItem.technicianInfo
+      : null) ||
+    (serviceItem?.provider && typeof serviceItem.provider === "object"
+      ? serviceItem.provider
+      : null) ||
+    (serviceItem?.user && typeof serviceItem.user === "object"
+      ? serviceItem.user
+      : null) ||
+    {};
+
+  const name =
+    nestedTech.name ||
+    nestedTech.fullName ||
+    rawData?.technicianName ||
+    serviceItem?.technicianName ||
+    serviceItem?.providerName ||
+    "Verified Technician";
+
+  const email =
+    nestedTech.email ||
+    rawData?.technicianEmail ||
+    serviceItem?.technicianEmail ||
+    "";
+
+  const avatar =
+    nestedTech.avatar ||
+    nestedTech.photo ||
+    nestedTech.photoURL ||
+    nestedTech.profileImage ||
+    nestedTech.image ||
+    rawData?.technicianAvatar ||
+    serviceItem?.technicianAvatar ||
+    "";
+
+  const area =
+    (nestedTech.area && String(nestedTech.area).trim()) ||
+    (nestedTech.serviceArea && String(nestedTech.serviceArea).trim()) ||
+    (nestedTech.location && String(nestedTech.location).trim()) ||
+    (nestedTech.address && String(nestedTech.address).trim()) ||
+    (serviceItem?.area && String(serviceItem.area).trim()) ||
+    (serviceItem?.serviceArea && String(serviceItem.serviceArea).trim()) ||
+    DEFAULT_TECH_AREA;
+
+  const bio =
+    (nestedTech.bio && String(nestedTech.bio).trim()) ||
+    (nestedTech.about && String(nestedTech.about).trim()) ||
+    (nestedTech.description && String(nestedTech.description).trim()) ||
+    (nestedTech.specialty && String(nestedTech.specialty).trim()) ||
+    (rawData?.technicianBio && String(rawData.technicianBio).trim()) ||
+    (serviceItem?.technicianBio && String(serviceItem.technicianBio).trim()) ||
+    DEFAULT_TECH_BIO;
+
+  const id =
+    nestedTech._id ||
+    nestedTech.id ||
+    serviceItem?.technicianId ||
+    serviceItem?.userId ||
+    "";
+
+  const plan = resolvePlan(
+    nestedTech.plan ??
+      rawData?.technicianPlan ??
+      serviceItem?.technicianPlan,
+    nestedTech.isVerifiedPro ??
+      rawData?.isVerifiedPro ??
+      serviceItem?.isVerifiedPro
+  );
+
+  return {
+    _id: id,
+    name,
+    email,
+    avatar,
+    area,
+    bio,
+    plan,
+    isVerifiedPro: plan === "pro",
+  };
+}
+
 export default function ServiceDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const serviceId = params?.id;
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const rawId = params?.id;
+  const serviceId = rawId ? String(rawId).trim() : "";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [service, setService] = useState(null);
   const [technician, setTechnician] = useState(null);
@@ -87,7 +268,141 @@ export default function ServiceDetailsPage() {
     return () => clearTimeout(timer);
   }, [toast]);
 
+  const fetchServiceDetails = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!serviceId) {
+        if (!silent) {
+          setNotFound(true);
+          setLoading(false);
+        }
+        return;
+      }
+
+      if (!silent) {
+        setLoading(true);
+        setNotFound(false);
+      }
+
+      try {
+        const res = await fetch(`${apiUrl}/api/services/${serviceId}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) {
+          if (!silent) {
+            setNotFound(true);
+            setLoading(false);
+          }
+          return;
+        }
+
+        const data = await res.json().catch(() => ({}));
+        const item =
+          data?.data && typeof data.data === "object"
+            ? data.data
+            : data?.service && typeof data.service === "object"
+            ? data.service
+            : null;
+
+        if (!item) {
+          if (!silent) {
+            setNotFound(true);
+            setLoading(false);
+          }
+          return;
+        }
+
+        const status = (item?.status || item?.approvalStatus || "approved")
+          .toString()
+          .toLowerCase();
+        const isAvailable =
+          item?.available !== false && item?.isAvailable !== false;
+
+        if (status !== "approved" || !isAvailable) {
+          if (!silent) {
+            setNotFound(true);
+            setLoading(false);
+          }
+          return;
+        }
+
+        let normalizedTech = normalizeTechnicianData(data, item);
+
+        if (typeof window !== "undefined") {
+          try {
+            const rawUser = localStorage.getItem("user");
+            const validUser = rawUser ? JSON.parse(rawUser) : null;
+            if (validUser && typeof validUser === "object") {
+              normalizedTech = mergeUserIntoTechnician(
+                normalizedTech,
+                validUser,
+                item
+              );
+            }
+          } catch {
+            // Ignore storage parse error
+          }
+
+          const token = getAuthToken();
+          if (
+            token &&
+            isSameTechnician(
+              {
+                email: normalizedTech.email,
+                _id: normalizedTech._id,
+              },
+              normalizedTech,
+              item
+            )
+          ) {
+            try {
+              const meRes = await fetch(`${apiUrl}/api/auth/me`, {
+                cache: "no-store",
+                headers: { Authorization: `Bearer ${token}` },
+              });
+              if (meRes.ok) {
+                const meJson = await meRes.json().catch(() => ({}));
+                const meUser = meJson?.user || meJson?.data || null;
+                if (meUser && typeof meUser === "object") {
+                  normalizedTech = mergeUserIntoTechnician(
+                    normalizedTech,
+                    meUser,
+                    item
+                  );
+                  const existingRaw = localStorage.getItem("user");
+                  const existingObj = existingRaw
+                    ? JSON.parse(existingRaw)
+                    : {};
+                  localStorage.setItem(
+                    "user",
+                    JSON.stringify({ ...existingObj, ...meUser })
+                  );
+                }
+              }
+            } catch {
+              // Ignore live /api/auth/me sync error
+            }
+          }
+        }
+
+        setService(item);
+        setTechnician(normalizedTech);
+        setServiceImageError(false);
+        setTechAvatarError(false);
+      } catch {
+        if (!silent) {
+          setNotFound(true);
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [apiUrl, serviceId]
+  );
+
   const syncSession = useCallback(() => {
+    if (typeof window === "undefined") return;
     try {
       const rawUser = localStorage.getItem("user");
       if (!rawUser) {
@@ -95,87 +410,45 @@ export default function ServiceDetailsPage() {
         return;
       }
       const parsed = JSON.parse(rawUser);
-      setSessionUser(parsed && typeof parsed === "object" ? parsed : null);
-      if (parsed?.phone || parsed?.area) {
+      const validUser = parsed && typeof parsed === "object" ? parsed : null;
+      setSessionUser(validUser);
+
+      if (validUser) {
         setFormData((prev) => ({
           ...prev,
-          phone: prev.phone || parsed.phone || "",
-          address: prev.address || parsed.area || "",
+          phone: validUser.phone || prev.phone || "",
+          address: validUser.area || prev.address || "",
         }));
       }
     } catch {
       setSessionUser(null);
     }
-  }, []);
+    fetchServiceDetails({ silent: true });
+  }, [fetchServiceDetails]);
 
   useEffect(() => {
     syncSession();
+    const handleFocusOrVisible = () => {
+      if (
+        document.visibilityState === "visible" ||
+        document.hasFocus()
+      ) {
+        fetchServiceDetails({ silent: true });
+      }
+    };
+
     window.addEventListener("auth-change", syncSession);
     window.addEventListener("storage", syncSession);
+    window.addEventListener("focus", handleFocusOrVisible);
+    document.addEventListener("visibilitychange", handleFocusOrVisible);
+
     return () => {
       window.removeEventListener("auth-change", syncSession);
       window.removeEventListener("storage", syncSession);
+      window.removeEventListener("focus", handleFocusOrVisible);
+      document.removeEventListener("visibilitychange", handleFocusOrVisible);
     };
-  }, [syncSession]);
-
-  const fetchServiceDetails = useCallback(async () => {
-    if (!serviceId) {
-      setNotFound(true);
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setNotFound(false);
-
-    try {
-      const res = await fetch(`${apiUrl}/api/services/${serviceId}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      const data = await res.json().catch(() => ({}));
-      const item = data?.data;
-      if (!item) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      const status = (item?.status || item?.approvalStatus || "approved")
-        .toString()
-        .toLowerCase();
-      const isAvailable =
-        item?.available !== false && item?.isAvailable !== false;
-
-      if (status !== "approved" || !isAvailable) {
-        setNotFound(true);
-        setLoading(false);
-        return;
-      }
-
-      setService(item);
-      setTechnician(
-        data?.technician || {
-          name: item.technicianName || "Verified Technician",
-          email: item.technicianEmail || "",
-          avatar: "",
-          area: item.area || "",
-          bio: "",
-        }
-      );
-      setServiceImageError(false);
-      setTechAvatarError(false);
-    } catch {
-      setNotFound(true);
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl, serviceId]);
+  }, [syncSession, fetchServiceDetails]);
 
   useEffect(() => {
     fetchServiceDetails();
@@ -183,7 +456,7 @@ export default function ServiceDetailsPage() {
 
   const role = (sessionUser?.role || "").toLowerCase();
   const isLoggedIn = Boolean(
-    sessionUser && (sessionUser.email || sessionUser._id)
+    sessionUser && (sessionUser.email || sessionUser._id || sessionUser.id)
   );
   const isCustomer = isLoggedIn && role === "customer";
   const isRestrictedStaff =
@@ -191,7 +464,7 @@ export default function ServiceDetailsPage() {
 
   const handleRequestButtonClick = () => {
     setFormError("");
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     if (!isLoggedIn || !token) {
       const redirectTarget = encodeURIComponent(`/services/${serviceId}`);
       setNavigating(true);
@@ -242,7 +515,7 @@ export default function ServiceDetailsPage() {
 
     setSubmitting(true);
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       if (!token) {
         setRequestOpen(false);
         const redirectTarget = encodeURIComponent(`/services/${serviceId}`);
@@ -258,7 +531,7 @@ export default function ServiceDetailsPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          serviceId: service._id || serviceId,
+          serviceId: service._id || service.id || serviceId,
           phone: trimmedPhone,
           address: trimmedAddress,
           preferredDate: formData.preferredDate,
@@ -328,13 +601,23 @@ export default function ServiceDetailsPage() {
     );
   }
 
+  const modeLabel = service.mode || service.serviceMode || "Home Visit";
+  const areaLabel =
+    service.area || service.serviceArea || DEFAULT_TECH_AREA;
+  const durationLabel =
+    service.duration || service.estimatedDuration || "1-2 hours";
+  const serviceImageUrl =
+    service.image || service.thumbnail || service.photo || "";
+
   const techName =
     technician?.name || service.technicianName || "Verified Technician";
-  const techArea = technician?.area || service.area || "Service Area Available";
-  const techBio =
-    technician?.bio ||
-    "Experienced FixMate specialist focused on clean diagnostics, reliable repairs, and transparent communication.";
-  const showServicePhoto = Boolean(service.image) && !serviceImageError;
+  const techArea = technician?.area || areaLabel;
+  const techBio = technician?.bio || DEFAULT_TECH_BIO;
+  const isProTechnician = Boolean(
+    technician?.isVerifiedPro || technician?.plan === "pro"
+  );
+
+  const showServicePhoto = Boolean(serviceImageUrl) && !serviceImageError;
   const showTechPhoto = Boolean(technician?.avatar) && !techAvatarError;
 
   return (
@@ -424,7 +707,7 @@ export default function ServiceDetailsPage() {
               <div className="aspect-[16/10] w-full bg-slate-950 border-b border-slate-800/80 flex items-center justify-center overflow-hidden">
                 {showServicePhoto ? (
                   <img
-                    src={service.image}
+                    src={serviceImageUrl}
                     alt={service.title}
                     onError={() => setServiceImageError(true)}
                     className="w-full h-full object-cover"
@@ -440,7 +723,7 @@ export default function ServiceDetailsPage() {
                     {service.category || "General Repair"}
                   </span>
                   <span className="px-3 py-1 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700/80 text-xs font-medium">
-                    {service.mode || "Home Visit"}
+                    {modeLabel}
                   </span>
                 </div>
 
@@ -461,9 +744,17 @@ export default function ServiceDetailsPage() {
                   <UserCheck className="w-5 h-5 text-sky-400" />
                   <span>Technician Summary</span>
                 </h2>
-                <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
-                  Verified Specialist
-                </span>
+
+                {isProTechnician ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/35">
+                    <Crown className="w-3.5 h-3.5 text-amber-300" />
+                    <span>Verified Pro</span>
+                  </span>
+                ) : (
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+                    Verified Specialist
+                  </span>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-start gap-4">
@@ -491,7 +782,7 @@ export default function ServiceDetailsPage() {
                     </p>
                   </div>
 
-                  <p className="text-sm text-slate-300 leading-relaxed">
+                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
                     {techBio}
                   </p>
                 </div>
@@ -523,7 +814,7 @@ export default function ServiceDetailsPage() {
                     Estimated Duration
                   </span>
                   <span className="font-semibold text-white">
-                    {service.duration || "1-2 hours"}
+                    {durationLabel}
                   </span>
                 </div>
 
@@ -532,9 +823,7 @@ export default function ServiceDetailsPage() {
                     <Laptop className="w-4 h-4 text-sky-400" />
                     Service Mode
                   </span>
-                  <span className="font-semibold text-white">
-                    {service.mode || "Home Visit"}
-                  </span>
+                  <span className="font-semibold text-white">{modeLabel}</span>
                 </div>
 
                 <div className="flex items-center justify-between py-2">
@@ -543,7 +832,7 @@ export default function ServiceDetailsPage() {
                     Service Area
                   </span>
                   <span className="font-semibold text-white text-right">
-                    {service.area || "Available"}
+                    {areaLabel}
                   </span>
                 </div>
               </div>
@@ -589,7 +878,7 @@ export default function ServiceDetailsPage() {
       </div>
 
       {/* Customer Repair Request Modal */}
-      {requestOpen && isCustomer && (
+      {requestOpen && role === "customer" && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 my-auto">
             <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">

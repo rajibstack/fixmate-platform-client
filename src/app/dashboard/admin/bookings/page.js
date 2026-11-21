@@ -95,55 +95,186 @@ function formatPaymentText(paymentStatus) {
   return paymentStatus === "paid" ? "Paid" : "Unpaid";
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildUserLookup(users = [], currentUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (currentUser && typeof currentUser === "object") {
+    allUsers.push(currentUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveCustomerName(booking, lookup) {
+  const id = String(
+    booking?.customerId || booking?.userId || booking?.customer?._id || ""
+  ).trim();
+  const email = String(
+    booking?.customerEmail ||
+      booking?.userEmail ||
+      booking?.customer?.email ||
+      ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    booking?.customer?.name ||
+    booking?.customerName ||
+    booking?.userName ||
+    "Customer"
+  );
+}
+
+function resolveTechnicianName(booking, lookup) {
+  const id = String(
+    booking?.technicianId || booking?.technician?._id || ""
+  ).trim();
+  const email = String(
+    booking?.technicianEmail || booking?.technician?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    booking?.technician?.name ||
+    booking?.technicianName ||
+    "Technician"
+  );
+}
+
 export default function AdminAllBookingsPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [bookings, setBookings] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchAllBookings = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error(
-          "Please sign in as an admin to view all platform bookings."
-        );
+  const fetchAllBookings = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setError("");
       }
 
-      const res = await fetch(`${apiUrl}/api/admin/bookings`, {
-        cache: "no-store",
-        headers: {
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        if (!token) {
+          throw new Error(
+            "Please sign in as an admin to view all platform bookings."
+          );
+        }
+
+        const headers = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        },
-      });
+        };
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load platform bookings.");
+        const [bookingsRes, usersRes] = await Promise.all([
+          fetch(`${apiUrl}/api/admin/bookings`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/users`, {
+            cache: "no-store",
+            headers,
+          }),
+        ]);
+
+        const data = await bookingsRes.json().catch(() => ({}));
+        if (!bookingsRes.ok) {
+          throw new Error(data?.message || "Failed to load platform bookings.");
+        }
+
+        const list = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setBookings(list);
+
+        if (usersRes.ok) {
+          const usersData = await usersRes.json().catch(() => ({}));
+          const userList = Array.isArray(usersData?.data)
+            ? usersData.data
+            : Array.isArray(usersData)
+            ? usersData
+            : [];
+          setUsers(userList);
+        }
+      } catch (err) {
+        if (!silent) {
+          setError(err.message || "Could not fetch bookings.");
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-
-      const list = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : [];
-      setBookings(list);
-    } catch (err) {
-      setError(err.message || "Could not fetch bookings.");
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setCurrentUser(readStoredUser());
     fetchAllBookings();
+
+    const handleLiveSync = () => {
+      setCurrentUser(readStoredUser());
+      fetchAllBookings({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [fetchAllBookings]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, currentUser),
+    [users, currentUser]
+  );
 
   const counts = useMemo(() => {
     let requested = 0;
@@ -245,7 +376,7 @@ export default function AdminAllBookingsPage() {
           </div>
           <button
             type="button"
-            onClick={fetchAllBookings}
+            onClick={() => fetchAllBookings()}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -281,7 +412,7 @@ export default function AdminAllBookingsPage() {
             ) : (
               <button
                 type="button"
-                onClick={fetchAllBookings}
+                onClick={() => fetchAllBookings()}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4 text-sky-400" />
@@ -315,6 +446,14 @@ export default function AdminAllBookingsPage() {
                     const paymentStatus = normalizePaymentStatus(
                       booking?.paymentStatus
                     );
+                    const customerName = resolveCustomerName(
+                      booking,
+                      userLookup
+                    );
+                    const technicianName = resolveTechnicianName(
+                      booking,
+                      userLookup
+                    );
 
                     return (
                       <tr
@@ -328,10 +467,10 @@ export default function AdminAllBookingsPage() {
                           {booking?.serviceTitle || "Repair Service"}
                         </td>
                         <td className="py-4 px-5 text-slate-300 whitespace-nowrap">
-                          {booking?.customerName || "Customer"}
+                          {customerName}
                         </td>
                         <td className="py-4 px-5 text-slate-300 whitespace-nowrap">
-                          {booking?.technicianName || "Technician"}
+                          {technicianName}
                         </td>
                         <td className="py-4 px-5 text-slate-300 whitespace-nowrap">
                           {formatShortDate(
@@ -379,6 +518,11 @@ export default function AdminAllBookingsPage() {
               const paymentStatus = normalizePaymentStatus(
                 booking?.paymentStatus
               );
+              const customerName = resolveCustomerName(booking, userLookup);
+              const technicianName = resolveTechnicianName(
+                booking,
+                userLookup
+              );
 
               return (
                 <div
@@ -404,14 +548,14 @@ export default function AdminAllBookingsPage() {
                       <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       Customer:{" "}
                       <strong className="text-slate-200 font-medium">
-                        {booking?.customerName || "Customer"}
+                        {customerName}
                       </strong>
                     </span>
                     <span className="inline-flex items-center gap-1.5 truncate">
                       <Wrench className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       Tech:{" "}
                       <strong className="text-slate-200 font-medium">
-                        {booking?.technicianName || "Technician"}
+                        {technicianName}
                       </strong>
                     </span>
                     <span className="inline-flex items-center gap-1.5">

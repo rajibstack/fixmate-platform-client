@@ -21,8 +21,31 @@ function formatRoleLabel(role) {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
+function getAuthToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
+function extractUpdatedUser(responseData) {
+  if (!responseData || typeof responseData !== "object") return {};
+  if (responseData.user && typeof responseData.user === "object") {
+    return responseData.user;
+  }
+  if (responseData.data && typeof responseData.data === "object") {
+    return responseData.data.user || responseData.data;
+  }
+  return {};
+}
+
 export default function UpdateProfilePage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
   const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
 
   const [formData, setFormData] = useState({
@@ -30,6 +53,8 @@ export default function UpdateProfilePage() {
     phone: "",
     email: "",
     role: "customer",
+    plan: "free",
+    isVerifiedPro: false,
     area: "",
     bio: "",
     avatar: "",
@@ -57,6 +82,8 @@ export default function UpdateProfilePage() {
           phone: parsed?.phone || "",
           email: parsed?.email || "",
           role: parsed?.role || "customer",
+          plan: parsed?.plan || "free",
+          isVerifiedPro: Boolean(parsed?.isVerifiedPro || parsed?.plan === "pro"),
           area: parsed?.area || "",
           bio: parsed?.bio || "",
           avatar: parsed?.avatar || "",
@@ -69,7 +96,7 @@ export default function UpdateProfilePage() {
       // ignore storage parse error
     }
 
-    const token = localStorage.getItem("token");
+    const token = getAuthToken();
     if (!token) {
       if (active) setLoadingProfile(false);
       return () => {
@@ -90,22 +117,45 @@ export default function UpdateProfilePage() {
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
         if (!active) return;
-        if (data?.success && data?.user) {
-          const nextAvatar = data.user.avatar || "";
+        const meUser = extractUpdatedUser(data);
+        if (meUser && Object.keys(meUser).length > 0) {
+          const nextAvatar =
+            meUser.avatar !== undefined ? meUser.avatar : "";
+          const nextPlan = meUser.plan || "free";
+          const nextIsPro = Boolean(
+            meUser.isVerifiedPro || String(nextPlan).toLowerCase() === "pro"
+          );
+
           setFormData((prev) => ({
             ...prev,
-            name: data.user.name || prev.name,
-            phone: data.user.phone || prev.phone,
-            email: data.user.email || prev.email,
-            role: data.user.role || prev.role,
-            area: data.user.area || prev.area,
-            bio: data.user.bio || prev.bio,
-            avatar: nextAvatar || prev.avatar,
+            name: meUser.name ?? prev.name,
+            phone: meUser.phone ?? prev.phone,
+            email: meUser.email ?? prev.email,
+            role: meUser.role ?? prev.role,
+            plan: nextPlan,
+            isVerifiedPro: nextIsPro,
+            area: meUser.area ?? prev.area,
+            bio: meUser.bio ?? prev.bio,
+            avatar: nextAvatar,
           }));
-          if (nextAvatar) {
-            setPhotoPreview(nextAvatar);
-          }
+          setPhotoPreview(nextAvatar);
           setImgFailed(false);
+
+          try {
+            const existingRaw = localStorage.getItem("user");
+            const existingObj = existingRaw ? JSON.parse(existingRaw) : {};
+            const syncedUser = {
+              ...existingObj,
+              ...meUser,
+              avatar: nextAvatar,
+              plan: nextPlan,
+              isVerifiedPro: nextIsPro,
+            };
+            localStorage.setItem("user", JSON.stringify(syncedUser));
+            window.dispatchEvent(new Event("auth-change"));
+          } catch {
+            // ignore storage write error
+          }
         }
       })
       .catch(() => {
@@ -278,7 +328,7 @@ export default function UpdateProfilePage() {
     };
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       if (!token) {
         throw new Error("Please sign in to update your profile.");
       }
@@ -298,14 +348,39 @@ export default function UpdateProfilePage() {
         throw new Error(data?.message || "Failed to update profile.");
       }
 
+      const serverUser = extractUpdatedUser(data);
       const existingStored = localStorage.getItem("user");
-      const parsedStored = existingStored ? JSON.parse(existingStored) : {};
+      let parsedStored = {};
+      try {
+        parsedStored = existingStored ? JSON.parse(existingStored) : {};
+      } catch {
+        parsedStored = {};
+      }
+
       const mergedUser = {
         ...parsedStored,
-        ...(data?.user || {}),
+        ...serverUser,
         ...payload,
       };
+
       localStorage.setItem("user", JSON.stringify(mergedUser));
+      setFormData((prev) => ({
+        ...prev,
+        name: mergedUser.name ?? prev.name,
+        phone: mergedUser.phone ?? prev.phone,
+        email: mergedUser.email ?? prev.email,
+        role: mergedUser.role ?? prev.role,
+        plan: mergedUser.plan ?? prev.plan,
+        isVerifiedPro: Boolean(
+          mergedUser.isVerifiedPro || mergedUser.plan === "pro"
+        ),
+        area: mergedUser.area ?? prev.area,
+        bio: mergedUser.bio ?? prev.bio,
+        avatar: mergedUser.avatar ?? "",
+      }));
+      setPhotoPreview(mergedUser.avatar || "");
+      setImgFailed(false);
+
       window.dispatchEvent(new Event("storage"));
       window.dispatchEvent(new Event("auth-change"));
 
@@ -482,10 +557,21 @@ export default function UpdateProfilePage() {
             <span className="block text-sm font-medium text-slate-300 mb-2">
               Role
             </span>
-            <div className="h-[46px] flex items-center">
+            <div className="h-[46px] flex items-center gap-2">
               <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/25">
                 {formatRoleLabel(formData.role)}
               </span>
+              {formData.role === "technician" && (
+                <span
+                  className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                    formData.isVerifiedPro
+                      ? "bg-amber-500/15 text-amber-300 border-amber-400/35"
+                      : "bg-slate-800 text-slate-300 border-slate-700"
+                  }`}
+                >
+                  {formData.isVerifiedPro ? "Verified Pro" : "Free"}
+                </span>
+              )}
             </div>
           </div>
         </div>

@@ -44,59 +44,167 @@ function getTransactionId(booking) {
   return `pi_${rawId.slice(-10).toUpperCase()}`;
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildUserLookup(users = [], currentUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (currentUser && typeof currentUser === "object") {
+    allUsers.push(currentUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveTechnicianName(record, lookup) {
+  const id = String(
+    record?.technicianId || record?.technician?._id || ""
+  ).trim();
+  const email = String(
+    record?.technicianEmail || record?.technician?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    record?.technician?.name ||
+    record?.technicianName ||
+    "Technician"
+  );
+}
+
 export default function CustomerPaymentHistoryPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [payments, setPayments] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
 
-  const fetchPaymentHistory = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Please sign in to view your payment history.");
+  const fetchPaymentHistory = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setError("");
       }
 
-      const res = await fetch(`${apiUrl}/api/bookings/my`, {
-        cache: "no-store",
-        headers: {
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        if (!token) {
+          throw new Error("Please sign in to view your payment history.");
+        }
+
+        const headers = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        },
-      });
+        };
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load payment history.");
+        const [res, usersRes] = await Promise.all([
+          fetch(`${apiUrl}/api/bookings/my`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/users`, {
+            cache: "no-store",
+            headers,
+          }).catch(() => null),
+        ]);
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.message || "Failed to load payment history.");
+        }
+
+        const allBookings = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+
+        const paidBookings = allBookings.filter(
+          (b) =>
+            (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
+        );
+
+        setPayments(paidBookings);
+
+        if (usersRes && usersRes.ok) {
+          const usersData = await usersRes.json().catch(() => ({}));
+          const userList = Array.isArray(usersData?.data)
+            ? usersData.data
+            : Array.isArray(usersData)
+            ? usersData
+            : [];
+          if (userList.length > 0) {
+            setUsers(userList);
+          }
+        }
+      } catch (err) {
+        if (!silent) {
+          setError(err.message || "Could not load payment history.");
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-
-      const allBookings = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : [];
-
-      const paidBookings = allBookings.filter(
-        (b) =>
-          (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
-      );
-
-      setPayments(paidBookings);
-    } catch (err) {
-      setError(err.message || "Could not load payment history.");
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setCurrentUser(readStoredUser());
     fetchPaymentHistory();
+
+    const handleLiveSync = () => {
+      setCurrentUser(readStoredUser());
+      fetchPaymentHistory({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [fetchPaymentHistory]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, currentUser),
+    [users, currentUser]
+  );
 
   const summary = useMemo(() => {
     const count = payments.length;
@@ -173,6 +281,7 @@ export default function CustomerPaymentHistoryPage() {
                 <tbody className="divide-y divide-slate-800/80 text-sm">
                   {payments.map((item) => {
                     const id = item._id || item.id;
+                    const techName = resolveTechnicianName(item, userLookup);
                     return (
                       <tr
                         key={id}
@@ -182,7 +291,7 @@ export default function CustomerPaymentHistoryPage() {
                           {item.serviceTitle || "Repair Service"}
                         </td>
                         <td className="py-4 px-6 text-slate-300">
-                          {item.technicianName || "Technician"}
+                          {techName}
                         </td>
                         <td className="py-4 px-6 font-bold text-sky-400">
                           ${getBookingAmount(item)}
@@ -207,6 +316,7 @@ export default function CustomerPaymentHistoryPage() {
           <div className="md:hidden space-y-3.5">
             {payments.map((item) => {
               const id = item._id || item.id;
+              const techName = resolveTechnicianName(item, userLookup);
               return (
                 <div
                   key={id}
@@ -218,7 +328,7 @@ export default function CustomerPaymentHistoryPage() {
                         {item.serviceTitle || "Repair Service"}
                       </h2>
                       <p className="text-xs text-slate-400 mt-0.5">
-                        {item.technicianName || "Technician"}
+                        {techName}
                       </p>
                     </div>
                     <span className="text-base font-bold text-sky-400 shrink-0">

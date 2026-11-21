@@ -5,6 +5,7 @@ import TechnicianOverview from "@/components/overviews/TechnicianOverview";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 function readStoredUser() {
+  if (typeof window === "undefined") return null;
   try {
     const stored = localStorage.getItem("user");
     if (!stored) return null;
@@ -18,13 +19,15 @@ function readStoredUser() {
 export default function TechnicianDashboardPage() {
   const [user, setUser] = useState(null);
   const [ready, setReady] = useState(false);
+  const [syncVersion, setSyncVersion] = useState(0);
 
   const syncUser = useCallback(() => {
     setUser(readStoredUser());
+    setSyncVersion((prev) => prev + 1);
   }, []);
 
   useEffect(() => {
-    syncUser();
+    setUser(readStoredUser());
     setReady(true);
 
     window.addEventListener("storage", syncUser);
@@ -39,5 +42,5 @@ export default function TechnicianDashboardPage() {
     return <DashboardPageSkeleton />;
   }
 
-  return <TechnicianOverview user={user} />;
+  return <TechnicianOverview user={user} syncVersion={syncVersion} />;
 }

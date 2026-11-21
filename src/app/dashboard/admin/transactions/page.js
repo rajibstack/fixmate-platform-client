@@ -37,11 +37,12 @@ function formatCurrency(value) {
 
 function getBookingAmount(booking) {
   const raw =
-    booking?.paidAmount ||
-    booking?.finalAmount ||
-    booking?.totalPrice ||
-    booking?.startingPrice ||
-    booking?.price ||
+    booking?.amount ??
+    booking?.paidAmount ??
+    booking?.finalAmount ??
+    booking?.totalPrice ??
+    booking?.startingPrice ??
+    booking?.price ??
     0;
   const num = Number(raw);
   return Number.isNaN(num) ? 0 : num;
@@ -59,63 +60,231 @@ function getTransactionCode(booking) {
   return `pi_3${suffix}`;
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildUserLookup(users = [], currentUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (currentUser && typeof currentUser === "object") {
+    allUsers.push(currentUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveCustomerName(tx, lookup) {
+  const id = String(
+    tx?.customerId || tx?.userId || tx?.customer?._id || tx?.user?._id || ""
+  ).trim();
+  const email = String(
+    tx?.customerEmail ||
+      tx?.userEmail ||
+      tx?.customer?.email ||
+      tx?.user?.email ||
+      ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    tx?.customer?.name ||
+    tx?.user?.name ||
+    tx?.customerName ||
+    tx?.userName ||
+    "Customer"
+  );
+}
+
+function resolveTechnicianName(tx, lookup) {
+  const id = String(
+    tx?.technicianId || tx?.technician?._id || ""
+  ).trim();
+  const email = String(
+    tx?.technicianEmail || tx?.technician?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    tx?.technician?.name ||
+    tx?.technicianName ||
+    "Technician"
+  );
+}
+
 export default function AdminTransactionsPage() {
   const apiUrl = (
     process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
   ).replace(/\/+$/, "");
 
   const [bookings, setBookings] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  const fetchTransactions = useCallback(async () => {
-    setLoading(true);
-    setError("");
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error(
-          "Please sign in as an admin to view platform transactions."
-        );
+  const fetchTransactions = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setError("");
       }
 
-      const res = await fetch(`${apiUrl}/api/admin/bookings`, {
-        cache: "no-store",
-        headers: {
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        if (!token) {
+          throw new Error(
+            "Please sign in as an admin to view platform transactions."
+          );
+        }
+
+        const headers = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        },
-      });
+        };
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load transactions.");
+        const [bookingsRes, paymentsRes, usersRes] = await Promise.all([
+          fetch(`${apiUrl}/api/admin/bookings`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/payments`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/users`, {
+            cache: "no-store",
+            headers,
+          }),
+        ]);
+
+        const bookingsData = await bookingsRes.json().catch(() => ({}));
+        if (!bookingsRes.ok) {
+          throw new Error(
+            bookingsData?.message || "Failed to load transactions."
+          );
+        }
+
+        const bookingList = Array.isArray(bookingsData?.data)
+          ? bookingsData.data
+          : Array.isArray(bookingsData)
+          ? bookingsData
+          : [];
+
+        let combinedList = bookingList;
+        if (paymentsRes.ok) {
+          const paymentsData = await paymentsRes.json().catch(() => ({}));
+          const paymentList = Array.isArray(paymentsData?.data)
+            ? paymentsData.data
+            : Array.isArray(paymentsData)
+            ? paymentsData
+            : [];
+
+          if (paymentList.length > 0) {
+            const seenKeys = new Set(
+              paymentList.map((item) =>
+                String(item?.bookingId || item?._id || item?.id || "")
+              )
+            );
+            const extraFromBookings = bookingList.filter((b) => {
+              const bId = String(b?._id || b?.id || "");
+              const isPaid =
+                (b?.paymentStatus || "").toString().toLowerCase().trim() ===
+                "paid";
+              return isPaid && bId && !seenKeys.has(bId);
+            });
+            combinedList = [...paymentList, ...extraFromBookings];
+          }
+        }
+
+        if (usersRes.ok) {
+          const usersData = await usersRes.json().catch(() => ({}));
+          const userList = Array.isArray(usersData?.data)
+            ? usersData.data
+            : Array.isArray(usersData)
+            ? usersData
+            : [];
+          setUsers(userList);
+        }
+
+        setBookings(combinedList);
+      } catch (err) {
+        if (!silent) {
+          setError(err.message || "Could not fetch transactions.");
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-
-      const list = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : [];
-      setBookings(list);
-    } catch (err) {
-      setError(err.message || "Could not fetch transactions.");
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setCurrentUser(readStoredUser());
     fetchTransactions();
+
+    const handleSessionOrProfileChange = () => {
+      setCurrentUser(readStoredUser());
+      fetchTransactions({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleSessionOrProfileChange);
+    window.addEventListener("storage", handleSessionOrProfileChange);
+
+    return () => {
+      window.removeEventListener("auth-change", handleSessionOrProfileChange);
+      window.removeEventListener("storage", handleSessionOrProfileChange);
+    };
   }, [fetchTransactions]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, currentUser),
+    [users, currentUser]
+  );
 
   const paidTransactions = useMemo(() => {
     return bookings
-      .filter(
-        (b) =>
-          (b?.paymentStatus || "").toString().toLowerCase().trim() === "paid"
-      )
+      .filter((b) => {
+        const pay = (b?.paymentStatus || b?.status || "")
+          .toString()
+          .toLowerCase()
+          .trim();
+        return pay === "paid";
+      })
       .sort((a, b) => {
         const dateA = new Date(
           a?.paidAt || a?.updatedAt || a?.createdAt || 0
@@ -167,7 +336,7 @@ export default function AdminTransactionsPage() {
           </div>
           <button
             type="button"
-            onClick={fetchTransactions}
+            onClick={() => fetchTransactions()}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
@@ -255,7 +424,7 @@ export default function AdminTransactionsPage() {
             </Link>
             <button
               type="button"
-              onClick={fetchTransactions}
+              onClick={() => fetchTransactions()}
               className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
             >
               <RefreshCw className="w-4 h-4 text-sky-400" />
@@ -282,6 +451,14 @@ export default function AdminTransactionsPage() {
                 <tbody className="divide-y divide-slate-800/80 text-sm">
                   {paidTransactions.map((tx) => {
                     const id = tx._id || tx.id;
+                    const customerName = resolveCustomerName(tx, userLookup);
+                    const customerEmail =
+                      tx?.customerEmail || tx?.userEmail || "";
+                    const technicianName = resolveTechnicianName(
+                      tx,
+                      userLookup
+                    );
+
                     return (
                       <tr
                         key={id}
@@ -289,16 +466,16 @@ export default function AdminTransactionsPage() {
                       >
                         <td className="py-4 px-5 whitespace-nowrap">
                           <div className="font-semibold text-white">
-                            {tx?.customerName || "Customer"}
+                            {customerName}
                           </div>
-                          {tx?.customerEmail && (
+                          {customerEmail && (
                             <div className="text-xs text-slate-400 mt-0.5">
-                              {tx.customerEmail}
+                              {customerEmail}
                             </div>
                           )}
                         </td>
                         <td className="py-4 px-5 text-slate-300 whitespace-nowrap">
-                          {tx?.technicianName || "Technician"}
+                          {technicianName}
                         </td>
                         <td className="py-4 px-5 font-medium text-white">
                           {tx?.serviceTitle || "Repair Service"}
@@ -326,6 +503,10 @@ export default function AdminTransactionsPage() {
           <div className="lg:hidden space-y-3.5">
             {paidTransactions.map((tx) => {
               const id = tx._id || tx.id;
+              const customerName = resolveCustomerName(tx, userLookup);
+              const customerEmail = tx?.customerEmail || tx?.userEmail || "";
+              const technicianName = resolveTechnicianName(tx, userLookup);
+
               return (
                 <div
                   key={id}
@@ -349,11 +530,11 @@ export default function AdminTransactionsPage() {
                     <div className="flex items-center gap-1.5 truncate">
                       <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                       <strong className="text-slate-200 font-medium">
-                        {tx?.customerName || "Customer"}
+                        {customerName}
                       </strong>
-                      {tx?.customerEmail && (
+                      {customerEmail && (
                         <span className="text-slate-500 truncate">
-                          ({tx.customerEmail})
+                          ({customerEmail})
                         </span>
                       )}
                     </div>
@@ -362,7 +543,7 @@ export default function AdminTransactionsPage() {
                       <span>
                         Technician:{" "}
                         <strong className="text-slate-200 font-medium">
-                          {tx?.technicianName || "Technician"}
+                          {technicianName}
                         </strong>
                       </span>
                     </div>

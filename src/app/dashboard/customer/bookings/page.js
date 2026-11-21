@@ -50,34 +50,48 @@ function readStoredUser() {
   }
 }
 
-function resolveTechnicianName(booking, currentUser) {
+function buildUserLookup(users = [], currentUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (currentUser && typeof currentUser === "object") {
+    allUsers.push(currentUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveTechnicianName(booking, lookup) {
   const bTechId = String(
     booking?.technicianId ||
       booking?.technician?._id ||
       booking?.technician?.id ||
       ""
   ).trim();
-  const uId = String(currentUser?._id || currentUser?.id || "").trim();
-
   const bTechEmail = String(
     booking?.technicianEmail || booking?.technician?.email || ""
   )
     .trim()
     .toLowerCase();
-  const uEmail = String(currentUser?.email || "").trim().toLowerCase();
 
-  const isCurrentUserTech = Boolean(
-    currentUser?.name &&
-      ((bTechId && uId && bTechId === uId) ||
-        (bTechEmail && uEmail && bTechEmail === uEmail))
-  );
-
-  if (isCurrentUserTech) {
-    return currentUser.name;
-  }
+  const matched =
+    (bTechId && lookup?.byId?.get(bTechId)) ||
+    (bTechEmail && lookup?.byEmail?.get(bTechEmail));
 
   return (
-    booking?.technician?.name || booking?.technicianName || "Technician"
+    matched?.name ||
+    booking?.technician?.name ||
+    booking?.technicianName ||
+    "Technician"
   );
 }
 
@@ -149,6 +163,7 @@ export default function CustomerMyBookingsPage() {
   ).replace(/\/+$/, "");
 
   const [bookings, setBookings] = useState([]);
+  const [users, setUsers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -174,13 +189,21 @@ export default function CustomerMyBookingsPage() {
           throw new Error("Please sign in to view your bookings.");
         }
 
-        const res = await fetch(`${apiUrl}/api/bookings/my`, {
-          cache: "no-store",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const headers = {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        };
+
+        const [res, usersRes] = await Promise.all([
+          fetch(`${apiUrl}/api/bookings/my`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/users`, {
+            cache: "no-store",
+            headers,
+          }).catch(() => null),
+        ]);
 
         const data = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -193,6 +216,18 @@ export default function CustomerMyBookingsPage() {
           ? data
           : [];
         setBookings(list);
+
+        if (usersRes && usersRes.ok) {
+          const usersData = await usersRes.json().catch(() => ({}));
+          const userList = Array.isArray(usersData?.data)
+            ? usersData.data
+            : Array.isArray(usersData)
+            ? usersData
+            : [];
+          if (userList.length > 0) {
+            setUsers(userList);
+          }
+        }
       } catch (err) {
         if (!silent) {
           setFeedback({
@@ -226,6 +261,11 @@ export default function CustomerMyBookingsPage() {
       window.removeEventListener("storage", handleSessionOrProfileChange);
     };
   }, [fetchMyBookings]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, currentUser),
+    [users, currentUser]
+  );
 
   const counts = useMemo(() => {
     let active = 0;
@@ -520,7 +560,7 @@ export default function CustomerMyBookingsPage() {
             const status = normalizeStatus(booking?.status);
             const paymentStatus = normalizePaymentStatus(booking?.paymentStatus);
             const busy = actionId === id;
-            const techName = resolveTechnicianName(booking, currentUser);
+            const techName = resolveTechnicianName(booking, userLookup);
 
             const amount = Number(
               booking?.paidAmount ||

@@ -35,6 +35,7 @@ export default function RootLayout({ children }) {
           theme="dark"
           richColors
           closeButton
+          duration={4000}
           toastOptions={{
             style: {
               background: "#0EA6F4",

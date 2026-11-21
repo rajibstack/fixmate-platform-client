@@ -37,10 +37,12 @@ export default function DashboardOverviewPage() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [redirecting, setRedirecting] = useState(false);
+  const [syncVersion, setSyncVersion] = useState(0);
 
   const loadUser = useCallback(() => {
     const nextUser = readSessionUser();
     setUser(nextUser);
+    setSyncVersion((prev) => prev + 1);
     setLoading(false);
   }, []);
 
@@ -74,12 +76,12 @@ export default function DashboardOverviewPage() {
   const role = (user?.role || "customer").toString().toLowerCase().trim();
 
   if (role === "admin") {
-    return <AdminOverview user={user} />;
+    return <AdminOverview user={user} syncVersion={syncVersion} />;
   }
 
   if (role === "technician") {
-    return <TechnicianOverview user={user} />;
+    return <TechnicianOverview user={user} syncVersion={syncVersion} />;
   }
 
-  return <CustomerOverview user={user} />;
+  return <CustomerOverview user={user} syncVersion={syncVersion} />;
 }

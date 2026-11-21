@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -18,12 +18,16 @@ import {
   CheckCircle2,
   AlertCircle,
   Lock,
+  Crown,
+  Check,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   DashboardPageSkeleton,
   FixMateSpinner,
 } from "@/components/ui/LoadingState";
+
+const FREE_SERVICE_LIMIT = 3;
 
 const CATEGORIES = [
   "Smartphone",
@@ -42,9 +46,60 @@ const SERVICE_MODES = [
   "Pickup & Delivery",
 ];
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem("user");
+    if (!stored) return null;
+    const parsed = JSON.parse(stored);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAuthToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
+function resolveUserPlan(userObj) {
+  if (!userObj || typeof userObj !== "object") return "free";
+  if (userObj.isVerifiedPro === true) return "pro";
+  return String(userObj.plan || "free").toLowerCase().trim() === "pro"
+    ? "pro"
+    : "free";
+}
+
+function syncUserPlanToStorage(updatedUser) {
+  if (typeof window === "undefined" || !updatedUser) return;
+  try {
+    const raw = localStorage.getItem("user");
+    const prev = raw ? JSON.parse(raw) : {};
+    const resolvedPlan = resolveUserPlan(updatedUser);
+    const nextUser = {
+      ...prev,
+      ...updatedUser,
+      plan: resolvedPlan,
+      isVerifiedPro: resolvedPlan === "pro",
+    };
+    localStorage.setItem("user", JSON.stringify(nextUser));
+    window.dispatchEvent(new Event("auth-change"));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 export default function AddServicePage() {
   const router = useRouter();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
   const imgbbKey = process.env.NEXT_PUBLIC_IMGBB_API_KEY;
   const redirectTimerRef = useRef(null);
 
@@ -61,6 +116,12 @@ export default function AddServicePage() {
     technicianEmail: "",
   });
 
+  const [plan, setPlan] = useState("free");
+  const [proPrice, setProPrice] = useState(19);
+  const [serviceCount, setServiceCount] = useState(0);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [upgradingPro, setUpgradingPro] = useState(false);
+
   const [imagePreview, setImagePreview] = useState("");
   const [imageFailed, setImageFailed] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -68,21 +129,126 @@ export default function AddServicePage() {
   const [navigating, setNavigating] = useState(false);
   const [feedback, setFeedback] = useState(null);
 
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem("user");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setFormData((prev) => ({
-          ...prev,
-          technicianName: parsed?.name || "",
-          technicianEmail: parsed?.email || "",
-        }));
-      }
-    } catch {
-      // ignore storage parse error
+  const isPro = plan === "pro";
+  const hasReachedFreeLimit = !isPro && serviceCount >= FREE_SERVICE_LIMIT;
+
+  const refreshPlanAndServiceCount = useCallback(async () => {
+    const token = getAuthToken();
+    const parsedUser = readStoredUser();
+
+    if (parsedUser) {
+      setPlan(resolveUserPlan(parsedUser));
     }
+
+    if (!token) {
+      return {
+        currentPlan: resolveUserPlan(parsedUser),
+        currentCount: 0,
+      };
+    }
+
+    let resolvedPlan = resolveUserPlan(parsedUser);
+    let resolvedCount = 0;
+
+    try {
+      const [servicesRes, subStatusRes] = await Promise.all([
+        fetch(`${apiUrl}/api/technician/services`, {
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch(() => null),
+        fetch(`${apiUrl}/api/subscriptions/pro/status`, {
+          cache: "no-store",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }).catch(() => null),
+      ]);
+
+      let servicesData = null;
+      if (servicesRes && servicesRes.ok) {
+        servicesData = await servicesRes.json().catch(() => ({}));
+        const list = Array.isArray(servicesData?.data) ? servicesData.data : [];
+        const filtered = parsedUser?.email
+          ? list.filter(
+              (item) =>
+                !item.technicianEmail ||
+                item.technicianEmail.toLowerCase() ===
+                  parsedUser.email.toLowerCase()
+            )
+          : list;
+        resolvedCount = filtered.length;
+        setServiceCount(resolvedCount);
+      }
+
+      if (subStatusRes && subStatusRes.ok) {
+        const subData = await subStatusRes.json().catch(() => ({}));
+        resolvedPlan = resolveUserPlan({
+          plan: subData?.plan ?? servicesData?.plan ?? parsedUser?.plan,
+          isVerifiedPro:
+            subData?.isVerifiedPro ??
+            subData?.user?.isVerifiedPro ??
+            parsedUser?.isVerifiedPro,
+        });
+        if (subData?.price) {
+          setProPrice(Number(subData.price));
+        }
+        if (subData?.user) {
+          syncUserPlanToStorage(subData.user);
+        } else {
+          syncUserPlanToStorage({
+            plan: resolvedPlan,
+            isVerifiedPro: resolvedPlan === "pro",
+          });
+        }
+      } else {
+        resolvedPlan = resolveUserPlan({
+          plan: servicesData?.plan ?? parsedUser?.plan,
+          isVerifiedPro: parsedUser?.isVerifiedPro,
+        });
+      }
+
+      setPlan(resolvedPlan);
+    } catch {
+      // Keep fallback state
+    }
+
+    return {
+      currentPlan: resolvedPlan,
+      currentCount: resolvedCount,
+    };
+  }, [apiUrl]);
+
+  const syncTechnicianIdentity = useCallback(() => {
+    const parsed = readStoredUser();
+    if (!parsed) return;
+    setFormData((prev) => ({
+      ...prev,
+      technicianName: parsed.name ?? prev.technicianName,
+      technicianEmail: parsed.email ?? prev.technicianEmail,
+    }));
+    setPlan(resolveUserPlan(parsed));
   }, []);
+
+  useEffect(() => {
+    syncTechnicianIdentity();
+    refreshPlanAndServiceCount();
+
+    const handleSync = () => {
+      syncTechnicianIdentity();
+      refreshPlanAndServiceCount();
+    };
+
+    window.addEventListener("auth-change", handleSync);
+    window.addEventListener("storage", handleSync);
+    return () => {
+      window.removeEventListener("auth-change", handleSync);
+      window.removeEventListener("storage", handleSync);
+    };
+  }, [syncTechnicianIdentity, refreshPlanAndServiceCount]);
 
   useEffect(() => {
     return () => {
@@ -99,6 +265,63 @@ export default function AddServicePage() {
       }
     };
   }, []);
+
+  const handleConfirmUpgradeToPro = async () => {
+    setUpgradingPro(true);
+    setFeedback(null);
+
+    try {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error("Please sign in as a technician first.");
+      }
+
+      const returnUrl =
+        typeof window !== "undefined" ? window.location.origin : undefined;
+
+      const res = await fetch(
+        `${apiUrl}/api/subscriptions/pro/checkout-session`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ returnUrl }),
+        }
+      );
+
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        throw new Error(data?.message || "Failed to upgrade to Pro.");
+      }
+
+      if (data?.url) {
+        window.location.href = data.url;
+        return;
+      }
+
+      setPlan("pro");
+      setUpgradeModalOpen(false);
+      if (data?.user) {
+        syncUserPlanToStorage(data.user);
+      } else {
+        syncUserPlanToStorage({ plan: "pro", isVerifiedPro: true });
+      }
+
+      const successMsg =
+        data?.message ||
+        "Upgraded to Pro! You can now add unlimited services.";
+      setFeedback({ type: "success", message: successMsg });
+      toast.success("Upgraded to Pro Technician Plan!");
+    } catch (err) {
+      const errMsg = err.message || "Could not upgrade to Pro.";
+      setFeedback({ type: "error", message: errMsg });
+      toast.error(errMsg);
+    } finally {
+      setUpgradingPro(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -207,6 +430,19 @@ export default function AddServicePage() {
     e.preventDefault();
     setFeedback(null);
 
+    const latestState = await refreshPlanAndServiceCount();
+    const activePlan = latestState?.currentPlan || plan;
+    const activeCount = Math.max(latestState?.currentCount ?? 0, serviceCount);
+
+    if (activePlan !== "pro" && activeCount >= FREE_SERVICE_LIMIT) {
+      setUpgradeModalOpen(true);
+      const msg =
+        "Free technicians can add up to 3 services. Upgrade to Pro to add more services.";
+      setFeedback({ type: "error", message: msg });
+      toast.error(msg);
+      return;
+    }
+
     if (!formData.title.trim()) {
       const msg = "Service title is required.";
       setFeedback({ type: "error", message: msg });
@@ -249,6 +485,18 @@ export default function AddServicePage() {
 
     setSubmitting(true);
 
+    const latestUser = readStoredUser();
+    const techName = (
+      latestUser?.name ||
+      formData.technicianName ||
+      ""
+    ).trim();
+    const techEmail = (
+      latestUser?.email ||
+      formData.technicianEmail ||
+      ""
+    ).trim();
+
     const payload = {
       title: formData.title.trim(),
       category: formData.category,
@@ -258,13 +506,13 @@ export default function AddServicePage() {
       area: formData.area.trim(),
       description: formData.description.trim(),
       image: formData.image || "",
-      technicianName: formData.technicianName.trim(),
-      technicianEmail: formData.technicianEmail.trim(),
+      technicianName: techName,
+      technicianEmail: techEmail,
       status: "pending",
     };
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       if (!token) {
         throw new Error(
           "Please sign in as a technician to submit a service."
@@ -293,8 +541,17 @@ export default function AddServicePage() {
       const data = await res.json().catch(() => ({}));
 
       if (!res.ok) {
+        if (
+          res.status === 403 ||
+          String(data?.message || "").toLowerCase().includes("limit") ||
+          String(data?.message || "").toLowerCase().includes("pro")
+        ) {
+          setUpgradeModalOpen(true);
+        }
         throw new Error(data?.message || "Failed to submit service for review.");
       }
+
+      setServiceCount((prev) => prev + 1);
 
       const successMsg =
         "Service submitted for review! It will stay pending until an admin approves it.";
@@ -312,6 +569,8 @@ export default function AddServicePage() {
         area: "",
         description: "",
         image: "",
+        technicianName: techName,
+        technicianEmail: techEmail,
       }));
       setImagePreview("");
       setImageFailed(false);
@@ -350,6 +609,16 @@ export default function AddServicePage() {
               <ShieldCheck className="w-3.5 h-3.5" />
               Pending Admin Approval
             </span>
+            {isPro ? (
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/35">
+                <Crown className="w-3.5 h-3.5 text-amber-400" />
+                Verified Pro
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700">
+                Free ({serviceCount}/{FREE_SERVICE_LIMIT})
+              </span>
+            )}
           </div>
           <p className="text-slate-400 text-sm mt-1.5">
             New services stay pending until an admin approves them.
@@ -365,6 +634,27 @@ export default function AddServicePage() {
           <span>Back to My services</span>
         </Link>
       </div>
+
+      {hasReachedFreeLimit && (
+        <div className="rounded-2xl px-4 py-3.5 border bg-amber-500/10 border-amber-400/30 text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+          <div className="flex items-center gap-2.5">
+            <Crown className="w-5 h-5 shrink-0 text-amber-400" />
+            <span>
+              You have reached the <strong>{FREE_SERVICE_LIMIT}-service</strong>{" "}
+              limit on the Free plan. Upgrade to <strong>Pro</strong> to add more
+              services.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setUpgradeModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-bold transition cursor-pointer shrink-0 self-start sm:self-auto"
+          >
+            <Crown className="w-3.5 h-3.5" />
+            <span>Upgrade to Pro</span>
+          </button>
+        </div>
+      )}
 
       {feedback && (
         <div
@@ -798,6 +1088,82 @@ export default function AddServicePage() {
           </section>
         </div>
       </form>
+
+      {/* Upgrade to Pro Popup Modal */}
+      {upgradeModalOpen && !isPro && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-amber-400/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                  <Crown className="w-5 h-5" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-white">
+                    Upgrade to Technician Pro
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    Free plan allows up to {FREE_SERVICE_LIMIT} services.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                disabled={upgradingPro}
+                onClick={() => setUpgradeModalOpen(false)}
+                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="rounded-2xl bg-slate-950/70 border border-slate-800 p-4 space-y-2.5 text-sm">
+              <div className="flex items-baseline justify-between">
+                <span className="font-semibold text-white">Pro Monthly</span>
+                <span className="text-xl font-bold text-amber-300">
+                  ${proPrice}
+                  <span className="text-xs font-normal text-slate-400">
+                    /mo
+                  </span>
+                </span>
+              </div>
+              <ul className="space-y-1.5 text-xs text-slate-300 pt-1">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Add unlimited repair services beyond 3</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>Get Verified Pro badge on your profile &amp; services</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="flex items-center justify-end gap-2.5 pt-1">
+              <button
+                type="button"
+                disabled={upgradingPro}
+                onClick={() => setUpgradeModalOpen(false)}
+                className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={upgradingPro}
+                onClick={handleConfirmUpgradeToPro}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs sm:text-sm font-bold transition shadow-lg shadow-amber-500/20 cursor-pointer disabled:opacity-60"
+              >
+                {upgradingPro && <FixMateSpinner compact />}
+                <Crown className="w-4 h-4" />
+                <span>
+                  {upgradingPro ? "Upgrading..." : `Upgrade Now ($${proPrice})`}
+                </span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Wrench } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { toast } from "sonner";
@@ -44,8 +44,28 @@ function getDashboardPath(role) {
   return "/dashboard/customer";
 }
 
+function getSafeRedirectPath(rawRedirect) {
+  if (!rawRedirect || typeof rawRedirect !== "string") return "";
+  const trimmed = rawRedirect.trim();
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) return "";
+  return trimmed;
+}
+
+function getStoredToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
 function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const safeRedirect = getSafeRedirectPath(searchParams.get("redirect"));
+
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [navigating, setNavigating] = useState(false);
@@ -61,24 +81,22 @@ function LoginContent() {
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
       const storedUser = localStorage.getItem("user");
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        localStorage.getItem("accessToken");
+      const token = getStoredToken();
 
       if (storedUser && token) {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser === "object" && parsedUser.role) {
           setNavigating(true);
-          router.replace(getDashboardPath(parsedUser.role));
+          router.replace(safeRedirect || getDashboardPath(parsedUser.role));
         }
       }
     } catch {
       localStorage.removeItem("user");
     }
-  }, [router]);
+  }, [router, safeRedirect]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -105,9 +123,9 @@ function LoginContent() {
           : fallbackSuccessMsg
       );
       setNavigating(true);
-      router.push(getDashboardPath(normalizedUser.role));
+      router.push(safeRedirect || getDashboardPath(normalizedUser.role));
     },
-    [router]
+    [router, safeRedirect]
   );
 
   const authenticateWithEmail = useCallback(
@@ -395,7 +413,9 @@ export default function LoginPage() {
     <GoogleOAuthProvider
       clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
     >
-      <LoginContent />
+      <Suspense fallback={<PublicPageSkeleton cards={2} />}>
+        <LoginContent />
+      </Suspense>
     </GoogleOAuthProvider>
   );
 }

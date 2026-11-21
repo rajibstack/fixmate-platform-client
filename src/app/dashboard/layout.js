@@ -62,7 +62,11 @@ export default function DashboardLayout({ children }) {
       const hasToken = Boolean(token || parsed.token);
       if (!hasToken) return null;
 
-      return parsed;
+      const normalizedRole = (parsed.role || "").toString().toLowerCase().trim();
+      return {
+        ...parsed,
+        role: normalizedRole || parsed.role,
+      };
     } catch {
       return null;
     }
@@ -72,6 +76,7 @@ export default function DashboardLayout({ children }) {
     try {
       const currentUser = syncUserFromStorage();
       if (!currentUser) {
+        setUser(null);
         setCheckingAuth(false);
         router.replace("/sign-in");
         return;
@@ -79,6 +84,7 @@ export default function DashboardLayout({ children }) {
 
       const role = (currentUser?.role || "").toString().toLowerCase().trim();
       if (!role) {
+        setUser(null);
         setCheckingAuth(false);
         router.replace("/sign-in");
         return;
@@ -89,30 +95,31 @@ export default function DashboardLayout({ children }) {
 
       if (!isSharedRoute) {
         if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
-          router.replace(getDashboardPath(role));
+          router.replace(getDashboardPath());
           return;
         }
         if (
           pathname.startsWith("/dashboard/technician") &&
           role !== "technician"
         ) {
-          router.replace(getDashboardPath(role));
+          router.replace(getDashboardPath());
           return;
         }
         if (pathname.startsWith("/dashboard/customer") && role !== "customer") {
-          router.replace(getDashboardPath(role));
+          router.replace(getDashboardPath());
           return;
         }
         if (pathname === "/dashboard") {
-          router.replace(getDashboardPath(role));
+          router.replace(getDashboardPath());
           return;
         }
       }
 
-      setUser({ ...currentUser, role });
+      setUser(currentUser);
       setAvatarError(false);
       setCheckingAuth(false);
     } catch {
+      setUser(null);
       setCheckingAuth(false);
       router.replace("/sign-in");
     }
@@ -122,11 +129,7 @@ export default function DashboardLayout({ children }) {
     const handleProfileOrAuthSync = () => {
       const updated = syncUserFromStorage();
       if (updated) {
-        const normalizedRole = (updated.role || "")
-          .toString()
-          .toLowerCase()
-          .trim();
-        setUser({ ...updated, role: normalizedRole || updated.role });
+        setUser(updated);
         setAvatarError(false);
       } else {
         setUser(null);

@@ -41,9 +41,11 @@ const FALLBACK_SERVICE_IMAGE =
   "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1000&q=80";
 
 function isServiceApprovedAndAvailable(service) {
+  if (!service || typeof service !== "object") return false;
   const status = (service?.status || service?.approvalStatus || "approved")
     .toString()
-    .toLowerCase();
+    .toLowerCase()
+    .trim();
   const isApproved = status === "approved";
   const isAvailable =
     service?.available !== false && service?.isAvailable !== false;
@@ -77,6 +79,70 @@ function normalizeSortOption(rawSort = "newest") {
   return "newest";
 }
 
+function applyClientFiltersAndSort(list, { search, category, mode, sort }) {
+  const q = (search || "").toString().trim().toLowerCase();
+  const cat = (category || "All").toString().trim().toLowerCase();
+  const srvMode = (mode || "All").toString().trim().toLowerCase();
+
+  let filtered = list.filter((item) => {
+    if (cat && cat !== "all") {
+      const itemCat = (item?.category || "").toString().toLowerCase();
+      const matchesCat =
+        itemCat === cat ||
+        itemCat.includes(cat) ||
+        (cat === "ac & refrigeration" &&
+          (itemCat.includes("ac") || itemCat.includes("refrigerator")));
+      if (!matchesCat) return false;
+    }
+
+    if (srvMode && srvMode !== "all") {
+      const itemMode = (item?.mode || item?.serviceMode || "Home Visit")
+        .toString()
+        .toLowerCase();
+      if (itemMode !== srvMode && !itemMode.includes(srvMode)) {
+        return false;
+      }
+    }
+
+    if (q) {
+      const title = (item?.title || "").toString().toLowerCase();
+      const itemCat = (item?.category || "").toString().toLowerCase();
+      const area = (item?.area || item?.serviceArea || "")
+        .toString()
+        .toLowerCase();
+      const desc = (item?.description || "").toString().toLowerCase();
+      if (
+        !title.includes(q) &&
+        !itemCat.includes(q) &&
+        !area.includes(q) &&
+        !desc.includes(q)
+      ) {
+        return false;
+      }
+    }
+
+    return true;
+  });
+
+  if (sort === "price-asc") {
+    filtered = [...filtered].sort(
+      (a, b) => Number(a?.price || 0) - Number(b?.price || 0)
+    );
+  } else if (sort === "price-desc") {
+    filtered = [...filtered].sort(
+      (a, b) => Number(b?.price || 0) - Number(a?.price || 0)
+    );
+  } else {
+    filtered = [...filtered].sort(
+      (a, b) =>
+        new Date(b?.createdAt || 0).getTime() -
+        new Date(a?.createdAt || 0).getTime()
+    );
+  }
+
+  return filtered;
+}
+
 function readStoredUser() {
   if (typeof window === "undefined") return null;
   try {
@@ -91,7 +157,10 @@ function readStoredUser() {
 
 function resolveTechnicianName(service, currentUser) {
   const srvTechId = String(
-    service?.technicianId || service?.technician?._id || service?.technician?.id || ""
+    service?.technicianId ||
+      service?.technician?._id ||
+      service?.technician?.id ||
+      ""
   ).trim();
   const userId = String(currentUser?._id || currentUser?.id || "").trim();
 
@@ -100,7 +169,9 @@ function resolveTechnicianName(service, currentUser) {
   )
     .trim()
     .toLowerCase();
-  const userEmail = String(currentUser?.email || "").trim().toLowerCase();
+  const userEmail = String(currentUser?.email || "")
+    .trim()
+    .toLowerCase();
 
   const isOwnService = Boolean(
     currentUser?.name &&
@@ -178,6 +249,7 @@ function BrowseServicesContent() {
 
   const debounceTimerRef = useRef(null);
   const searchInputRef = useRef(null);
+  const hasLoadedOnceRef = useRef(false);
 
   useEffect(() => {
     setSearchTerm((prev) => (prev === urlQuery ? prev : urlQuery));
@@ -205,7 +277,9 @@ function BrowseServicesContent() {
       if (sort && sort !== "newest") params.set("sort", sort);
 
       const queryString = params.toString();
-      const targetUrl = queryString ? `/services?${queryString}` : "/services";
+      const targetUrl = queryString
+        ? `/services?${queryString}`
+        : "/services";
       const currentFullUrl =
         typeof window !== "undefined"
           ? `${window.location.pathname}${window.location.search}`
@@ -260,11 +334,19 @@ function BrowseServicesContent() {
           ? data
           : [];
 
-        const filteredValid = rawList.filter(isServiceApprovedAndAvailable);
-        setServices(filteredValid);
+        const approvedValid = rawList.filter(isServiceApprovedAndAvailable);
+        const finalList = applyClientFiltersAndSort(approvedValid, {
+          search: trimmedSearch,
+          category,
+          mode,
+          sort,
+        });
+
+        setServices(finalList);
       } catch (err) {
         setError(err.message || "Could not fetch services.");
       } finally {
+        hasLoadedOnceRef.current = true;
         setInitialLoading(false);
         setFetching(false);
       }
@@ -278,29 +360,15 @@ function BrowseServicesContent() {
       category: urlCategory,
       mode: urlMode,
       sort: urlSort,
-      isInitial: initialLoading,
+      isInitial: !hasLoadedOnceRef.current,
     });
-  }, [
-    fetchServicesFromServer,
-    urlQuery,
-    urlCategory,
-    urlMode,
-    urlSort,
-    initialLoading,
-  ]);
+  }, [fetchServicesFromServer, urlQuery, urlCategory, urlMode, urlSort]);
 
   useEffect(() => {
     setCurrentUser(readStoredUser());
 
     const handleSessionOrProfileChange = () => {
       setCurrentUser(readStoredUser());
-      fetchServicesFromServer({
-        search: searchTerm,
-        category: selectedCategory,
-        mode: selectedMode,
-        sort: sortBy,
-        isInitial: false,
-      });
     };
 
     window.addEventListener("auth-change", handleSessionOrProfileChange);
@@ -310,7 +378,7 @@ function BrowseServicesContent() {
       window.removeEventListener("auth-change", handleSessionOrProfileChange);
       window.removeEventListener("storage", handleSessionOrProfileChange);
     };
-  }, [fetchServicesFromServer, searchTerm, selectedCategory, selectedMode, sortBy]);
+  }, []);
 
   const totalPages = Math.max(1, Math.ceil(services.length / ITEMS_PER_PAGE));
 
@@ -618,27 +686,28 @@ function BrowseServicesContent() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {paginatedServices.map((service) => {
-                const id = service._id || service.id;
+              {paginatedServices.map((service, index) => {
+                const rawId = service?._id || service?.id;
+                const id = rawId ? String(rawId).trim() : "";
                 const modeLabel =
-                  service.mode || service.serviceMode || "Home Visit";
+                  service?.mode || service?.serviceMode || "Home Visit";
                 const areaLabel =
-                  service.area ||
-                  service.serviceArea ||
+                  service?.area ||
+                  service?.serviceArea ||
                   "Service Area Available";
                 const techName = resolveTechnicianName(service, currentUser);
 
                 return (
                   <article
-                    key={id}
+                    key={id || `service-${index}`}
                     className="h-full flex flex-col justify-between bg-slate-900/90 border border-slate-800 hover:border-sky-500/40 rounded-3xl overflow-hidden shadow-xl transition"
                   >
                     <div>
                       {/* Service Image */}
                       <div className="h-44 w-full bg-slate-950 border-b border-slate-800/80 overflow-hidden flex items-center justify-center">
                         <ServiceCardImage
-                          src={service.image}
-                          alt={service.title}
+                          src={service?.image}
+                          alt={service?.title || "Repair Service"}
                         />
                       </div>
 
@@ -646,7 +715,7 @@ function BrowseServicesContent() {
                       <div className="p-5 space-y-3">
                         <div className="flex items-center justify-between gap-2 text-xs">
                           <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/25 font-semibold truncate">
-                            {service.category || "General Repair"}
+                            {service?.category || "General Repair"}
                           </span>
                           <span className="inline-flex items-center gap-1 text-slate-300 font-medium truncate shrink-0">
                             <Laptop className="w-3.5 h-3.5 text-sky-400 shrink-0" />
@@ -655,7 +724,7 @@ function BrowseServicesContent() {
                         </div>
 
                         <h2 className="text-base sm:text-lg font-bold text-white line-clamp-1">
-                          {service.title}
+                          {service?.title}
                         </h2>
 
                         <div className="space-y-1.5 text-xs text-slate-400 pt-0.5">
@@ -680,18 +749,29 @@ function BrowseServicesContent() {
                           Starting at
                         </span>
                         <span className="text-lg font-bold text-sky-400">
-                          ${Number(service.price || 0)}
+                          ${Number(service?.price || 0)}
                         </span>
                       </div>
 
-                      <Link
-                        href={`/services/${id}`}
-                        onClick={() => setNavigating(true)}
-                        className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
-                      >
-                        <span>View Details</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
+                      {id ? (
+                        <Link
+                          href={`/services/${id}`}
+                          onClick={() => setNavigating(true)}
+                          className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
+                        >
+                          <span>View Details</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="inline-flex items-center gap-1.5 bg-slate-800 text-slate-500 font-semibold text-xs px-3.5 py-2.5 rounded-xl cursor-not-allowed shrink-0"
+                        >
+                          <span>View Details</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                     </div>
                   </article>
                 );

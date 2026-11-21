@@ -41,6 +41,68 @@ function getTicketCode(booking) {
   return `#FM-${numericTail}`;
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function getAuthToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
+function buildUserLookup(users = [], currentUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (currentUser && typeof currentUser === "object") {
+    allUsers.push(currentUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || (!u.name && !u.phone && !u.area)) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveCustomerDetails(booking, lookup) {
+  const id = String(
+    booking?.customerId || booking?.userId || booking?.customer?._id || ""
+  ).trim();
+  const email = String(
+    booking?.customerEmail || booking?.userEmail || booking?.customer?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return {
+    name: matched?.name || booking?.customer?.name || booking?.customerName || "Customer",
+    phone: matched?.phone || booking?.phone || booking?.customerPhone || "—",
+    address: booking?.address || matched?.area || "—",
+  };
+}
+
 function normalizeStatus(status) {
   return (status || "requested").toString().toLowerCase().trim();
 }
@@ -89,59 +151,110 @@ function RequestThumbnail({ src, alt }) {
 }
 
 export default function TechnicianManageRequestsPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [requests, setRequests] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [actionKey, setActionKey] = useState("");
   const [feedback, setFeedback] = useState(null);
   const [requestToReject, setRequestToReject] = useState(null);
 
-  const fetchTechnicianRequests = useCallback(async () => {
-    setLoading(true);
-    setFeedback(null);
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error(
-          "Please sign in as a technician to view repair requests."
-        );
+  const fetchTechnicianRequests = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setFeedback(null);
       }
 
-      const res = await fetch(`${apiUrl}/api/technician/bookings`, {
-        cache: "no-store",
-        headers: {
+      try {
+        const token = getAuthToken();
+        if (!token) {
+          throw new Error(
+            "Please sign in as a technician to view repair requests."
+          );
+        }
+
+        const headers = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        },
-      });
+        };
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load repair requests.");
+        const [res, usersRes] = await Promise.all([
+          fetch(`${apiUrl}/api/technician/bookings`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/users`, {
+            cache: "no-store",
+            headers,
+          }).catch(() => null),
+        ]);
+
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          throw new Error(data?.message || "Failed to load repair requests.");
+        }
+
+        const list = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setRequests(list);
+
+        if (usersRes && usersRes.ok) {
+          const usersData = await usersRes.json().catch(() => ({}));
+          const userList = Array.isArray(usersData?.data)
+            ? usersData.data
+            : Array.isArray(usersData)
+            ? usersData
+            : [];
+          if (userList.length > 0) {
+            setUsers(userList);
+          }
+        }
+      } catch (err) {
+        if (!silent) {
+          setFeedback({
+            type: "error",
+            message: err.message || "Could not fetch requests.",
+          });
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-
-      const list = Array.isArray(data?.data)
-        ? data.data
-        : Array.isArray(data)
-        ? data
-        : [];
-      setRequests(list);
-    } catch (err) {
-      setFeedback({
-        type: "error",
-        message: err.message || "Could not fetch requests.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setCurrentUser(readStoredUser());
     fetchTechnicianRequests();
+
+    const handleLiveSync = () => {
+      setCurrentUser(readStoredUser());
+      fetchTechnicianRequests({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [fetchTechnicianRequests]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, currentUser),
+    [users, currentUser]
+  );
 
   const counts = useMemo(() => {
     let requested = 0;
@@ -184,7 +297,7 @@ export default function TechnicianManageRequestsPage() {
     setFeedback(null);
 
     try {
-      const token = localStorage.getItem("token");
+      const token = getAuthToken();
       const res = await fetch(`${apiUrl}/api/bookings/${id}/status`, {
         method: "PATCH",
         headers: {
@@ -346,7 +459,7 @@ export default function TechnicianManageRequestsPage() {
             ) : (
               <button
                 type="button"
-                onClick={fetchTechnicianRequests}
+                onClick={() => fetchTechnicianRequests()}
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4 text-sky-400" />
@@ -364,6 +477,7 @@ export default function TechnicianManageRequestsPage() {
               .toString()
               .toLowerCase()
               .trim();
+            const customer = resolveCustomerDetails(booking, userLookup);
             const amount = Number(
               booking?.finalAmount ||
                 booking?.totalPrice ||
@@ -419,13 +533,13 @@ export default function TechnicianManageRequestsPage() {
                       <span className="min-w-0">
                         Customer:{" "}
                         <strong className="font-semibold text-slate-100">
-                          {booking?.customerName || "Customer"}
+                          {customer.name}
                         </strong>
                       </span>
                       <span className="shrink-0">
                         Phone:{" "}
                         <strong className="font-semibold text-sky-400">
-                          {booking?.phone || "—"}
+                          {customer.phone}
                         </strong>
                       </span>
                     </div>
@@ -433,7 +547,7 @@ export default function TechnicianManageRequestsPage() {
                     <div className="text-xs sm:text-sm text-slate-400 break-words">
                       <span>Address: </span>
                       <strong className="font-semibold text-slate-100">
-                        {booking?.address || "—"}
+                        {customer.address}
                       </strong>
                     </div>
 
@@ -569,7 +683,7 @@ export default function TechnicianManageRequestsPage() {
         variant="warning"
         title="Reject Repair Request?"
         description={`Are you sure you want to reject the request from "${
-          requestToReject?.customerName || "Customer"
+          requestToReject ? resolveCustomerDetails(requestToReject, userLookup).name : "Customer"
         }" for "${requestToReject?.serviceTitle || "this service"}"?`}
         confirmText="Reject Request"
         cancelText="Keep Request"

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Wrench } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { toast } from "sonner";
@@ -15,8 +15,28 @@ function getDashboardPath(role) {
   return "/dashboard/customer";
 }
 
+function getSafeRedirectPath(rawRedirect) {
+  if (!rawRedirect || typeof rawRedirect !== "string") return "";
+  const trimmed = rawRedirect.trim();
+  if (!trimmed.startsWith("/") || trimmed.startsWith("//")) return "";
+  return trimmed;
+}
+
+function getStoredToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
 function SignUpContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const safeRedirect = getSafeRedirectPath(searchParams.get("redirect"));
+
   const [accountType, setAccountType] = useState("customer");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -34,24 +54,22 @@ function SignUpContent() {
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "";
 
   useEffect(() => {
+    if (typeof window === "undefined") return;
     try {
       const storedUser = localStorage.getItem("user");
-      const token =
-        localStorage.getItem("token") ||
-        localStorage.getItem("authToken") ||
-        localStorage.getItem("accessToken");
+      const token = getStoredToken();
 
       if (storedUser && token) {
         const parsedUser = JSON.parse(storedUser);
         if (parsedUser && typeof parsedUser === "object" && parsedUser.role) {
           setNavigating(true);
-          router.replace(getDashboardPath(parsedUser.role));
+          router.replace(safeRedirect || getDashboardPath(parsedUser.role));
         }
       }
     } catch {
       localStorage.removeItem("user");
     }
-  }, [router]);
+  }, [router, safeRedirect]);
 
   const handleChange = (e) => {
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -81,9 +99,9 @@ function SignUpContent() {
           : fallbackSuccessMsg
       );
       setNavigating(true);
-      router.push(getDashboardPath(normalizedUser.role));
+      router.push(safeRedirect || getDashboardPath(normalizedUser.role));
     },
-    [accountType, router]
+    [accountType, router, safeRedirect]
   );
 
   const handleSubmit = async (e) => {
@@ -425,15 +443,15 @@ function SignUpContent() {
           </h2>
           <ul className="space-y-4 text-slate-300 text-sm">
             <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 flex-shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 shrink-0" />
               <span>Customers book and pay only after the job is completed.</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 flex-shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 shrink-0" />
               <span>Technicians list services after a quick review by our team.</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 flex-shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 shrink-0" />
               <span>Admin accounts are created by FixMate, not through sign-up.</span>
             </li>
           </ul>
@@ -448,7 +466,9 @@ export default function SignUpPage() {
     <GoogleOAuthProvider
       clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
     >
-      <SignUpContent />
+      <Suspense fallback={<PublicPageSkeleton cards={2} />}>
+        <SignUpContent />
+      </Suspense>
     </GoogleOAuthProvider>
   );
 }

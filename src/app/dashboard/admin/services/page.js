@@ -40,6 +40,66 @@ function formatStatusLabel(status) {
   return normalized.charAt(0).toUpperCase() + normalized.slice(1);
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function buildUserLookup(users = [], currentUser = null) {
+  const byId = new Map();
+  const byEmail = new Map();
+
+  const allUsers = Array.isArray(users) ? [...users] : [];
+  if (currentUser && typeof currentUser === "object") {
+    allUsers.push(currentUser);
+  }
+
+  for (const u of allUsers) {
+    if (!u || !u.name) continue;
+    const id = String(u._id || u.id || "").trim();
+    const email = String(u.email || "").trim().toLowerCase();
+    if (id) byId.set(id, u);
+    if (email) byEmail.set(email, u);
+  }
+
+  return { byId, byEmail };
+}
+
+function resolveTechnicianName(service, lookup) {
+  const id = String(
+    service?.technicianId ||
+      service?.userId ||
+      service?.technician?._id ||
+      ""
+  ).trim();
+  const email = String(
+    service?.technicianEmail ||
+      service?.userEmail ||
+      service?.technician?.email ||
+      ""
+  )
+    .trim()
+    .toLowerCase();
+
+  const matched =
+    (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
+
+  return (
+    matched?.name ||
+    service?.technician?.name ||
+    service?.technicianName ||
+    service?.technicianEmail ||
+    "—"
+  );
+}
+
 function AdminServiceThumbnail({ src, alt }) {
   const [imgFailed, setImgFailed] = useState(false);
 
@@ -62,52 +122,110 @@ function AdminServiceThumbnail({ src, alt }) {
 }
 
 export default function ManageServicesPage() {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [services, setServices] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState("all");
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [serviceToReject, setServiceToReject] = useState(null);
 
-  const fetchServices = useCallback(async () => {
-    setLoading(true);
-    setFeedback(null);
-
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        throw new Error("Please sign in as an admin to manage services.");
+  const fetchServices = useCallback(
+    async ({ silent = false } = {}) => {
+      if (!silent) {
+        setLoading(true);
+        setFeedback(null);
       }
 
-      const res = await fetch(`${apiUrl}/api/admin/services`, {
-        cache: "no-store",
-        headers: {
+      try {
+        const token =
+          localStorage.getItem("token") ||
+          localStorage.getItem("authToken") ||
+          localStorage.getItem("accessToken") ||
+          "";
+        if (!token) {
+          throw new Error("Please sign in as an admin to manage services.");
+        }
+
+        const headers = {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
-        },
-      });
+        };
 
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data?.message || "Failed to load services.");
+        const [servicesRes, usersRes] = await Promise.all([
+          fetch(`${apiUrl}/api/admin/services`, {
+            cache: "no-store",
+            headers,
+          }),
+          fetch(`${apiUrl}/api/admin/users`, {
+            cache: "no-store",
+            headers,
+          }),
+        ]);
+
+        const data = await servicesRes.json().catch(() => ({}));
+        if (!servicesRes.ok) {
+          throw new Error(data?.message || "Failed to load services.");
+        }
+
+        const serviceList = Array.isArray(data?.data)
+          ? data.data
+          : Array.isArray(data)
+          ? data
+          : [];
+        setServices(serviceList);
+
+        if (usersRes.ok) {
+          const usersData = await usersRes.json().catch(() => ({}));
+          const userList = Array.isArray(usersData?.data)
+            ? usersData.data
+            : Array.isArray(usersData)
+            ? usersData
+            : [];
+          setUsers(userList);
+        }
+      } catch (err) {
+        if (!silent) {
+          setFeedback({
+            type: "error",
+            message: err.message || "Could not fetch services.",
+          });
+        }
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
       }
-
-      setServices(Array.isArray(data?.data) ? data.data : []);
-    } catch (err) {
-      setFeedback({
-        type: "error",
-        message: err.message || "Could not fetch services.",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [apiUrl]);
+    },
+    [apiUrl]
+  );
 
   useEffect(() => {
+    setCurrentUser(readStoredUser());
     fetchServices();
+
+    const handleLiveSync = () => {
+      setCurrentUser(readStoredUser());
+      fetchServices({ silent: true });
+    };
+
+    window.addEventListener("auth-change", handleLiveSync);
+    window.addEventListener("storage", handleLiveSync);
+    return () => {
+      window.removeEventListener("auth-change", handleLiveSync);
+      window.removeEventListener("storage", handleLiveSync);
+    };
   }, [fetchServices]);
+
+  const userLookup = useMemo(
+    () => buildUserLookup(users, currentUser),
+    [users, currentUser]
+  );
 
   const counts = useMemo(() => {
     let pending = 0;
@@ -151,7 +269,11 @@ export default function ManageServicesPage() {
     );
 
     try {
-      const token = localStorage.getItem("token");
+      const token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("authToken") ||
+        localStorage.getItem("accessToken") ||
+        "";
       const res = await fetch(`${apiUrl}/api/admin/services/${id}/status`, {
         method: "PATCH",
         headers: {
@@ -327,6 +449,10 @@ export default function ManageServicesPage() {
                   const id = service._id || service.id;
                   const status = (service.status || "pending").toLowerCase();
                   const busy = updatingId === id;
+                  const technicianLabel = resolveTechnicianName(
+                    service,
+                    userLookup
+                  );
 
                   return (
                     <tr
@@ -355,9 +481,7 @@ export default function ManageServicesPage() {
 
                       {/* Technician */}
                       <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
-                        {service.technicianName ||
-                          service.technicianEmail ||
-                          "—"}
+                        {technicianLabel}
                       </td>
 
                       {/* Price */}

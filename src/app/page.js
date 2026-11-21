@@ -178,6 +178,53 @@ function matchesCategoryFilter(service, selectedCategoryName) {
   );
 }
 
+function readStoredUser() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function resolveTechnicianName(service, currentUser) {
+  const srvTechId = String(
+    service?.technicianId ||
+      service?.technician?._id ||
+      service?.technician?.id ||
+      ""
+  ).trim();
+  const userId = String(currentUser?._id || currentUser?.id || "").trim();
+
+  const srvTechEmail = String(
+    service?.technicianEmail || service?.technician?.email || ""
+  )
+    .trim()
+    .toLowerCase();
+  const userEmail = String(currentUser?.email || "")
+    .trim()
+    .toLowerCase();
+
+  const isOwnService = Boolean(
+    currentUser?.name &&
+      ((srvTechId && userId && srvTechId === userId) ||
+        (srvTechEmail && userEmail && srvTechEmail === userEmail))
+  );
+
+  if (isOwnService) {
+    return currentUser.name;
+  }
+
+  return (
+    service?.technicianName ||
+    service?.technician?.name ||
+    "Verified Technician"
+  );
+}
+
 function FeaturedServiceImage({ src, alt }) {
   const [failed, setFailed] = useState(false);
 
@@ -201,11 +248,14 @@ function FeaturedServiceImage({ src, alt }) {
 
 export default function HomePage() {
   const router = useRouter();
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
+  const apiUrl = (
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+  ).replace(/\/+$/, "");
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [allServices, setAllServices] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
   const [error, setError] = useState("");
@@ -248,6 +298,22 @@ export default function HomePage() {
   useEffect(() => {
     fetchFeaturedServices();
   }, [fetchFeaturedServices]);
+
+  useEffect(() => {
+    setCurrentUser(readStoredUser());
+
+    const handleSessionOrProfileChange = () => {
+      setCurrentUser(readStoredUser());
+    };
+
+    window.addEventListener("auth-change", handleSessionOrProfileChange);
+    window.addEventListener("storage", handleSessionOrProfileChange);
+
+    return () => {
+      window.removeEventListener("auth-change", handleSessionOrProfileChange);
+      window.removeEventListener("storage", handleSessionOrProfileChange);
+    };
+  }, []);
 
   const featuredServices = useMemo(() => {
     const filtered = selectedCategory
@@ -495,10 +561,7 @@ export default function HomePage() {
               const id = service._id || service.id;
               const modeLabel =
                 service.mode || service.serviceMode || "Home Visit";
-              const techName =
-                service.technicianName ||
-                service.technician?.name ||
-                "Verified Technician";
+              const techName = resolveTechnicianName(service, currentUser);
 
               return (
                 <article
