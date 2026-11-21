@@ -14,6 +14,7 @@ import {
   Check,
   Clock,
   Ban,
+  FileDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -21,6 +22,7 @@ import {
   FixMateSpinner,
 } from "@/components/ui/LoadingState";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import { downloadPaidJobInvoice } from "@/utils/generateInvoicePdf";
 
 const TIMELINE_STEPS = [
   { key: "requested", label: "Requested" },
@@ -682,6 +684,24 @@ export default function CustomerMyBookingsPage() {
     }
   };
 
+  const handleDownloadInvoice = (booking, techName) => {
+    const opened = downloadPaidJobInvoice({
+      ...booking,
+      technicianName: techName || booking?.technicianName || "Technician",
+      customerName:
+        booking?.customerName || currentUser?.name || "Customer",
+      customerEmail:
+        booking?.customerEmail || currentUser?.email || "",
+    });
+
+    if (!opened) {
+      const msg =
+        "Unable to open invoice window. Please allow pop-ups and try again.";
+      setFeedback({ type: "error", message: msg });
+      toast.error(msg);
+    }
+  };
+
   const openReviewModal = (booking) => {
     const existingRating = getBookingRating(booking);
     const existingReview = getBookingReviewText(booking);
@@ -911,6 +931,7 @@ export default function CustomerMyBookingsPage() {
 
             const canCancel = status === "requested";
             const canPay = status === "completed" && paymentStatus !== "paid";
+            const canDownloadInvoice = paymentStatus === "paid";
             const canReview = paymentStatus === "paid";
 
             const savedRating = getBookingRating(booking);
@@ -1030,7 +1051,7 @@ export default function CustomerMyBookingsPage() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0 ml-auto">
+                    <div className="flex flex-wrap items-center justify-end gap-2 shrink-0 ml-auto">
                       {canCancel && (
                         <button
                           type="button"
@@ -1060,6 +1081,18 @@ export default function CustomerMyBookingsPage() {
                             <CreditCard className="w-3.5 h-3.5" />
                           )}
                           <span>Pay now</span>
+                        </button>
+                      )}
+
+                      {canDownloadInvoice && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => handleDownloadInvoice(booking, techName)}
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-emerald-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                        >
+                          <FileDown className="w-3.5 h-3.5" />
+                          <span>PDF Invoice</span>
                         </button>
                       )}
 
