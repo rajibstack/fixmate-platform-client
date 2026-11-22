@@ -3,10 +3,16 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Wrench } from "lucide-react";
+import { Eye, EyeOff, Wrench } from "lucide-react";
 import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 import { toast } from "sonner";
 import { FixMateSpinner, PublicPageSkeleton } from "@/components/ui/LoadingState";
+
+const ACCOUNT_TYPE_NOTES = [
+  "Customers book and pay only after the job is completed.",
+  "Technicians list services after a quick review by our team.",
+  "Admin accounts are created by FixMate, not through sign-up.",
+];
 
 function getDashboardPath(role) {
   const normalized = (role || "customer").toString().toLowerCase().trim();
@@ -38,6 +44,7 @@ function SignUpContent() {
   const safeRedirect = getSafeRedirectPath(searchParams.get("redirect"));
 
   const [accountType, setAccountType] = useState("customer");
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [navigating, setNavigating] = useState(false);
@@ -209,106 +216,103 @@ function SignUpContent() {
   });
 
   if (navigating) {
-    return <PublicPageSkeleton cards={2} />;
+    return <PublicPageSkeleton cards={1} />;
   }
 
   const isBusy = loading || googleLoading;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-12 shadow-xl dark:shadow-2xl">
-          <div className="mb-8">
-            <Link
-              href="/"
-              onClick={() => setNavigating(true)}
-              className="inline-flex items-center gap-2.5 text-2xl font-bold text-sky-600 dark:text-sky-400 group mb-4"
-            >
-              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
-                <Wrench className="w-5 h-5" />
-              </div>
-              <span className="tracking-tight text-slate-900 dark:text-white">
-                Fix<span className="text-sky-600 dark:text-sky-400">Mate</span>
-              </span>
-            </Link>
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
-              Create your account
-            </h1>
-            <p className="text-slate-600 dark:text-slate-400 text-sm">
-              Already have one?{" "}
-              <Link
-                href="/sign-in"
-                onClick={() => setNavigating(true)}
-                className="text-sky-600 dark:text-sky-400 hover:underline font-medium"
-              >
-                Sign in
-              </Link>
-            </p>
+    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-10 sm:py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+      <div className="pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 w-[780px] h-[360px] rounded-full bg-sky-500/10 blur-3xl" />
+
+      <div className="relative w-full max-w-4xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl">
+        <div className="text-center mb-6">
+          <Link
+            href="/"
+            onClick={() => setNavigating(true)}
+            className="inline-flex items-center justify-center gap-2 text-2xl font-bold text-sky-600 dark:text-sky-400 group mb-2.5"
+          >
+            <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
+              <Wrench className="w-5 h-5" />
+            </div>
+            <span className="tracking-tight text-slate-900 dark:text-white">
+              Fix<span className="text-sky-600 dark:text-sky-400">Mate</span>
+            </span>
+          </Link>
+
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
+            Create your account
+          </h1>
+          <p className="text-slate-600 dark:text-slate-400 text-xs sm:text-sm mt-1">
+            One account for every repair in your home
+          </p>
+        </div>
+
+        {error && (
+          <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 text-xs sm:text-sm">
+            {error}
           </div>
+        )}
 
-          {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm">
-              {error}
-            </div>
-          )}
+        {isBusy ? (
+          <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4 py-8">
+            <FixMateSpinner
+              label={
+                googleLoading
+                  ? "Connecting to Google..."
+                  : "Creating your account..."
+              }
+              compact
+            />
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <span className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2">
+                Account type
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <button
+                  type="button"
+                  onClick={() => setAccountType("customer")}
+                  className={`text-left cursor-pointer border rounded-2xl p-3.5 transition ${
+                    accountType === "customer"
+                      ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white ring-1 ring-sky-500/30"
+                      : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <p className="font-semibold text-sm text-slate-900 dark:text-white">
+                    I need a repair as a Customer
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                    Book technicians and track your jobs.
+                  </p>
+                </button>
 
-          {isBusy ? (
-            <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4">
-              <FixMateSpinner
-                label={
-                  googleLoading
-                    ? "Connecting to Google..."
-                    : "Creating your account..."
-                }
-                compact
-              />
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <span className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-3">
-                  Account type
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button
-                    type="button"
-                    onClick={() => setAccountType("customer")}
-                    className={`text-left cursor-pointer border rounded-2xl p-4 transition ${
-                      accountType === "customer"
-                        ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white"
-                        : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
-                    }`}
-                  >
-                    <p className="font-semibold text-slate-900 dark:text-white mb-1">
-                      I need a repair
-                    </p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                      Book technicians and track your jobs.
-                    </p>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setAccountType("technician")}
-                    className={`text-left cursor-pointer border rounded-2xl p-4 transition ${
-                      accountType === "technician"
-                        ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white"
-                        : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
-                    }`}
-                  >
-                    <p className="font-semibold text-slate-900 dark:text-white mb-1">
-                      I fix things
-                    </p>
-                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
-                      List services and manage incoming jobs.
-                    </p>
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setAccountType("technician")}
+                  className={`text-left cursor-pointer border rounded-2xl p-3.5 transition ${
+                    accountType === "technician"
+                      ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white ring-1 ring-sky-500/30"
+                      : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <p className="font-semibold text-sm text-slate-900 dark:text-white">
+                    I fix things as a Technician
+                  </p>
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5 leading-relaxed">
+                    List services and manage incoming jobs.
+                  </p>
+                </button>
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label
                   htmlFor="signup-name"
-                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Full name
                 </label>
@@ -320,16 +324,16 @@ function SignUpContent() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your full name"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="signup-email"
-                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
-                  Email
+                  Email address
                 </label>
                 <input
                   id="signup-email"
@@ -338,29 +342,49 @@ function SignUpContent() {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="Enter your email"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
+                  placeholder="name@company.com"
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
               <div>
                 <label
                   htmlFor="signup-password"
-                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Password
                 </label>
-                <input
-                  id="signup-password"
-                  type="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Create a password"
-                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm mb-3"
-                />
-                <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                <div className="relative mb-2">
+                  <input
+                    id="signup-password"
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Create a password"
+                    className="w-full pl-4 pr-11 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    aria-label={
+                      showPassword ? "Hide password" : "Show password"
+                    }
+                    aria-pressed={showPassword}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-sky-600 dark:text-slate-400 dark:hover:text-sky-400 transition cursor-pointer"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+
+                <ul className="space-y-1 text-xs text-slate-600 dark:text-slate-400">
                   <li className="flex items-center gap-2">
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
@@ -394,10 +418,23 @@ function SignUpContent() {
                 </ul>
               </div>
 
+              <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/75 border border-slate-200 dark:border-slate-800 p-3.5 sm:mt-6">
+                <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
+                  {ACCOUNT_TYPE_NOTES.map((note) => (
+                    <li key={note} className="flex items-start gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-sky-500 dark:bg-sky-400 mt-1.5 shrink-0" />
+                      <span>{note}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
               <button
                 type="submit"
                 disabled={isBusy}
-                className="w-full cursor-pointer disabled:cursor-not-allowed bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-slate-950 font-semibold py-3.5 rounded-xl transition text-sm shadow-lg shadow-sky-500/20"
+                className="w-full cursor-pointer disabled:cursor-not-allowed bg-sky-500 hover:bg-sky-400 disabled:opacity-50 text-slate-950 font-bold py-3 rounded-xl transition text-sm shadow-lg shadow-sky-500/20"
               >
                 Create account
               </button>
@@ -407,7 +444,7 @@ function SignUpContent() {
                   type="button"
                   disabled={isBusy}
                   onClick={() => handleGoogleSignUp()}
-                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
+                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -430,32 +467,20 @@ function SignUpContent() {
                   Continue with Google
                 </button>
               ) : null}
-            </form>
-          )}
-        </div>
+            </div>
+          </form>
+        )}
 
-        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-center shadow-xl dark:shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 mb-6 shadow-inner">
-            <Wrench className="w-6 h-6" />
-          </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-snug">
-            One account for every repair in your home.
-          </h2>
-          <ul className="space-y-4 text-slate-700 dark:text-slate-300 text-sm">
-            <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400 mt-2 shrink-0" />
-              <span>Customers book and pay only after the job is completed.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400 mt-2 shrink-0" />
-              <span>Technicians list services after a quick review by our team.</span>
-            </li>
-            <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400 mt-2 shrink-0" />
-              <span>Admin accounts are created by FixMate, not through sign-up.</span>
-            </li>
-          </ul>
-        </div>
+        <p className="text-center text-xs sm:text-sm text-slate-600 dark:text-slate-400 pt-5">
+          Already have an account?{" "}
+          <Link
+            href="/sign-in"
+            onClick={() => setNavigating(true)}
+            className="text-sky-600 dark:text-sky-400 hover:underline font-semibold"
+          >
+            Sign in
+          </Link>
+        </p>
       </div>
     </div>
   );
@@ -466,7 +491,7 @@ export default function SignUpPage() {
     <GoogleOAuthProvider
       clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""}
     >
-      <Suspense fallback={<PublicPageSkeleton cards={2} />}>
+      <Suspense fallback={<PublicPageSkeleton cards={1} />}>
         <SignUpContent />
       </Suspense>
     </GoogleOAuthProvider>
