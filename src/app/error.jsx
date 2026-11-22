@@ -26,7 +26,7 @@ export default function ErrorBoundaryPage({ error, reset }) {
 
   if (navigating) {
     return (
-      <div className="min-h-screen bg-slate-950 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
         <DashboardPageSkeleton />
       </div>
     );
@@ -38,22 +38,22 @@ export default function ErrorBoundaryPage({ error, reset }) {
       : "An unexpected error interrupted this page. Please try again or return to the home page.";
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-12">
-      <div className="max-w-lg w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-9 shadow-2xl text-center space-y-6">
-        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 flex items-center justify-center mx-auto">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center px-4 py-12">
+      <div className="max-w-lg w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-9 shadow-xl dark:shadow-2xl text-center space-y-6">
+        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto">
           <AlertTriangle className="w-7 h-7" />
         </div>
 
         <div className="space-y-2">
-          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-300 border border-rose-500/25">
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-300 border border-rose-500/25">
             Something went wrong
           </span>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Unable to load this view
           </h1>
 
-          <p className="text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-slate-300 max-w-md mx-auto leading-relaxed">
             {clearMessage}
           </p>
         </div>
@@ -76,9 +76,9 @@ export default function ErrorBoundaryPage({ error, reset }) {
           <Link
             href="/"
             onClick={() => setNavigating(true)}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-sm px-5 py-3 rounded-xl transition"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-medium text-sm px-5 py-3 rounded-xl transition"
           >
-            <Home className="w-4 h-4 text-sky-400" />
+            <Home className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             <span>Back to Home</span>
           </Link>
         </div>

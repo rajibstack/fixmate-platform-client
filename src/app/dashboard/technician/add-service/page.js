@@ -599,28 +599,28 @@ export default function AddServicePage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-800/90">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Add a service
             </h1>
-            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/25">
+            <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/25">
               <ShieldCheck className="w-3.5 h-3.5" />
               Pending Admin Approval
             </span>
             {isPro ? (
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-400/15 text-amber-300 border border-amber-400/35">
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-400/15 text-amber-700 dark:text-amber-300 border border-amber-400/35">
+                <Crown className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                 Verified Pro
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                 Free ({serviceCount}/{FREE_SERVICE_LIMIT})
               </span>
             )}
           </div>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             New services stay pending until an admin approves them.
           </p>
         </div>
@@ -628,17 +628,17 @@ export default function AddServicePage() {
         <Link
           href="/dashboard/technician/my-services"
           onClick={() => setNavigating(true)}
-          className="inline-flex items-center gap-2 self-start sm:self-auto text-xs sm:text-sm font-medium text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 px-4 py-2.5 rounded-xl transition"
+          className="inline-flex items-center gap-2 self-start sm:self-auto text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl transition shadow-xs dark:shadow-none"
         >
-          <ArrowLeft className="w-4 h-4 text-sky-400" />
+          <ArrowLeft className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           <span>Back to My services</span>
         </Link>
       </div>
 
       {hasReachedFreeLimit && (
-        <div className="rounded-2xl px-4 py-3.5 border bg-amber-500/10 border-amber-400/30 text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+        <div className="rounded-2xl px-4 py-3.5 border bg-amber-500/10 border-amber-400/30 text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-2.5">
-            <Crown className="w-5 h-5 shrink-0 text-amber-400" />
+            <Crown className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <span>
               You have reached the <strong>{FREE_SERVICE_LIMIT}-service</strong>{" "}
               limit on the Free plan. Upgrade to <strong>Pro</strong> to add more
@@ -660,14 +660,14 @@ export default function AddServicePage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-red-500/10 border-red-500/30 text-red-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+              : "bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-red-600 dark:text-red-400" />
           )}
           <div className="flex-1">
             <p className="font-medium">{feedback.message}</p>
@@ -680,15 +680,17 @@ export default function AddServicePage() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start"
       >
         <div className="lg:col-span-7 space-y-6">
-          <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
               <div>
-                <h2 className="text-base font-bold text-white">Service basics</h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                  Service basics
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Core details customers see when browsing repairs
                 </p>
               </div>
-              <span className="text-xs font-mono text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-mono text-sky-700 dark:text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">
                 01
               </span>
             </div>
@@ -696,9 +698,10 @@ export default function AddServicePage() {
             <div>
               <label
                 htmlFor="title"
-                className="block text-sm font-medium text-slate-200 mb-2"
+                className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
               >
-                Service title <span className="text-sky-400">*</span>
+                Service title{" "}
+                <span className="text-sky-600 dark:text-sky-400">*</span>
               </label>
               <input
                 id="title"
@@ -708,7 +711,7 @@ export default function AddServicePage() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. iPhone Screen Replacement"
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
               />
             </div>
 
@@ -716,7 +719,7 @@ export default function AddServicePage() {
               <div>
                 <label
                   htmlFor="category"
-                  className="block text-sm font-medium text-slate-200 mb-2"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
                 >
                   Category
                 </label>
@@ -725,10 +728,14 @@ export default function AddServicePage() {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white outline-none transition cursor-pointer"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
                 >
                   {CATEGORIES.map((cat) => (
-                    <option key={cat} value={cat} className="bg-slate-900">
+                    <option
+                      key={cat}
+                      value={cat}
+                      className="bg-white dark:bg-slate-900"
+                    >
                       {cat}
                     </option>
                   ))}
@@ -738,7 +745,7 @@ export default function AddServicePage() {
               <div>
                 <label
                   htmlFor="mode"
-                  className="block text-sm font-medium text-slate-200 mb-2"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
                 >
                   Service mode
                 </label>
@@ -747,10 +754,14 @@ export default function AddServicePage() {
                   name="mode"
                   value={formData.mode}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white outline-none transition cursor-pointer"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
                 >
                   {SERVICE_MODES.map((m) => (
-                    <option key={m} value={m} className="bg-slate-900">
+                    <option
+                      key={m}
+                      value={m}
+                      className="bg-white dark:bg-slate-900"
+                    >
                       {m}
                     </option>
                   ))}
@@ -759,17 +770,17 @@ export default function AddServicePage() {
             </div>
           </section>
 
-          <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
               <div>
-                <h2 className="text-base font-bold text-white">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Pricing, timeline &amp; coverage
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Set transparent rates, turnaround time, and service location
                 </p>
               </div>
-              <span className="text-xs font-mono text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-mono text-sky-700 dark:text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">
                 02
               </span>
             </div>
@@ -778,12 +789,13 @@ export default function AddServicePage() {
               <div>
                 <label
                   htmlFor="price"
-                  className="block text-sm font-medium text-slate-200 mb-2"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
                 >
-                  Base price (USD) <span className="text-sky-400">*</span>
+                  Base price (USD){" "}
+                  <span className="text-sky-600 dark:text-sky-400">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-sm">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400 font-semibold text-sm">
                     $
                   </span>
                   <input
@@ -796,7 +808,7 @@ export default function AddServicePage() {
                     value={formData.price}
                     onChange={handleChange}
                     placeholder="45"
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-8 pr-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-8 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                   />
                 </div>
               </div>
@@ -804,7 +816,7 @@ export default function AddServicePage() {
               <div>
                 <label
                   htmlFor="duration"
-                  className="block text-sm font-medium text-slate-200 mb-2"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
                 >
                   Estimated duration
                 </label>
@@ -815,7 +827,7 @@ export default function AddServicePage() {
                   value={formData.duration}
                   onChange={handleChange}
                   placeholder="2-3 hours"
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                 />
               </div>
             </div>
@@ -823,9 +835,10 @@ export default function AddServicePage() {
             <div>
               <label
                 htmlFor="area"
-                className="block text-sm font-medium text-slate-200 mb-2"
+                className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
               >
-                Service area <span className="text-sky-400">*</span>
+                Service area{" "}
+                <span className="text-sky-600 dark:text-sky-400">*</span>
               </label>
               <input
                 id="area"
@@ -835,22 +848,22 @@ export default function AddServicePage() {
                 value={formData.area}
                 onChange={handleChange}
                 placeholder="Mirpur, Dhaka"
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
               />
             </div>
           </section>
 
-          <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
               <div>
-                <h2 className="text-base font-bold text-white">
+                <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Scope &amp; technician details
                 </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Describe parts, warranty, and linked technician account
                 </p>
               </div>
-              <span className="text-xs font-mono text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">
+              <span className="text-xs font-mono text-sky-700 dark:text-sky-400 bg-sky-500/10 border border-sky-500/20 px-2.5 py-1 rounded-lg">
                 03
               </span>
             </div>
@@ -858,9 +871,10 @@ export default function AddServicePage() {
             <div>
               <label
                 htmlFor="description"
-                className="block text-sm font-medium text-slate-200 mb-2"
+                className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
               >
-                Description <span className="text-sky-400">*</span>
+                Description{" "}
+                <span className="text-sky-600 dark:text-sky-400">*</span>
               </label>
               <textarea
                 id="description"
@@ -870,7 +884,7 @@ export default function AddServicePage() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="What the service includes, models you cover, warranty"
-                className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition resize-y"
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-y"
               />
             </div>
 
@@ -878,10 +892,10 @@ export default function AddServicePage() {
               <div>
                 <label
                   htmlFor="technicianName"
-                  className="flex items-center gap-1.5 text-sm font-medium text-slate-300 mb-2"
+                  className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                 >
                   <span>Technician name</span>
-                  <Lock className="w-3.5 h-3.5 text-slate-500" />
+                  <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                 </label>
                 <input
                   id="technicianName"
@@ -891,17 +905,17 @@ export default function AddServicePage() {
                   aria-readonly="true"
                   value={formData.technicianName}
                   placeholder="Technician name"
-                  className="w-full rounded-xl bg-slate-950/60 border border-slate-800/90 px-4 py-3 text-sm text-slate-400 placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
+                  className="w-full rounded-xl bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="technicianEmail"
-                  className="flex items-center gap-1.5 text-sm font-medium text-slate-300 mb-2"
+                  className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
                 >
                   <span>Technician email</span>
-                  <Lock className="w-3.5 h-3.5 text-slate-500" />
+                  <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                 </label>
                 <input
                   id="technicianEmail"
@@ -911,7 +925,7 @@ export default function AddServicePage() {
                   aria-readonly="true"
                   value={formData.technicianEmail}
                   placeholder="technician@fixmate.com"
-                  className="w-full rounded-xl bg-slate-950/60 border border-slate-800/90 px-4 py-3 text-sm text-slate-400 placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
+                  className="w-full rounded-xl bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
                 />
               </div>
             </div>
@@ -921,7 +935,7 @@ export default function AddServicePage() {
               <Link
                 href="/dashboard/profile"
                 onClick={() => setNavigating(true)}
-                className="text-sky-400 hover:underline font-medium"
+                className="text-sky-600 dark:text-sky-400 hover:underline font-medium"
               >
                 Update profile
               </Link>
@@ -931,16 +945,18 @@ export default function AddServicePage() {
         </div>
 
         <div className="lg:col-span-5 space-y-6">
-          <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-4">
             <div className="flex items-center justify-between">
-              <label className="text-sm font-bold text-white">Service image</label>
-              <span className="text-[11px] text-slate-400">
+              <label className="text-sm font-bold text-slate-900 dark:text-white">
+                Service image
+              </label>
+              <span className="text-[11px] text-slate-500 dark:text-slate-400">
                 JPG or PNG, up to 8 MB
               </span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="relative w-full sm:w-32 h-28 rounded-2xl bg-slate-950 border border-dashed border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="relative w-full sm:w-32 h-28 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
                 {previewImageSrc ? (
                   <>
                     <img
@@ -953,25 +969,25 @@ export default function AddServicePage() {
                       type="button"
                       onClick={handleRemoveImage}
                       aria-label="Remove image"
-                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-950/85 hover:bg-red-500 text-slate-200 hover:text-white flex items-center justify-center transition cursor-pointer"
+                      className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-slate-900/85 dark:bg-slate-950/85 hover:bg-red-500 text-slate-200 hover:text-white flex items-center justify-center transition cursor-pointer"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center text-center px-2 text-slate-500">
-                    <ImageIcon className="w-5 h-5 mb-1 text-slate-600" />
+                  <div className="flex flex-col items-center text-center px-2 text-slate-400 dark:text-slate-500">
+                    <ImageIcon className="w-5 h-5 mb-1 text-slate-400 dark:text-slate-600" />
                     <span className="text-xs">No image yet</span>
                   </div>
                 )}
               </div>
 
               <div className="flex-1 space-y-2">
-                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white transition cursor-pointer">
+                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white transition cursor-pointer">
                   {uploadingImage ? (
                     <FixMateSpinner compact />
                   ) : (
-                    <Upload className="w-4 h-4 text-sky-400" />
+                    <Upload className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                   )}
                   <span>{uploadingImage ? "Uploading..." : "Upload image"}</span>
                   <input
@@ -983,7 +999,7 @@ export default function AddServicePage() {
                   />
                 </label>
 
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                   Uploaded through the ImgBB step (simulated). JPG or PNG, up to 8
                   MB.
                 </p>
@@ -991,21 +1007,21 @@ export default function AddServicePage() {
             </div>
           </section>
 
-          <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
+          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-sky-400" />
-                <h2 className="text-sm font-bold text-white">
+                <Sparkles className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white">
                   Live listing preview
                 </h2>
               </div>
-              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/25">
+              <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/25">
                 Pending
               </span>
             </div>
 
-            <div className="rounded-2xl bg-slate-950 border border-slate-800/90 overflow-hidden">
-              <div className="h-36 w-full bg-slate-900 relative flex items-center justify-center border-b border-slate-800/80">
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/90 overflow-hidden">
+              <div className="h-36 w-full bg-slate-100 dark:bg-slate-900 relative flex items-center justify-center border-b border-slate-200 dark:border-slate-800/80">
                 {previewImageSrc ? (
                   <img
                     src={previewImageSrc}
@@ -1014,13 +1030,13 @@ export default function AddServicePage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="flex flex-col items-center text-slate-500 gap-1.5">
-                    <Wrench className="w-6 h-6 text-slate-600" />
+                  <div className="flex flex-col items-center text-slate-400 dark:text-slate-500 gap-1.5">
+                    <Wrench className="w-6 h-6 text-slate-400 dark:text-slate-600" />
                     <span className="text-xs">Service visual preview</span>
                   </div>
                 )}
 
-                <span className="absolute top-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-slate-950/85 text-sky-400 border border-sky-500/25 backdrop-blur-xs">
+                <span className="absolute top-3 left-3 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-white/90 dark:bg-slate-950/85 text-sky-700 dark:text-sky-400 border border-sky-500/25 backdrop-blur-xs">
                   {formData.category}
                 </span>
 
@@ -1031,32 +1047,32 @@ export default function AddServicePage() {
 
               <div className="p-4 space-y-3">
                 <div>
-                  <h3 className="text-base font-bold text-white line-clamp-1">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-white line-clamp-1">
                     {formData.title.trim() || "Untitled repair service"}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                     {formData.description.trim() ||
                       "Service scope, supported models, and warranty details will appear here."}
                   </p>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-400 pt-2 border-t border-slate-800/80">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-slate-500 dark:text-slate-400 pt-2 border-t border-slate-200 dark:border-slate-800/80">
                   <span className="inline-flex items-center gap-1">
-                    <Tag className="w-3.5 h-3.5 text-sky-400" />
+                    <Tag className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     {formData.mode}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-sky-400" />
+                    <Clock className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     {formData.duration.trim() || "2-3 hours"}
                   </span>
                   <span className="inline-flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-sky-400" />
+                    <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                     {formData.area.trim() || "Service area"}
                   </span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-slate-300 font-medium truncate">
+                  <span className="text-slate-700 dark:text-slate-300 font-medium truncate">
                     {formData.technicianName.trim() || "Technician"}
                   </span>
                   <span className="text-slate-500 truncate max-w-[160px]">
@@ -1067,10 +1083,12 @@ export default function AddServicePage() {
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Status sets to{" "}
-                <span className="text-amber-300 font-medium">pending</span> upon
-                submit.
+                <span className="text-amber-700 dark:text-amber-300 font-medium">
+                  pending
+                </span>{" "}
+                upon submit.
               </p>
               <button
                 type="submit"
@@ -1091,18 +1109,18 @@ export default function AddServicePage() {
 
       {/* Upgrade to Pro Popup Modal */}
       {upgradeModalOpen && !isPro && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-amber-400/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-amber-400/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-600 dark:text-amber-300">
                   <Crown className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                     Upgrade to Technician Pro
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Free plan allows up to {FREE_SERVICE_LIMIT} services.
                   </p>
                 </div>
@@ -1111,29 +1129,31 @@ export default function AddServicePage() {
                 type="button"
                 disabled={upgradingPro}
                 onClick={() => setUpgradeModalOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="rounded-2xl bg-slate-950/70 border border-slate-800 p-4 space-y-2.5 text-sm">
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4 space-y-2.5 text-sm">
               <div className="flex items-baseline justify-between">
-                <span className="font-semibold text-white">Pro Monthly</span>
-                <span className="text-xl font-bold text-amber-300">
+                <span className="font-semibold text-slate-900 dark:text-white">
+                  Pro Monthly
+                </span>
+                <span className="text-xl font-bold text-amber-600 dark:text-amber-300">
                   ${proPrice}
-                  <span className="text-xs font-normal text-slate-400">
+                  <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
                     /mo
                   </span>
                 </span>
               </div>
-              <ul className="space-y-1.5 text-xs text-slate-300 pt-1">
+              <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 pt-1">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Add unlimited repair services beyond 3</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Get Verified Pro badge on your profile &amp; services</span>
                 </li>
               </ul>
@@ -1144,7 +1164,7 @@ export default function AddServicePage() {
                 type="button"
                 disabled={upgradingPro}
                 onClick={() => setUpgradeModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium transition cursor-pointer"
               >
                 Cancel
               </button>

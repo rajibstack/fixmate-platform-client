@@ -23,7 +23,7 @@ const contactMethods = [
     value: "support@fixmate.com",
     note: "We typically reply within a few hours",
     icon: Mail,
-    accent: "text-sky-400",
+    accent: "text-sky-600 dark:text-sky-400",
     href: "mailto:support@fixmate.com",
   },
   {
@@ -31,7 +31,7 @@ const contactMethods = [
     value: "+880 123 456 789",
     note: "Direct help for urgent repair requests",
     icon: Phone,
-    accent: "text-emerald-400",
+    accent: "text-emerald-600 dark:text-emerald-400",
     href: "tel:+880123456789",
   },
   {
@@ -39,7 +39,7 @@ const contactMethods = [
     value: "Sat – Thu, 9 AM – 9 PM",
     note: "Technician dispatch & customer support",
     icon: Clock,
-    accent: "text-amber-300",
+    accent: "text-amber-600 dark:text-amber-300",
     href: null,
   },
   {
@@ -47,7 +47,7 @@ const contactMethods = [
     value: "123 Tech Street, Digital Avenue",
     note: "Device & home appliance repair network",
     icon: MapPin,
-    accent: "text-indigo-300",
+    accent: "text-indigo-600 dark:text-indigo-300",
     href: null,
   },
 ];
@@ -164,22 +164,24 @@ export default function ContactPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16 space-y-10 sm:space-y-12">
         {/* Header */}
-        <section className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl">
+        <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xl dark:shadow-2xl">
           <div className="max-w-3xl space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-300 text-xs font-semibold">
-              <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-semibold">
+              <MessageSquare className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
               <span>Contact Us</span>
             </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight">
               Get in touch with{" "}
-              <span className="text-sky-400">FixMate support</span>
+              <span className="text-sky-600 dark:text-sky-400">
+                FixMate support
+              </span>
             </h1>
 
-            <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 leading-relaxed">
               Have a question about a device or home appliance repair, need help
               with an existing booking, or want to join as a technician? Send us
               a message below.
@@ -194,10 +196,10 @@ export default function ContactPage() {
             return (
               <div
                 key={item.label}
-                className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-2xl p-6 flex flex-col justify-between shadow-lg transition"
+                className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg transition"
               >
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-slate-400">
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
                     {item.label}
                   </span>
                   <Icon className={`w-4 h-4 ${item.accent}`} />
@@ -207,16 +209,16 @@ export default function ContactPage() {
                   {item.href ? (
                     <a
                       href={item.href}
-                      className="text-base sm:text-lg font-bold text-white hover:text-sky-400 transition break-words"
+                      className="text-base sm:text-lg font-bold text-slate-900 dark:text-white hover:text-sky-600 dark:hover:text-sky-400 transition break-words"
                     >
                       {item.value}
                     </a>
                   ) : (
-                    <p className="text-base sm:text-lg font-bold text-white break-words">
+                    <p className="text-base sm:text-lg font-bold text-slate-900 dark:text-white break-words">
                       {item.value}
                     </p>
                   )}
-                  <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
                     {item.note}
                   </p>
                 </div>
@@ -228,12 +230,12 @@ export default function ContactPage() {
         {/* Form + Side Panel */}
         <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           {/* Contact Form */}
-          <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl">
+          <div className="lg:col-span-7 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md dark:shadow-xl">
             <div className="mb-6">
-              <h2 className="text-xl sm:text-2xl font-bold text-white">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                 Send a message
               </h2>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 Share your details and we will route your request to the right
                 team.
               </p>
@@ -243,21 +245,21 @@ export default function ContactPage() {
               <div
                 className={`mb-6 rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
                   feedback.type === "success"
-                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-                    : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+                    ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+                    : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
                 }`}
               >
                 {feedback.type === "success" ? (
-                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+                  <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
                 ) : (
-                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+                  <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
                 )}
                 <p className="font-medium flex-1">{feedback.message}</p>
               </div>
             )}
 
             {submitting ? (
-              <div className="rounded-2xl bg-slate-950/80 border border-slate-800 px-4">
+              <div className="rounded-2xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4">
                 <FixMateSpinner label="Sending your message..." compact />
               </div>
             ) : (
@@ -266,7 +268,7 @@ export default function ContactPage() {
                   <div>
                     <label
                       htmlFor="name"
-                      className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                      className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2"
                     >
                       Full name
                     </label>
@@ -277,14 +279,14 @@ export default function ContactPage() {
                       value={formData.name}
                       onChange={handleChange}
                       placeholder="Your name"
-                      className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition"
+                      className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
                     />
                   </div>
 
                   <div>
                     <label
                       htmlFor="email"
-                      className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                      className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2"
                     >
                       Email address
                     </label>
@@ -295,7 +297,7 @@ export default function ContactPage() {
                       value={formData.email}
                       onChange={handleChange}
                       placeholder="you@example.com"
-                      className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition"
+                      className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
                     />
                   </div>
                 </div>
@@ -303,7 +305,7 @@ export default function ContactPage() {
                 <div>
                   <label
                     htmlFor="topic"
-                    className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                    className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2"
                   >
                     Topic
                   </label>
@@ -312,10 +314,14 @@ export default function ContactPage() {
                     name="topic"
                     value={formData.topic}
                     onChange={handleChange}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white transition"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white transition"
                   >
                     {topics.map((topic) => (
-                      <option key={topic} value={topic} className="bg-slate-950">
+                      <option
+                        key={topic}
+                        value={topic}
+                        className="bg-white dark:bg-slate-950"
+                      >
                         {topic}
                       </option>
                     ))}
@@ -325,7 +331,7 @@ export default function ContactPage() {
                 <div>
                   <label
                     htmlFor="message"
-                    className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-2"
+                    className="block text-xs font-semibold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-2"
                   >
                     Message
                   </label>
@@ -336,7 +342,7 @@ export default function ContactPage() {
                     value={formData.message}
                     onChange={handleChange}
                     placeholder="Describe your question, booking ID, or device issue..."
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-white placeholder:text-slate-500 transition resize-y"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition resize-y"
                   />
                 </div>
 
@@ -354,10 +360,10 @@ export default function ContactPage() {
 
           {/* Right Helpful Notes & Shortcuts */}
           <div className="lg:col-span-5 space-y-6">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
+            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-4">
               <div className="flex items-center gap-2.5">
-                <ShieldCheck className="w-5 h-5 text-sky-400" />
-                <h2 className="text-lg font-bold text-white">
+                <ShieldCheck className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   Helpful tips before writing
                 </h2>
               </div>
@@ -366,24 +372,24 @@ export default function ContactPage() {
                 {quickNotes.map((note) => (
                   <li
                     key={note}
-                    className="flex items-start gap-2.5 text-sm text-slate-300 leading-relaxed"
+                    className="flex items-start gap-2.5 text-sm text-slate-700 dark:text-slate-300 leading-relaxed"
                   >
-                    <span className="w-1.5 h-1.5 rounded-full bg-sky-400 mt-2 shrink-0" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-sky-500 dark:bg-sky-400 mt-2 shrink-0" />
                     <span>{note}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="bg-gradient-to-br from-sky-500/20 via-slate-900 to-slate-900 border border-sky-500/30 rounded-3xl p-6 sm:p-7 shadow-xl shadow-sky-500/5 space-y-4">
+            <div className="bg-gradient-to-br from-sky-500/15 via-white to-slate-100 dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/30 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl dark:shadow-sky-500/5 space-y-4">
               <div className="flex items-center gap-2.5">
-                <Wrench className="w-5 h-5 text-sky-400" />
-                <h2 className="text-lg font-bold text-white">
+                <Wrench className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   Need a repair right away?
                 </h2>
               </div>
 
-              <p className="text-sm text-slate-300/90 leading-relaxed">
+              <p className="text-sm text-slate-700 dark:text-slate-300/90 leading-relaxed">
                 Browse approved technicians and book a repair slot directly, or
                 open your dashboard to track an active job.
               </p>
@@ -399,7 +405,7 @@ export default function ContactPage() {
                 <Link
                   href="/sign-in"
                   onClick={() => setNavigating(true)}
-                  className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-slate-950/90 hover:bg-slate-900 border border-slate-700 text-white text-sm font-semibold transition"
+                  className="inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-white/90 dark:bg-slate-950/90 hover:bg-slate-100 dark:hover:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-sm font-semibold transition"
                 >
                   Sign in
                 </Link>

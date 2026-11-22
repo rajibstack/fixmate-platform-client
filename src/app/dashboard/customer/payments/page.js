@@ -222,33 +222,33 @@ export default function CustomerPaymentHistoryPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="pb-5 border-b border-slate-800/90">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Payment history
         </h1>
-        <p className="text-slate-400 text-sm mt-1.5">
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
           {`${summary.count} payments, $${summary.totalAmount} in total.`}
         </p>
       </div>
 
       {/* Error Banner */}
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-700 dark:text-rose-300 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           <p className="font-medium flex-1">{error}</p>
         </div>
       )}
 
       {/* Content */}
       {payments.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <Receipt className="w-6 h-6" />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-white">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             No payments yet
           </h2>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
             Once a repair job is completed and paid, your payment receipts will
             appear here.
           </p>
@@ -266,11 +266,11 @@ export default function CustomerPaymentHistoryPage() {
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden md:block bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+          <div className="hidden md:block bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-md dark:shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <th className="py-4 px-6">Service</th>
                     <th className="py-4 px-6">Technician</th>
                     <th className="py-4 px-6">Amount</th>
@@ -278,28 +278,28 @@ export default function CustomerPaymentHistoryPage() {
                     <th className="py-4 px-6 text-right">Paid on</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 text-sm">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80 text-sm">
                   {payments.map((item) => {
                     const id = item._id || item.id;
                     const techName = resolveTechnicianName(item, userLookup);
                     return (
                       <tr
                         key={id}
-                        className="hover:bg-slate-800/40 transition"
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition"
                       >
-                        <td className="py-4 px-6 font-semibold text-white">
+                        <td className="py-4 px-6 font-semibold text-slate-900 dark:text-white">
                           {item.serviceTitle || "Repair Service"}
                         </td>
-                        <td className="py-4 px-6 text-slate-300">
+                        <td className="py-4 px-6 text-slate-700 dark:text-slate-300">
                           {techName}
                         </td>
-                        <td className="py-4 px-6 font-bold text-sky-400">
+                        <td className="py-4 px-6 font-bold text-sky-600 dark:text-sky-400">
                           ${getBookingAmount(item)}
                         </td>
-                        <td className="py-4 px-6 font-mono text-xs text-slate-400">
+                        <td className="py-4 px-6 font-mono text-xs text-slate-500 dark:text-slate-400">
                           {getTransactionId(item)}
                         </td>
-                        <td className="py-4 px-6 text-right text-slate-300">
+                        <td className="py-4 px-6 text-right text-slate-700 dark:text-slate-300">
                           {formatShortDate(
                             item.paidAt || item.updatedAt || item.createdAt
                           )}
@@ -320,28 +320,28 @@ export default function CustomerPaymentHistoryPage() {
               return (
                 <div
                   key={id}
-                  className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3"
+                  className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-md dark:shadow-lg space-y-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <h2 className="text-sm font-bold text-white truncate">
+                      <h2 className="text-sm font-bold text-slate-900 dark:text-white truncate">
                         {item.serviceTitle || "Repair Service"}
                       </h2>
-                      <p className="text-xs text-slate-400 mt-0.5">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                         {techName}
                       </p>
                     </div>
-                    <span className="text-base font-bold text-sky-400 shrink-0">
+                    <span className="text-base font-bold text-sky-600 dark:text-sky-400 shrink-0">
                       ${getBookingAmount(item)}
                     </span>
                   </div>
 
-                  <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2 text-xs text-slate-400">
-                    <span className="inline-flex items-center gap-1.5 font-mono text-slate-400 truncate">
-                      <CreditCard className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                  <div className="pt-2.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1.5 font-mono text-slate-500 dark:text-slate-400 truncate">
+                      <CreditCard className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                       {getTransactionId(item)}
                     </span>
-                    <span className="text-slate-300 shrink-0">
+                    <span className="text-slate-700 dark:text-slate-300 shrink-0">
                       {formatShortDate(
                         item.paidAt || item.updatedAt || item.createdAt
                       )}

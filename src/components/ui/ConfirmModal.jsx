@@ -43,15 +43,15 @@ export default function ConfirmModal({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5"
+        className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5"
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex items-start gap-3.5">
             <div
               className={`w-11 h-11 rounded-2xl border flex items-center justify-center shrink-0 ${
                 isWarning
-                  ? "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                  : "bg-rose-500/10 border-rose-500/30 text-rose-400"
+                  ? "bg-amber-500/10 border-amber-500/30 text-amber-600 dark:text-amber-400"
+                  : "bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400"
               }`}
             >
               <AlertTriangle className="w-5 h-5" />
@@ -59,11 +59,11 @@ export default function ConfirmModal({
             <div>
               <h2
                 id="confirm-modal-title"
-                className="text-lg font-bold text-white leading-snug"
+                className="text-lg font-bold text-slate-900 dark:text-white leading-snug"
               >
                 {title}
               </h2>
-              <p className="text-sm text-slate-400 mt-1 leading-relaxed">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
                 {description}
               </p>
             </div>
@@ -74,18 +74,18 @@ export default function ConfirmModal({
             disabled={loading}
             onClick={onCancel}
             aria-label="Close modal"
-            className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
+            className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800/80">
+        <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200 dark:border-slate-800/80">
           <button
             type="button"
             disabled={loading}
             onClick={onCancel}
-            className="px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700 text-xs sm:text-sm font-medium text-slate-200 transition cursor-pointer disabled:opacity-50"
+            className="px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer disabled:opacity-50"
           >
             {cancelText}
           </button>

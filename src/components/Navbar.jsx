@@ -24,7 +24,7 @@ import { ThemeToggle } from "@/components/ThemeProvider";
 
 const MENU_BY_ROLE = {
   customer: [
-    { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+    { name: "Overview", href: "/dashboard/customer", icon: LayoutDashboard },
     {
       name: "My bookings",
       href: "/dashboard/customer/bookings",
@@ -37,7 +37,7 @@ const MENU_BY_ROLE = {
     },
   ],
   technician: [
-    { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+    { name: "Overview", href: "/dashboard/technician", icon: LayoutDashboard },
     {
       name: "Add a service",
       href: "/dashboard/technician/add-service",
@@ -55,7 +55,7 @@ const MENU_BY_ROLE = {
     },
   ],
   admin: [
-    { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+    { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
     { name: "Manage users", href: "/dashboard/admin/users", icon: Users },
     {
       name: "Manage services",
@@ -209,7 +209,7 @@ export default function Navbar() {
     : [];
 
   return (
-    <header className="sticky top-0 z-40 bg-slate-950/85 backdrop-blur border-b border-slate-800/80 text-slate-100">
+    <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-950/85 backdrop-blur border-b border-slate-200 dark:border-slate-800/80 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       <div className="max-w-7xl mx-auto h-16 px-4 sm:px-8 flex items-center justify-between gap-3">
         {/* Left: Mobile Toggle + Brand */}
         <div className="flex items-center gap-2.5 min-w-0">
@@ -220,7 +220,7 @@ export default function Navbar() {
               mobileNavOpen ? "Close navigation menu" : "Open navigation menu"
             }
             aria-expanded={mobileNavOpen}
-            className="md:hidden p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 hover:text-sky-400 transition cursor-pointer shrink-0"
+            className="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition cursor-pointer shrink-0"
           >
             {mobileNavOpen ? (
               <X className="w-5 h-5" />
@@ -233,11 +233,11 @@ export default function Navbar() {
             href="/"
             className="flex items-center gap-2.5 text-xl font-bold shrink-0"
           >
-            <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400">
+            <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400">
               <Wrench className="w-5 h-5" />
             </div>
-            <span className="tracking-tight text-white">
-              Fix<span className="text-sky-400">Mate</span>
+            <span className="tracking-tight text-slate-900 dark:text-white">
+              Fix<span className="text-sky-600 dark:text-sky-400">Mate</span>
             </span>
           </Link>
         </div>
@@ -254,7 +254,9 @@ export default function Navbar() {
                 key={item.href}
                 href={item.href}
                 className={`text-sm font-medium transition ${
-                  active ? "text-sky-400" : "text-slate-300 hover:text-white"
+                  active
+                    ? "text-sky-600 dark:text-sky-400"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
                 {item.name}
@@ -271,7 +273,7 @@ export default function Navbar() {
             <>
               <Link
                 href="/sign-in"
-                className="text-sm font-medium text-slate-300 hover:text-white px-2.5 sm:px-3 py-2 rounded-lg transition"
+                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2.5 sm:px-3 py-2 rounded-lg transition"
               >
                 Sign in
               </Link>
@@ -290,7 +292,7 @@ export default function Navbar() {
                 aria-expanded={menuOpen}
                 aria-label="Open account menu"
                 onClick={() => setMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
+                className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 transition cursor-pointer"
               >
                 {showAvatarImage ? (
                   <img
@@ -300,13 +302,13 @@ export default function Navbar() {
                     className="w-8 h-8 rounded-full object-cover border border-sky-500/30"
                   />
                 ) : (
-                  <span className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs">
+                  <span className="w-8 h-8 rounded-full bg-sky-500/15 dark:bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs">
                     {getInitials(user.name)}
                   </span>
                 )}
                 <ChevronDown
-                  className={`w-4 h-4 text-slate-400 transition-transform duration-150 ${
-                    menuOpen ? "rotate-180 text-sky-400" : ""
+                  className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-150 ${
+                    menuOpen ? "rotate-180 text-sky-600 dark:text-sky-400" : ""
                   }`}
                 />
               </button>
@@ -314,9 +316,9 @@ export default function Navbar() {
               {menuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2.5 w-72 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50"
+                  className="absolute right-0 mt-2.5 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden z-50"
                 >
-                  <div className="p-4 border-b border-slate-800 flex items-center gap-3">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     {showAvatarImage ? (
                       <img
                         src={user.avatar}
@@ -325,20 +327,20 @@ export default function Navbar() {
                         className="w-10 h-10 rounded-full object-cover border border-sky-500/30 shrink-0"
                       />
                     ) : (
-                      <span className="w-10 h-10 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
+                      <span className="w-10 h-10 rounded-full bg-sky-500/15 dark:bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs shrink-0">
                         {getInitials(user.name)}
                       </span>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-white truncate">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                         {user.name || "FixMate User"}
                       </p>
                       {user.email && (
-                        <p className="text-xs text-slate-400 truncate mt-0.5">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                           {user.email}
                         </p>
                       )}
-                      <span className="inline-block mt-1.5 text-xs capitalize px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25 font-semibold">
+                      <span className="inline-block mt-1.5 text-xs capitalize px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-400 border border-sky-500/25 font-semibold">
                         {user.role || "customer"}
                       </span>
                     </div>
@@ -356,13 +358,15 @@ export default function Navbar() {
                           onClick={() => setMenuOpen(false)}
                           className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition ${
                             isActive
-                              ? "bg-sky-500/15 text-sky-400 font-semibold"
-                              : "text-slate-200 hover:bg-slate-800/80 hover:text-sky-400"
+                              ? "bg-sky-500/15 text-sky-700 dark:text-sky-400 font-semibold"
+                              : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-sky-600 dark:hover:text-sky-400"
                           }`}
                         >
                           <Icon
                             className={`w-4 h-4 shrink-0 ${
-                              isActive ? "text-sky-400" : "text-slate-400"
+                              isActive
+                                ? "text-sky-600 dark:text-sky-400"
+                                : "text-slate-400"
                             }`}
                           />
                           <span className="truncate">{item.name}</span>
@@ -371,12 +375,12 @@ export default function Navbar() {
                     })}
                   </div>
 
-                  <div className="border-t border-slate-800 py-1.5">
+                  <div className="border-t border-slate-200 dark:border-slate-800 py-1.5">
                     <button
                       type="button"
                       role="menuitem"
                       onClick={handleSignOut}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                     >
                       <LogOut className="w-4 h-4 shrink-0" />
                       <span>Sign out</span>
@@ -393,7 +397,7 @@ export default function Navbar() {
       {mobileNavOpen && (
         <nav
           aria-label="Mobile Navigation"
-          className="md:hidden bg-slate-900/95 border-t border-slate-800/90 px-4 py-3 space-y-1"
+          className="md:hidden bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800/90 px-4 py-3 space-y-1"
         >
           {navLinks.map((item) => {
             const active = isNavItemActive(item.href);
@@ -404,8 +408,8 @@ export default function Navbar() {
                 onClick={() => setMobileNavOpen(false)}
                 className={`block px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
                   active
-                    ? "bg-sky-500/15 text-sky-400 border border-sky-500/25 font-semibold"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                    ? "bg-sky-500/15 text-sky-700 dark:text-sky-400 border border-sky-500/25 font-semibold"
+                    : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
                 }`}
               >
                 {item.name}

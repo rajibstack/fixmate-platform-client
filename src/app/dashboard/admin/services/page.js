@@ -27,12 +27,12 @@ function formatSubmittedDate(dateStr) {
 function getStatusBadgeStyle(status) {
   const normalized = (status || "pending").toLowerCase();
   if (normalized === "approved") {
-    return "bg-emerald-500/10 text-emerald-300 border-emerald-500/25";
+    return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25";
   }
   if (normalized === "rejected") {
-    return "bg-rose-500/10 text-rose-300 border-rose-500/25";
+    return "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/25";
   }
-  return "bg-amber-500/10 text-amber-300 border-amber-500/25";
+  return "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25";
 }
 
 function formatStatusLabel(status) {
@@ -108,7 +108,7 @@ function AdminServiceThumbnail({ src, alt }) {
   }, [src]);
 
   if (!src || imgFailed) {
-    return <Wrench className="w-4 h-4 text-sky-400" />;
+    return <Wrench className="w-4 h-4 text-sky-600 dark:text-sky-400" />;
   }
 
   return (
@@ -345,17 +345,17 @@ export default function ManageServicesPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-800/90">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Manage services
           </h1>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             Only approved and available services appear on the public site.
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-slate-900/95 border border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto">
+        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto shadow-xs dark:shadow-none">
           {filterTabs.map((tab) => {
             const active = activeTab === tab.key;
             return (
@@ -366,13 +366,15 @@ export default function ManageServicesPage() {
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
                   active
                     ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-xs ${
-                    active ? "text-slate-950/80 font-bold" : "text-slate-400"
+                    active
+                      ? "text-slate-950/80 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {tab.count}
@@ -388,32 +390,32 @@ export default function ManageServicesPage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+              : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           )}
           <p className="font-medium flex-1">{feedback.message}</p>
         </div>
       )}
 
       {/* Services Table Card */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
         {filteredServices.length === 0 ? (
           <div className="py-16 px-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
               <Wrench className="w-6 h-6" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               {activeTab === "all"
                 ? "No services submitted yet"
                 : "No services found"}
             </h2>
-            <p className="text-sm text-slate-400 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
               {activeTab === "all"
                 ? "Technician service listings will appear here for review once submitted."
                 : "There are no services in this status category right now."}
@@ -435,7 +437,7 @@ export default function ManageServicesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/90 text-xs font-semibold text-slate-400 bg-slate-950/40">
+                <tr className="border-b border-slate-200 dark:border-slate-800/90 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40">
                   <th className="py-4 px-5">Service</th>
                   <th className="py-4 px-4">Technician</th>
                   <th className="py-4 px-4">Price</th>
@@ -444,7 +446,7 @@ export default function ManageServicesPage() {
                   <th className="py-4 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/70 text-sm">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/70 text-sm">
                 {filteredServices.map((service) => {
                   const id = service._id || service.id;
                   const status = (service.status || "pending").toLowerCase();
@@ -457,22 +459,22 @@ export default function ManageServicesPage() {
                   return (
                     <tr
                       key={id}
-                      className="hover:bg-slate-800/40 transition-colors"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       {/* Service Image/Icon + Title + Category */}
                       <td className="py-4 px-5">
                         <div className="flex items-center gap-3.5">
-                          <div className="w-14 h-11 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="w-14 h-11 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                             <AdminServiceThumbnail
                               src={service.image}
                               alt={service.title}
                             />
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-white truncate">
+                            <p className="font-semibold text-slate-900 dark:text-white truncate">
                               {service.title}
                             </p>
-                            <p className="text-xs text-slate-400 mt-0.5 truncate">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                               {service.category}
                             </p>
                           </div>
@@ -480,17 +482,17 @@ export default function ManageServicesPage() {
                       </td>
 
                       {/* Technician */}
-                      <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
+                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {technicianLabel}
                       </td>
 
                       {/* Price */}
-                      <td className="py-4 px-4 text-sky-400 font-semibold whitespace-nowrap">
+                      <td className="py-4 px-4 text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
                         ${Number(service.price || 0)}
                       </td>
 
                       {/* Submitted */}
-                      <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
+                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {formatSubmittedDate(service.createdAt)}
                       </td>
 
@@ -527,7 +529,7 @@ export default function ManageServicesPage() {
                               type="button"
                               disabled={busy}
                               onClick={() => setServiceToReject(service)}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-rose-500/15 hover:border-rose-500/30 text-slate-200 hover:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-rose-500/15 hover:border-rose-500/30 text-slate-700 dark:text-slate-200 hover:text-rose-700 dark:hover:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
                             >
                               <X className="w-3.5 h-3.5" />
                               <span>Reject</span>

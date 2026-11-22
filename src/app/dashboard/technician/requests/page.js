@@ -97,7 +97,11 @@ function resolveCustomerDetails(booking, lookup) {
     (id && lookup?.byId?.get(id)) || (email && lookup?.byEmail?.get(email));
 
   return {
-    name: matched?.name || booking?.customer?.name || booking?.customerName || "Customer",
+    name:
+      matched?.name ||
+      booking?.customer?.name ||
+      booking?.customerName ||
+      "Customer",
     phone: matched?.phone || booking?.phone || booking?.customerPhone || "—",
     address: booking?.address || matched?.area || "—",
   };
@@ -110,17 +114,17 @@ function normalizeStatus(status) {
 function getStatusBadgeStyle(status) {
   switch (status) {
     case "accepted":
-      return "bg-sky-500/15 text-sky-300 border-sky-500/30";
+      return "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30";
     case "in-progress":
-      return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
     case "completed":
-      return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
     case "rejected":
     case "cancelled":
-      return "bg-rose-500/15 text-rose-300 border-rose-500/30";
+      return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
     case "requested":
     default:
-      return "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
+      return "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30";
   }
 }
 
@@ -137,7 +141,7 @@ function RequestThumbnail({ src, alt }) {
   }, [src]);
 
   if (!src || imgFailed) {
-    return <Wrench className="w-8 h-8 text-sky-400" />;
+    return <Wrench className="w-8 h-8 text-sky-600 dark:text-sky-400" />;
   }
 
   return (
@@ -374,17 +378,17 @@ export default function TechnicianManageRequestsPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-800/90">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Manage requests
           </h1>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             Move each job forward one step at a time.
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-slate-900/95 border border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto">
+        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto shadow-xs dark:shadow-none">
           {tabs.map((tab) => {
             const active = activeTab === tab.key;
             return (
@@ -395,13 +399,15 @@ export default function TechnicianManageRequestsPage() {
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
                   active
                     ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-xs ${
-                    active ? "text-slate-950/80 font-bold" : "text-slate-400"
+                    active
+                      ? "text-slate-950/80 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {tab.count}
@@ -417,14 +423,14 @@ export default function TechnicianManageRequestsPage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+              : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           )}
           <p className="font-medium flex-1">{feedback.message}</p>
         </div>
@@ -432,16 +438,16 @@ export default function TechnicianManageRequestsPage() {
 
       {/* Requests List / States */}
       {filteredRequests.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <Inbox className="w-6 h-6" />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-white">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             {activeTab === "all"
               ? "No repair requests yet"
               : "No repair requests found"}
           </h2>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
             {activeTab === "all"
               ? "Customer booking requests for your approved services will appear here."
               : "There are no customer requests in this stage right now."}
@@ -460,9 +466,9 @@ export default function TechnicianManageRequestsPage() {
               <button
                 type="button"
                 onClick={() => fetchTechnicianRequests()}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4 text-sky-400" />
+                <RefreshCw className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>Refresh requests</span>
               </button>
             )}
@@ -498,11 +504,11 @@ export default function TechnicianManageRequestsPage() {
             return (
               <div
                 key={id}
-                className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
+                className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
               >
                 {/* Left Section: Fixed-Size Service Image + Details with Equal Vertical Spacing */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
-                  <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     <RequestThumbnail
                       src={booking?.serviceImage}
                       alt={booking?.serviceTitle || "Repair Service"}
@@ -510,49 +516,49 @@ export default function TechnicianManageRequestsPage() {
                   </div>
 
                   <div className="flex-1 min-w-0 space-y-3 py-0.5">
-                    <h2 className="text-base sm:text-lg font-bold text-white truncate">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                       {booking?.serviceTitle || "Repair Service"}
                     </h2>
 
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-400">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                       <span>
                         Requested{" "}
-                        <strong className="font-semibold text-slate-200">
+                        <strong className="font-semibold text-slate-800 dark:text-slate-200">
                           {formatShortDate(booking?.createdAt)}
                         </strong>
                       </span>
                       <span>
                         Preferred{" "}
-                        <strong className="font-semibold text-slate-200">
+                        <strong className="font-semibold text-slate-800 dark:text-slate-200">
                           {formatShortDate(booking?.preferredDate)}
                         </strong>
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1.5 text-xs sm:text-sm text-slate-400">
+                    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                       <span className="min-w-0">
                         Customer:{" "}
-                        <strong className="font-semibold text-slate-100">
+                        <strong className="font-semibold text-slate-900 dark:text-slate-100">
                           {customer.name}
                         </strong>
                       </span>
                       <span className="shrink-0">
                         Phone:{" "}
-                        <strong className="font-semibold text-sky-400">
+                        <strong className="font-semibold text-sky-600 dark:text-sky-400">
                           {customer.phone}
                         </strong>
                       </span>
                     </div>
 
-                    <div className="text-xs sm:text-sm text-slate-400 break-words">
+                    <div className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 break-words">
                       <span>Address: </span>
-                      <strong className="font-semibold text-slate-100">
+                      <strong className="font-semibold text-slate-900 dark:text-slate-100">
                         {customer.address}
                       </strong>
                     </div>
 
                     {booking?.problemDescription && (
-                      <p className="text-xs sm:text-sm text-slate-300/90 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300/90 leading-relaxed">
                         {booking.problemDescription}
                       </p>
                     )}
@@ -560,17 +566,17 @@ export default function TechnicianManageRequestsPage() {
                 </div>
 
                 {/* Right Section: Clean Aligned Ticket, Price, Badges & Step Action */}
-                <div className="w-full xl:w-[27rem] xl:pl-6 xl:border-l xl:border-dashed xl:border-slate-800 flex flex-col justify-between gap-4 shrink-0">
+                <div className="w-full xl:w-[27rem] xl:pl-6 xl:border-l xl:border-dashed xl:border-slate-200 dark:xl:border-slate-800 flex flex-col justify-between gap-4 shrink-0">
                   <div className="flex items-start justify-between gap-4">
-                    <span className="text-xs font-medium text-slate-400 pt-0.5">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pt-0.5">
                       Ticket {getTicketCode(booking)}
                     </span>
 
                     <div className="text-right">
-                      <span className="block text-[11px] text-slate-400 leading-tight">
+                      <span className="block text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                         {amountLabel}
                       </span>
-                      <span className="text-2xl font-bold text-white leading-tight">
+                      <span className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">
                         ${amount}
                       </span>
                     </div>
@@ -590,8 +596,8 @@ export default function TechnicianManageRequestsPage() {
                       <span
                         className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
                           paymentStatus === "paid"
-                            ? "bg-emerald-500/15 text-emerald-300 border-emerald-500/30"
-                            : "bg-slate-800/90 text-slate-300 border-slate-700"
+                            ? "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
+                            : "bg-slate-200/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
                         }`}
                       >
                         {paymentStatus === "paid" ? "Paid" : "Unpaid"}
@@ -621,7 +627,7 @@ export default function TechnicianManageRequestsPage() {
                             type="button"
                             disabled={isAnyBusy}
                             onClick={() => setRequestToReject(booking)}
-                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                            className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-700 dark:text-rose-300 hover:text-rose-800 dark:hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                           >
                             {isRejecting ? (
                               <FixMateSpinner compact />
@@ -683,7 +689,9 @@ export default function TechnicianManageRequestsPage() {
         variant="warning"
         title="Reject Repair Request?"
         description={`Are you sure you want to reject the request from "${
-          requestToReject ? resolveCustomerDetails(requestToReject, userLookup).name : "Customer"
+          requestToReject
+            ? resolveCustomerDetails(requestToReject, userLookup).name
+            : "Customer"
         }" for "${requestToReject?.serviceTitle || "this service"}"?`}
         confirmText="Reject Request"
         cancelText="Keep Request"

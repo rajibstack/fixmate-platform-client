@@ -410,11 +410,11 @@ export default function UpdateProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
-      <div className="pb-5 border-b border-slate-800/90">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90">
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Update profile
         </h1>
-        <p className="text-slate-400 text-sm mt-1.5">
+        <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
           Your name and photo show in the navbar and on your services.
         </p>
       </div>
@@ -423,14 +423,14 @@ export default function UpdateProfilePage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+              : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           )}
           <div className="flex-1">
             <p className="font-medium">{feedback.message}</p>
@@ -440,11 +440,11 @@ export default function UpdateProfilePage() {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-8 shadow-xl space-y-6"
+        className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-8 shadow-md dark:shadow-xl space-y-6"
       >
         {/* Photo Upload Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 pb-6 border-b border-slate-800/80">
-          <div className="relative w-20 h-20 rounded-full bg-slate-950 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 pb-6 border-b border-slate-200 dark:border-slate-800/80">
+          <div className="relative w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
             {displayAvatar ? (
               <>
                 <img
@@ -457,25 +457,25 @@ export default function UpdateProfilePage() {
                   type="button"
                   onClick={handleRemovePhoto}
                   aria-label="Remove photo"
-                  className="absolute inset-0 bg-slate-950/65 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition cursor-pointer"
+                  className="absolute inset-0 bg-black/65 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </>
             ) : (
-              <div className="flex flex-col items-center text-center px-1.5 text-slate-500">
-                <UserIcon className="w-5 h-5 mb-0.5 text-slate-600" />
+              <div className="flex flex-col items-center text-center px-1.5 text-slate-400 dark:text-slate-500">
+                <UserIcon className="w-5 h-5 mb-0.5 text-slate-400 dark:text-slate-600" />
                 <span className="text-[10px] leading-tight">No image yet</span>
               </div>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sm font-medium text-white transition cursor-pointer">
+            <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white transition cursor-pointer">
               {uploadingPhoto ? (
                 <FixMateSpinner compact />
               ) : (
-                <Upload className="w-4 h-4 text-sky-400" />
+                <Upload className="w-4 h-4 text-sky-600 dark:text-sky-400" />
               )}
               <span>{uploadingPhoto ? "Uploading..." : "Upload photo"}</span>
               <input
@@ -486,7 +486,7 @@ export default function UpdateProfilePage() {
                 className="hidden"
               />
             </label>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Uploaded through the ImgBB step (simulated). JPG or PNG, up to 8 MB.
             </p>
           </div>
@@ -497,9 +497,10 @@ export default function UpdateProfilePage() {
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-medium text-slate-200 mb-2"
+              className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
             >
-              Full name <span className="text-sky-400">*</span>
+              Full name{" "}
+              <span className="text-sky-600 dark:text-sky-400">*</span>
             </label>
             <input
               id="name"
@@ -509,14 +510,14 @@ export default function UpdateProfilePage() {
               value={formData.name}
               onChange={handleChange}
               placeholder="Your full name"
-              className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
             />
           </div>
 
           <div>
             <label
               htmlFor="phone"
-              className="block text-sm font-medium text-slate-200 mb-2"
+              className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
             >
               Phone
             </label>
@@ -527,7 +528,7 @@ export default function UpdateProfilePage() {
               value={formData.phone}
               onChange={handleChange}
               placeholder="01812-445566"
-              className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
             />
           </div>
         </div>
@@ -537,10 +538,10 @@ export default function UpdateProfilePage() {
           <div>
             <label
               htmlFor="email"
-              className="flex items-center gap-1.5 text-sm font-medium text-slate-300 mb-2"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
             >
               <span>Email</span>
-              <Lock className="w-3.5 h-3.5 text-slate-500" />
+              <Lock className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
             </label>
             <input
               id="email"
@@ -549,24 +550,24 @@ export default function UpdateProfilePage() {
               readOnly
               aria-readonly="true"
               value={formData.email}
-              className="w-full rounded-xl bg-slate-950/60 border border-slate-800/90 px-4 py-3 text-sm text-slate-400 outline-none cursor-not-allowed select-none"
+              className="w-full rounded-xl bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 outline-none cursor-not-allowed select-none"
             />
           </div>
 
           <div>
-            <span className="block text-sm font-medium text-slate-300 mb-2">
+            <span className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Role
             </span>
             <div className="h-[46px] flex items-center gap-2">
-              <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-300 border border-sky-500/25">
+              <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25">
                 {formatRoleLabel(formData.role)}
               </span>
               {formData.role === "technician" && (
                 <span
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
                     formData.isVerifiedPro
-                      ? "bg-amber-500/15 text-amber-300 border-amber-400/35"
-                      : "bg-slate-800 text-slate-300 border-slate-700"
+                      ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-400/35"
+                      : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
                   }`}
                 >
                   {formData.isVerifiedPro ? "Verified Pro" : "Free"}
@@ -580,7 +581,7 @@ export default function UpdateProfilePage() {
         <div>
           <label
             htmlFor="area"
-            className="block text-sm font-medium text-slate-200 mb-2"
+            className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
           >
             Area
           </label>
@@ -591,7 +592,7 @@ export default function UpdateProfilePage() {
             value={formData.area}
             onChange={handleChange}
             placeholder="Mirpur, Dhaka"
-            className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+            className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
           />
         </div>
 
@@ -599,7 +600,7 @@ export default function UpdateProfilePage() {
         <div>
           <label
             htmlFor="bio"
-            className="block text-sm font-medium text-slate-200 mb-2"
+            className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
           >
             Bio
           </label>
@@ -610,9 +611,9 @@ export default function UpdateProfilePage() {
             value={formData.bio}
             onChange={handleChange}
             placeholder="Share your repair experience, specialties, and warranty details..."
-            className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition resize-y"
+            className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-y"
           />
-          <p className="text-xs text-slate-400 mt-1.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
             Customers read this on your service pages.
           </p>
         </div>

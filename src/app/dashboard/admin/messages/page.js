@@ -14,9 +14,11 @@ import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 
 const statusStyles = {
-  unread: "bg-sky-500/15 text-sky-300 border-sky-500/30",
-  read: "bg-slate-800 text-slate-300 border-slate-700",
-  replied: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
+  unread:
+    "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30",
+  read: "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700",
+  replied:
+    "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
 };
 
 export default function AdminMessagesPage() {
@@ -111,7 +113,11 @@ export default function AdminMessagesPage() {
           const currentId = msg._id || msg.id;
           if (currentId !== id) return msg;
           return updatedItem && typeof updatedItem === "object"
-            ? { ...msg, ...updatedItem, status: updatedItem.status || nextStatus }
+            ? {
+                ...msg,
+                ...updatedItem,
+                status: updatedItem.status || nextStatus,
+              }
             : { ...msg, status: nextStatus };
         })
       );
@@ -135,13 +141,13 @@ export default function AdminMessagesPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-2xl p-5 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs dark:shadow-none">
         <div>
-          <h1 className="text-xl font-bold text-white flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-sky-400" />
+          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-sky-600 dark:text-sky-400" />
             <span>Contact Messages</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Messages submitted from the public Contact Us page ({messages.length}{" "}
             total)
           </p>
@@ -156,7 +162,7 @@ export default function AdminMessagesPage() {
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition cursor-pointer ${
                 filter === tab
                   ? "bg-sky-500 text-slate-950"
-                  : "bg-slate-950 text-slate-300 border border-slate-800 hover:bg-slate-800"
+                  : "bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800"
               }`}
             >
               {tab}
@@ -166,7 +172,7 @@ export default function AdminMessagesPage() {
           <button
             type="button"
             onClick={fetchMessages}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-800 text-xs font-semibold text-slate-200 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 transition cursor-pointer"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Refresh</span>
@@ -176,28 +182,28 @@ export default function AdminMessagesPage() {
 
       {/* Content */}
       {error ? (
-        <div className="bg-rose-500/10 border border-rose-500/30 text-rose-300 rounded-2xl p-5 text-sm flex items-center justify-between gap-3">
+        <div className="bg-rose-500/10 border border-rose-500/30 text-rose-700 dark:text-rose-300 rounded-2xl p-5 text-sm flex items-center justify-between gap-3">
           <span>{error}</span>
           <button
             type="button"
             onClick={fetchMessages}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-800 dark:text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Retry</span>
           </button>
         </div>
       ) : filteredMessages.length === 0 ? (
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-12 text-center space-y-3 shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3 shadow-md dark:shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <MessageSquare className="w-6 h-6" />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-white">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             {filter === "all"
               ? "No contact messages yet"
               : `No ${filter} messages`}
           </h2>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
             {filter === "all"
               ? "Submissions from the Contact Us page will show up here for review."
               : `There are currently no messages marked as ${filter}.`}
@@ -216,9 +222,9 @@ export default function AdminMessagesPage() {
               <button
                 type="button"
                 onClick={fetchMessages}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4 text-sky-400" />
+                <RefreshCw className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>Refresh inbox</span>
               </button>
             )}
@@ -233,34 +239,36 @@ export default function AdminMessagesPage() {
             return (
               <div
                 key={id}
-                className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-2xl p-5 sm:p-6 space-y-4 transition"
+                className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xs dark:shadow-none transition"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="inline-flex items-center gap-1.5 text-sm font-bold text-white">
-                        <User className="w-4 h-4 text-sky-400" />
+                      <span className="inline-flex items-center gap-1.5 text-sm font-bold text-slate-900 dark:text-white">
+                        <User className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                         {msg.name || "Anonymous User"}
                       </span>
-                      <span className="text-slate-600">•</span>
+                      <span className="text-slate-400 dark:text-slate-600">
+                        •
+                      </span>
                       {msg.email ? (
                         <a
                           href={`mailto:${msg.email}`}
-                          className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-sky-400 hover:underline"
+                          className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-sky-600 dark:text-sky-400 hover:underline"
                         >
                           <Mail className="w-3.5 h-3.5" />
                           {msg.email}
                         </a>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-400">
+                        <span className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-500 dark:text-slate-400">
                           <Mail className="w-3.5 h-3.5" />
                           No email provided
                         </span>
                       )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-400">
-                      <span className="px-2.5 py-0.5 rounded-full bg-slate-950 border border-slate-800 text-slate-300 font-medium">
+                    <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
+                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium">
                         {msg.topic || "General Inquiry"}
                       </span>
                       {msg.createdAt && (
@@ -288,21 +296,36 @@ export default function AdminMessagesPage() {
                       onChange={(e) =>
                         handleStatusChange(id, e.target.value)
                       }
-                      className="rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-200 px-2.5 py-1.5 focus:border-sky-500 focus:outline-none cursor-pointer"
+                      className="rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-200 px-2.5 py-1.5 focus:border-sky-500 focus:outline-none cursor-pointer"
                     >
-                      <option value="unread">Unread</option>
-                      <option value="read">Read</option>
-                      <option value="replied">Replied</option>
+                      <option
+                        value="unread"
+                        className="bg-white dark:bg-slate-950"
+                      >
+                        Unread
+                      </option>
+                      <option
+                        value="read"
+                        className="bg-white dark:bg-slate-950"
+                      >
+                        Read
+                      </option>
+                      <option
+                        value="replied"
+                        className="bg-white dark:bg-slate-950"
+                      >
+                        Replied
+                      </option>
                     </select>
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-300 bg-slate-950/80 border border-slate-800/80 rounded-xl p-4 leading-relaxed whitespace-pre-line">
+                <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 rounded-xl p-4 leading-relaxed whitespace-pre-line">
                   {msg.message}
                 </p>
 
                 {currentStatus === "replied" && (
-                  <div className="inline-flex items-center gap-1.5 text-xs text-emerald-400">
+                  <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Marked as replied</span>
                   </div>

@@ -233,7 +233,7 @@ function FeaturedServiceImage({ src, alt }) {
   }, [src]);
 
   if (!src || failed) {
-    return <Wrench className="w-9 h-9 text-sky-400/70" />;
+    return <Wrench className="w-9 h-9 text-sky-500 dark:text-sky-400/70" />;
   }
 
   return (
@@ -354,25 +354,27 @@ export default function HomePage() {
   }
 
   return (
-    <div className="bg-slate-950 text-slate-100">
+    <div className="bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* 1. Hero / Banner Section */}
-      <section className="relative overflow-hidden border-b border-slate-800/80">
+      <section className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800/80 bg-white/70 dark:bg-transparent">
         <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[720px] h-[340px] rounded-full bg-sky-500/10 blur-3xl" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-8 py-14 lg:py-20 relative">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             <div className="lg:col-span-7 space-y-6">
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-300 text-xs font-semibold">
-                <Sparkles className="w-3.5 h-3.5 text-sky-400" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-700 dark:text-sky-300 text-xs font-semibold">
+                <Sparkles className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
                 <span>On-Demand Device & Appliance Repair</span>
               </div>
 
-              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-white leading-[1.15]">
+              <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
                 Broken Device? Get It Fixed by{" "}
-                <span className="text-sky-400">Verified Technicians</span>
+                <span className="text-sky-600 dark:text-sky-400">
+                  Verified Technicians
+                </span>
               </h1>
 
-              <p className="text-slate-400 text-base sm:text-lg max-w-2xl leading-relaxed">
+              <p className="text-slate-600 dark:text-slate-400 text-base sm:text-lg max-w-2xl leading-relaxed">
                 Book trusted repair specialists for smartphones, laptops, ACs,
                 fridges, TVs, and home appliances with upfront starting prices
                 and pay-after-completion peace of mind.
@@ -384,13 +386,13 @@ export default function HomePage() {
                 className="flex flex-col sm:flex-row gap-3 pt-1 max-w-2xl"
               >
                 <div className="relative flex-1">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <Search className="w-4 h-4 text-slate-400 dark:text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search AC repair, laptop screen, fridge..."
-                    className="w-full rounded-xl bg-slate-900/95 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-3 text-sm text-white placeholder:text-slate-500 outline-none transition"
+                    className="w-full rounded-xl bg-white dark:bg-slate-900/95 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                   />
                 </div>
 
@@ -405,23 +407,23 @@ export default function HomePage() {
                 <Link
                   href="/services"
                   onClick={() => setNavigating(true)}
-                  className="inline-flex items-center justify-center gap-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-semibold text-sm px-5 py-3 rounded-xl transition shrink-0"
+                  className="inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-sm px-5 py-3 rounded-xl transition shrink-0"
                 >
                   <span>Explore Services</span>
                 </Link>
               </form>
 
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-400 pt-1">
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs sm:text-sm text-slate-600 dark:text-slate-400 pt-1">
                 <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                  <CheckCircle2 className="w-4 h-4 text-sky-500 dark:text-sky-400" />
                   Verified specialists
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                  <CheckCircle2 className="w-4 h-4 text-sky-500 dark:text-sky-400" />
                   Transparent starting prices
                 </span>
                 <span className="inline-flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-sky-400" />
+                  <CheckCircle2 className="w-4 h-4 text-sky-500 dark:text-sky-400" />
                   Pay after completion
                 </span>
               </div>
@@ -429,8 +431,8 @@ export default function HomePage() {
 
             {/* Visual Showcase Card */}
             <div className="lg:col-span-5">
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-5">
-                <div className="aspect-[16/10] w-full rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden relative flex items-center justify-center">
+              <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl dark:shadow-2xl space-y-5">
+                <div className="aspect-[16/10] w-full rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden relative flex items-center justify-center">
                   <img
                     src={heroImgSrc}
                     alt="Technician repairing electronics with precision tools"
@@ -443,25 +445,29 @@ export default function HomePage() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
                   <div className="absolute bottom-3.5 left-4 right-4 flex items-center justify-between gap-2">
-                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-500/15 text-sky-300 border border-sky-500/30 backdrop-blur-xs">
+                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-500/20 text-sky-200 border border-sky-400/30 backdrop-blur-xs">
                       Same-Day Slot Available
                     </span>
-                    <span className="text-xs font-medium text-slate-200 bg-slate-900/85 px-3 py-1 rounded-full border border-slate-700/80">
+                    <span className="text-xs font-medium text-slate-100 bg-slate-900/85 px-3 py-1 rounded-full border border-slate-700/80">
                       4.9 ★ Rating
                     </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3.5">
-                  <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-4">
-                    <p className="text-xs text-slate-400">Turnaround</p>
-                    <p className="text-base font-bold text-white mt-1">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-4">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Turnaround
+                    </p>
+                    <p className="text-base font-bold text-slate-900 dark:text-white mt-1">
                       Fast & Reliable
                     </p>
                   </div>
-                  <div className="rounded-2xl bg-slate-950/80 border border-slate-800 p-4">
-                    <p className="text-xs text-slate-400">Service Modes</p>
-                    <p className="text-base font-bold text-sky-400 mt-1">
+                  <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-4">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      Service Modes
+                    </p>
+                    <p className="text-base font-bold text-sky-600 dark:text-sky-400 mt-1">
                       Home & Workshop
                     </p>
                   </div>
@@ -477,17 +483,17 @@ export default function HomePage() {
         id="featured-services"
         className="max-w-7xl mx-auto px-4 sm:px-8 py-14 sm:py-16 space-y-8"
       >
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-800/80 pb-5">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-5">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-sky-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
               Featured Listings
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
               {selectedCategory
                 ? `${selectedCategory} Services`
                 : "Latest Approved Services"}
             </h2>
-            <p className="text-sm text-slate-400 mt-1">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
               Available services vetted for quality and ready to book.
             </p>
           </div>
@@ -497,7 +503,7 @@ export default function HomePage() {
               <button
                 type="button"
                 onClick={() => setSelectedCategory("")}
-                className="text-xs font-semibold px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700 text-slate-200 transition cursor-pointer"
+                className="text-xs font-semibold px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
               >
                 Clear filter
               </button>
@@ -511,7 +517,7 @@ export default function HomePage() {
                   : "/services"
               }
               onClick={() => setNavigating(true)}
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-400 hover:text-sky-300 transition"
+              className="inline-flex items-center gap-1.5 text-sm font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 transition"
             >
               <span>View All Services</span>
               <ArrowRight className="w-4 h-4" />
@@ -522,25 +528,27 @@ export default function HomePage() {
         {loading ? (
           <PublicPageSkeleton cards={6} />
         ) : error ? (
-          <div className="py-12 px-6 text-center bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
-            <p className="text-sm font-medium text-rose-300">{error}</p>
+          <div className="py-12 px-6 text-center bg-white dark:bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
+            <p className="text-sm font-medium text-rose-600 dark:text-rose-300">
+              {error}
+            </p>
             <button
               type="button"
               onClick={fetchFeaturedServices}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition cursor-pointer"
             >
               Try Again
             </button>
           </div>
         ) : featuredServices.length === 0 ? (
-          <div className="py-14 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
+          <div className="py-14 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
               <Wrench className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-white">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">
               No matching services found
             </h3>
-            <p className="text-sm text-slate-400 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
               {selectedCategory
                 ? `No approved and available services matched "${selectedCategory}".`
                 : "Approved and available repair services will appear here soon."}
@@ -566,10 +574,10 @@ export default function HomePage() {
               return (
                 <article
                   key={id}
-                  className="h-full flex flex-col justify-between bg-slate-900/90 border border-slate-800 hover:border-sky-500/40 rounded-3xl overflow-hidden shadow-xl transition"
+                  className="h-full flex flex-col justify-between bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-sky-500/40 rounded-3xl overflow-hidden shadow-md dark:shadow-xl transition"
                 >
                   <div>
-                    <div className="h-44 w-full bg-slate-950 border-b border-slate-800/80 overflow-hidden flex items-center justify-center">
+                    <div className="h-44 w-full bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 overflow-hidden flex items-center justify-center">
                       <FeaturedServiceImage
                         src={service.image}
                         alt={service.title || "Repair Service"}
@@ -578,33 +586,33 @@ export default function HomePage() {
 
                     <div className="p-5 space-y-3">
                       <div className="flex items-center justify-between gap-2 text-xs">
-                        <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/25 font-semibold truncate">
+                        <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25 font-semibold truncate">
                           {service.category || "General Repair"}
                         </span>
-                        <span className="text-slate-400 font-medium truncate">
+                        <span className="text-slate-500 dark:text-slate-400 font-medium truncate">
                           {modeLabel}
                         </span>
                       </div>
 
-                      <h3 className="text-lg font-bold text-white line-clamp-1">
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
                         {service.title}
                       </h3>
 
-                      <p className="text-xs text-slate-400 truncate">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
                         Technician:{" "}
-                        <span className="text-slate-200 font-medium">
+                        <span className="text-slate-700 dark:text-slate-200 font-medium">
                           {techName}
                         </span>
                       </p>
                     </div>
                   </div>
 
-                  <div className="px-5 pb-5 pt-3 border-t border-slate-800/70 flex items-center justify-between gap-3">
+                  <div className="px-5 pb-5 pt-3 border-t border-slate-200 dark:border-slate-800/70 flex items-center justify-between gap-3">
                     <div>
-                      <span className="block text-[11px] text-slate-400">
+                      <span className="block text-[11px] text-slate-500 dark:text-slate-400">
                         Starting at
                       </span>
-                      <span className="text-lg font-bold text-sky-400">
+                      <span className="text-lg font-bold text-sky-600 dark:text-sky-400">
                         ${Number(service.price || 0)}
                       </span>
                     </div>
@@ -626,16 +634,16 @@ export default function HomePage() {
       </section>
 
       {/* 3. Extra Section 1: How FixMate Works */}
-      <section className="border-y border-slate-800/80 bg-slate-900/40 py-14 sm:py-16">
+      <section className="border-y border-slate-200 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-900/40 py-14 sm:py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
           <div className="max-w-2xl">
-            <p className="text-xs font-semibold uppercase tracking-wider text-sky-400">
+            <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
               Simple Process
             </p>
-            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+            <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
               How FixMate Works
             </h2>
-            <p className="text-sm text-slate-400 mt-1.5">
+            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5">
               Four straightforward steps from booking to a working device.
             </p>
           </div>
@@ -646,28 +654,28 @@ export default function HomePage() {
               return (
                 <div
                   key={item.step}
-                  className="h-full flex flex-col justify-between bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-lg relative"
+                  className="h-full flex flex-col justify-between bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 shadow-md dark:shadow-lg relative"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
-                      <div className="w-11 h-11 rounded-2xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-400">
+                      <div className="w-11 h-11 rounded-2xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-600 dark:text-sky-400">
                         <Icon className="w-5 h-5" />
                       </div>
-                      <span className="text-xs font-bold tracking-widest text-slate-500">
+                      <span className="text-xs font-bold tracking-widest text-slate-400 dark:text-slate-500">
                         STEP {item.step}
                       </span>
                     </div>
 
-                    <h3 className="text-base font-bold text-white">
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white">
                       {item.title}
                     </h3>
-                    <p className="text-sm text-slate-400 leading-relaxed">
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                       {item.description}
                     </p>
                   </div>
 
                   {idx < HOW_IT_WORKS_STEPS.length - 1 && (
-                    <div className="mt-5 pt-3 border-t border-slate-800/70 flex items-center gap-1.5 text-xs font-medium text-sky-400/90">
+                    <div className="mt-5 pt-3 border-t border-slate-200 dark:border-slate-800/70 flex items-center gap-1.5 text-xs font-medium text-sky-600 dark:text-sky-400/90">
                       <span>Next</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
@@ -684,13 +692,13 @@ export default function HomePage() {
         <div className="space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-sky-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
                 Categories
               </p>
-              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-white mt-1">
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
                 Popular Repair Categories
               </h2>
-              <p className="text-sm text-slate-400 mt-1">
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
                 Click a category to filter featured services below.
               </p>
             </div>
@@ -698,7 +706,7 @@ export default function HomePage() {
             <Link
               href="/services"
               onClick={() => setNavigating(true)}
-              className="text-sm font-semibold text-sky-400 hover:text-sky-300 inline-flex items-center gap-1.5 self-start sm:self-auto"
+              className="text-sm font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 inline-flex items-center gap-1.5 self-start sm:self-auto"
             >
               <span>Browse all categories</span>
               <ArrowRight className="w-4 h-4" />
@@ -717,8 +725,8 @@ export default function HomePage() {
                   onClick={() => handleCategoryClick(cat.name)}
                   className={`text-left h-full flex flex-col justify-between rounded-2xl p-5 border transition cursor-pointer ${
                     isSelected
-                      ? "bg-sky-500/15 border-sky-500 text-white shadow-lg shadow-sky-500/10"
-                      : "bg-slate-900/90 border-slate-800 hover:border-sky-500/40 text-slate-100"
+                      ? "bg-sky-500/15 border-sky-500 text-slate-900 dark:text-white shadow-lg shadow-sky-500/10"
+                      : "bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-sky-500/40 text-slate-900 dark:text-slate-100"
                   }`}
                 >
                   <div className="space-y-3">
@@ -726,22 +734,22 @@ export default function HomePage() {
                       className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
                         isSelected
                           ? "bg-sky-500 text-slate-950 border-sky-400"
-                          : "bg-slate-950 text-sky-400 border-slate-800"
+                          : "bg-slate-100 dark:bg-slate-950 text-sky-600 dark:text-sky-400 border-slate-200 dark:border-slate-800"
                       }`}
                     >
                       <Icon className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-white">
+                      <h3 className="text-base font-bold text-slate-900 dark:text-white">
                         {cat.name}
                       </h3>
-                      <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
                         {cat.tagline}
                       </p>
                     </div>
                   </div>
 
-                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-sky-400">
+                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400">
                     <span>{isSelected ? "Selected" : "Filter services"}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </span>
@@ -752,13 +760,13 @@ export default function HomePage() {
         </div>
 
         {/* Why Choose Us / Platform Trust Stats */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800/80 pb-5">
+        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-lg dark:shadow-xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-5">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-sky-400">
+              <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
                 Why Choose FixMate
               </p>
-              <h2 className="text-xl sm:text-2xl font-bold text-white mt-1">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mt-1">
                 Built on Trust, Speed & Accountability
               </h2>
             </div>
@@ -778,18 +786,18 @@ export default function HomePage() {
               return (
                 <div
                   key={stat.label}
-                  className="rounded-2xl bg-slate-950/80 border border-slate-800 p-5 space-y-2.5"
+                  className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-5 space-y-2.5"
                 >
-                  <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-400">
+                  <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-600 dark:text-sky-400">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <p className="text-xl sm:text-2xl font-bold text-white">
+                  <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
                     {stat.value}
                   </p>
-                  <p className="text-sm font-semibold text-sky-400">
+                  <p className="text-sm font-semibold text-sky-600 dark:text-sky-400">
                     {stat.label}
                   </p>
-                  <p className="text-xs text-slate-400 leading-relaxed">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                     {stat.description}
                   </p>
                 </div>

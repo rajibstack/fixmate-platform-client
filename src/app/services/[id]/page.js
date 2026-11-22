@@ -736,16 +736,18 @@ export default function ServiceDetailsPage() {
 
   if (notFound || !service) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-16">
-        <div className="max-w-md w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-8 text-center shadow-2xl space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-400 flex items-center justify-center mx-auto">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center px-4 py-16 transition-colors duration-200">
+        <div className="max-w-md w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center shadow-xl dark:shadow-2xl space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto">
             <AlertCircle className="w-7 h-7" />
           </div>
-          <p className="text-xs font-bold uppercase tracking-widest text-sky-400">
+          <p className="text-xs font-bold uppercase tracking-widest text-sky-600 dark:text-sky-400">
             404 • Not Found
           </p>
-          <h1 className="text-2xl font-bold text-white">Service Not Found</h1>
-          <p className="text-sm text-slate-400 leading-relaxed">
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Service Not Found
+          </h1>
+          <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
             The service you are looking for does not exist, is no longer
             available, or is awaiting approval.
           </p>
@@ -785,28 +787,28 @@ export default function ServiceDetailsPage() {
   const filledStarsCount = Math.round(averageRating);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-10 sm:py-14">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-10 sm:py-14 transition-colors duration-200">
       {/* Floating Toast Notification */}
       {toast && (
         <div
           role="status"
           className={`fixed bottom-5 right-5 z-50 max-w-md rounded-2xl px-4 py-3.5 border shadow-2xl flex items-start gap-3 text-sm backdrop-blur ${
             toast.type === "success"
-              ? "bg-slate-900/95 border-emerald-500/40 text-emerald-200"
-              : "bg-slate-900/95 border-rose-500/40 text-rose-200"
+              ? "bg-white/95 dark:bg-slate-900/95 border-emerald-500/40 text-emerald-800 dark:text-emerald-200"
+              : "bg-white/95 dark:bg-slate-900/95 border-rose-500/40 text-rose-800 dark:text-rose-200"
           }`}
         >
           {toast.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
           )}
           <div className="flex-1">
             <p className="font-medium leading-snug">{toast.message}</p>
             {toast.type === "success" && (
               <Link
                 href="/dashboard/customer/bookings"
-                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-400 hover:text-sky-300 mt-1.5 underline underline-offset-2"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 mt-1.5 underline underline-offset-2"
               >
                 <span>Go to My Bookings</span>
                 <ExternalLink className="w-3 h-3" />
@@ -817,7 +819,7 @@ export default function ServiceDetailsPage() {
             type="button"
             onClick={() => setToast(null)}
             aria-label="Close notification"
-            className="text-slate-400 hover:text-white cursor-pointer"
+            className="text-slate-400 hover:text-slate-700 dark:hover:text-white cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -830,7 +832,7 @@ export default function ServiceDetailsPage() {
           <Link
             href="/services"
             onClick={() => setNavigating(true)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-sky-400 transition"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Services</span>
@@ -841,12 +843,12 @@ export default function ServiceDetailsPage() {
         {submittedSuccess && (
           <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-white">
+                <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
                   Repair Request Submitted
                 </h2>
-                <p className="text-xs sm:text-sm text-emerald-200/90 mt-0.5">
+                <p className="text-xs sm:text-sm text-emerald-800 dark:text-emerald-200/90 mt-0.5">
                   Your booking request is now marked as{" "}
                   <span className="font-semibold">requested</span>. You can
                   view and track it anytime in My Bookings.
@@ -867,8 +869,8 @@ export default function ServiceDetailsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Left Column: Large Service Image + Description + Technician + Reviews */}
           <div className="lg:col-span-7 space-y-6">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
-              <div className="aspect-[16/10] w-full bg-slate-950 border-b border-slate-800/80 flex items-center justify-center overflow-hidden">
+            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-md dark:shadow-xl">
+              <div className="aspect-[16/10] w-full bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-center overflow-hidden">
                 {showServicePhoto ? (
                   <img
                     src={serviceImageUrl}
@@ -877,23 +879,23 @@ export default function ServiceDetailsPage() {
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  <Wrench className="w-14 h-14 text-sky-400/70" />
+                  <Wrench className="w-14 h-14 text-sky-500 dark:text-sky-400/70" />
                 )}
               </div>
 
               <div className="p-6 sm:p-8 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-300 border border-sky-500/25 text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25 text-xs font-semibold">
                       {service.category || "General Repair"}
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-slate-800/90 text-slate-300 border border-slate-700/80 text-xs font-medium">
+                    <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 text-xs font-medium">
                       {modeLabel}
                     </span>
                   </div>
 
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-xs font-semibold">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/15 dark:bg-amber-400/10 border border-amber-400/35 dark:border-amber-400/30 text-amber-700 dark:text-amber-300 text-xs font-semibold">
+                    <Star className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400" />
                     <span>
                       {reviewCount > 0
                         ? `${averageRating.toFixed(1)} (${reviewCount} ${
@@ -904,31 +906,31 @@ export default function ServiceDetailsPage() {
                   </div>
                 </div>
 
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
                   {service.title}
                 </h1>
 
-                <p className="text-slate-300 text-sm sm:text-base leading-relaxed whitespace-pre-line">
+                <p className="text-slate-700 dark:text-slate-300 text-sm sm:text-base leading-relaxed whitespace-pre-line">
                   {service.description}
                 </p>
               </div>
             </div>
 
             {/* Technician Summary Card */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3.5">
-                <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                  <UserCheck className="w-5 h-5 text-sky-400" />
+            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-3.5">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <UserCheck className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                   <span>Technician Summary</span>
                 </h2>
 
                 {isProTechnician ? (
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-400/35">
-                    <Crown className="w-3.5 h-3.5 text-amber-300" />
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-400/35">
+                    <Crown className="w-3.5 h-3.5 text-amber-600 dark:text-amber-300" />
                     <span>Verified Pro</span>
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/25">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
                     Verified Specialist
                   </span>
                 )}
@@ -943,23 +945,23 @@ export default function ServiceDetailsPage() {
                     className="w-16 h-16 rounded-2xl object-cover border border-sky-500/30 shrink-0"
                   />
                 ) : (
-                  <div className="w-16 h-16 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-lg shrink-0">
+                  <div className="w-16 h-16 rounded-2xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-lg shrink-0">
                     {getInitials(techName)}
                   </div>
                 )}
 
                 <div className="space-y-2 flex-1 min-w-0">
                   <div>
-                    <h3 className="text-lg font-bold text-white truncate">
+                    <h3 className="text-lg font-bold text-slate-900 dark:text-white truncate">
                       {techName}
                     </h3>
-                    <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-1">
-                      <MapPin className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-1">
+                      <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                       <span>{techArea}</span>
                     </p>
                   </div>
 
-                  <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                  <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">
                     {techBio}
                   </p>
                 </div>
@@ -967,10 +969,10 @@ export default function ServiceDetailsPage() {
             </div>
 
             {/* Customer Ratings & Reviews Card */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800/80 pb-4">
-                <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
-                  <MessageSquareQuote className="w-5 h-5 text-amber-400" />
+            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800/80 pb-4">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <MessageSquareQuote className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                   <span>Customer Reviews</span>
                 </h2>
 
@@ -982,22 +984,22 @@ export default function ServiceDetailsPage() {
                         className={`w-4 h-4 ${
                           star <= filledStarsCount
                             ? "text-amber-400 fill-amber-400"
-                            : "text-slate-700"
+                            : "text-slate-300 dark:text-slate-700"
                         }`}
                       />
                     ))}
                   </div>
-                  <span className="text-sm font-bold text-white">
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">
                     {reviewCount > 0 ? `${averageRating.toFixed(1)}/5` : "0.0/5"}
                   </span>
-                  <span className="text-xs text-slate-400">
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
                     ({reviewCount})
                   </span>
                 </div>
               </div>
 
               {reviews.length === 0 ? (
-                <p className="text-sm text-slate-400">
+                <p className="text-sm text-slate-600 dark:text-slate-400">
                   No customer reviews yet.
                 </p>
               ) : (
@@ -1011,11 +1013,11 @@ export default function ServiceDetailsPage() {
                     return (
                       <div
                         key={item?._id || item?.bookingId || index}
-                        className="rounded-2xl bg-slate-950/75 border border-slate-800/90 p-4 space-y-2"
+                        className="rounded-2xl bg-slate-50 dark:bg-slate-950/75 border border-slate-200 dark:border-slate-800/90 p-4 space-y-2"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs sm:text-sm font-semibold text-white">
+                            <span className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white">
                               {item?.customerName || "Customer"}
                             </span>
                             <div className="flex items-center gap-0.5">
@@ -1025,7 +1027,7 @@ export default function ServiceDetailsPage() {
                                   className={`w-3.5 h-3.5 ${
                                     star <= itemRating
                                       ? "text-amber-400 fill-amber-400"
-                                      : "text-slate-700"
+                                      : "text-slate-300 dark:text-slate-700"
                                   }`}
                                 />
                               ))}
@@ -1038,7 +1040,7 @@ export default function ServiceDetailsPage() {
                           )}
                         </div>
                         {item?.review && (
-                          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                          <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
                             “{item.review}”
                           </p>
                         )}
@@ -1052,56 +1054,58 @@ export default function ServiceDetailsPage() {
 
           {/* Right Column: Pricing, Specs & Request Repair Action */}
           <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-20">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-7 shadow-xl space-y-6">
-              <div className="flex items-end justify-between border-b border-slate-800/80 pb-5">
+            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-6">
+              <div className="flex items-end justify-between border-b border-slate-200 dark:border-slate-800/80 pb-5">
                 <div>
-                  <span className="text-xs font-medium text-slate-400">
+                  <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     Starting Price
                   </span>
-                  <p className="text-3xl sm:text-4xl font-bold text-sky-400 mt-1">
+                  <p className="text-3xl sm:text-4xl font-bold text-sky-600 dark:text-sky-400 mt-1">
                     ${Number(service.price || 0)}
                   </p>
                 </div>
                 <div className="text-right space-y-1">
-                  <div className="inline-flex items-center gap-1 text-xs font-semibold text-amber-300">
-                    <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <div className="inline-flex items-center gap-1 text-xs font-semibold text-amber-700 dark:text-amber-300">
+                    <Star className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400" />
                     <span>
                       {reviewCount > 0
                         ? `${averageRating.toFixed(1)} (${reviewCount})`
                         : "New"}
                     </span>
                   </div>
-                  <span className="block text-xs text-slate-400">
+                  <span className="block text-xs text-slate-500 dark:text-slate-400">
                     Pay after completion
                   </span>
                 </div>
               </div>
 
               <div className="space-y-3.5 text-sm">
-                <div className="flex items-center justify-between py-2 border-b border-slate-800/60">
-                  <span className="text-slate-400 inline-flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-sky-400" />
+                <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-800/60">
+                  <span className="text-slate-600 dark:text-slate-400 inline-flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                     Estimated Duration
                   </span>
-                  <span className="font-semibold text-white">
+                  <span className="font-semibold text-slate-900 dark:text-white">
                     {durationLabel}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-2 border-b border-slate-800/60">
-                  <span className="text-slate-400 inline-flex items-center gap-2">
-                    <Laptop className="w-4 h-4 text-sky-400" />
+                <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-800/60">
+                  <span className="text-slate-600 dark:text-slate-400 inline-flex items-center gap-2">
+                    <Laptop className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                     Service Mode
                   </span>
-                  <span className="font-semibold text-white">{modeLabel}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">
+                    {modeLabel}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-slate-400 inline-flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-sky-400" />
+                  <span className="text-slate-600 dark:text-slate-400 inline-flex items-center gap-2">
+                    <MapPin className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                     Service Area
                   </span>
-                  <span className="font-semibold text-white text-right">
+                  <span className="font-semibold text-slate-900 dark:text-white text-right">
                     {areaLabel}
                   </span>
                 </div>
@@ -1111,17 +1115,17 @@ export default function ServiceDetailsPage() {
               <div className="space-y-3 pt-1">
                 {isRestrictedStaff ? (
                   <div className="rounded-2xl bg-amber-500/10 border border-amber-500/25 p-4 space-y-2">
-                    <div className="flex items-center gap-2 text-amber-300 text-xs font-bold uppercase tracking-wide">
+                    <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300 text-xs font-bold uppercase tracking-wide">
                       <ShieldAlert className="w-4 h-4 shrink-0" />
                       <span>Customer Access Only</span>
                     </div>
-                    <p className="text-xs sm:text-sm text-amber-100/90">
+                    <p className="text-xs sm:text-sm text-amber-800 dark:text-amber-100/90">
                       Only customers can request a repair
                     </p>
                     <button
                       type="button"
                       disabled
-                      className="w-full mt-2 py-3 px-5 rounded-xl bg-slate-800/80 border border-slate-700 text-slate-500 font-semibold text-sm cursor-not-allowed"
+                      className="w-full mt-2 py-3 px-5 rounded-xl bg-slate-200 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 text-slate-400 dark:text-slate-500 font-semibold text-sm cursor-not-allowed"
                     >
                       Request Repair
                     </button>
@@ -1137,7 +1141,7 @@ export default function ServiceDetailsPage() {
                 )}
 
                 {!isLoggedIn && (
-                  <p className="text-xs text-center text-slate-400">
+                  <p className="text-xs text-center text-slate-500 dark:text-slate-400">
                     Sign in as a customer to submit a repair request.
                   </p>
                 )}
@@ -1150,13 +1154,13 @@ export default function ServiceDetailsPage() {
       {/* Customer Repair Request Modal */}
       {requestOpen && role === "customer" && (
         <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 my-auto">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-800 pb-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 my-auto">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-sky-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
                   Booking Request
                 </p>
-                <h2 className="text-xl font-bold text-white mt-0.5">
+                <h2 className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">
                   Request Repair — {service.title}
                 </h2>
               </div>
@@ -1167,15 +1171,15 @@ export default function ServiceDetailsPage() {
                   setFormError("");
                 }}
                 aria-label="Close request modal"
-                className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {formError && (
-              <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 text-xs sm:text-sm text-rose-300 flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3 text-xs sm:text-sm text-rose-700 dark:text-rose-300 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 <span>{formError}</span>
               </div>
             )}
@@ -1183,26 +1187,26 @@ export default function ServiceDetailsPage() {
             <form onSubmit={handleSubmitRequest} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     Name (Read-only)
                   </label>
                   <input
                     type="text"
                     readOnly
                     value={sessionUser?.name || ""}
-                    className="w-full rounded-xl bg-slate-950/70 border border-slate-800 px-3.5 py-2.5 text-sm text-slate-400 cursor-not-allowed outline-none"
+                    className="w-full rounded-xl bg-slate-100 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                     Email (Read-only)
                   </label>
                   <input
                     type="email"
                     readOnly
                     value={sessionUser?.email || ""}
-                    className="w-full rounded-xl bg-slate-950/70 border border-slate-800 px-3.5 py-2.5 text-sm text-slate-400 cursor-not-allowed outline-none"
+                    className="w-full rounded-xl bg-slate-100 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none"
                   />
                 </div>
               </div>
@@ -1211,12 +1215,12 @@ export default function ServiceDetailsPage() {
                 <div>
                   <label
                     htmlFor="request-phone"
-                    className="block text-xs font-semibold text-slate-300 mb-1.5"
+                    className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                   >
                     Phone *
                   </label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Phone className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       id="request-phone"
                       name="phone"
@@ -1225,7 +1229,7 @@ export default function ServiceDetailsPage() {
                       value={formData.phone}
                       onChange={handleFieldChange}
                       placeholder="+880 17XX-XXXXXX"
-                      className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none transition"
+                      className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                     />
                   </div>
                 </div>
@@ -1233,12 +1237,12 @@ export default function ServiceDetailsPage() {
                 <div>
                   <label
                     htmlFor="request-date"
-                    className="block text-xs font-semibold text-slate-300 mb-1.5"
+                    className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                   >
                     Preferred Date *
                   </label>
                   <div className="relative">
-                    <Calendar className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <Calendar className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                     <input
                       id="request-date"
                       name="preferredDate"
@@ -1247,7 +1251,7 @@ export default function ServiceDetailsPage() {
                       min={todayStr}
                       value={formData.preferredDate}
                       onChange={handleFieldChange}
-                      className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-white outline-none transition [color-scheme:dark]"
+                      className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition dark:[color-scheme:dark]"
                     />
                   </div>
                 </div>
@@ -1256,12 +1260,12 @@ export default function ServiceDetailsPage() {
               <div>
                 <label
                   htmlFor="request-address"
-                  className="block text-xs font-semibold text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Address *
                 </label>
                 <div className="relative">
-                  <Home className="w-4 h-4 text-slate-500 absolute left-3.5 top-3 pointer-events-none" />
+                  <Home className="w-4 h-4 text-slate-400 dark:text-slate-500 absolute left-3.5 top-3 pointer-events-none" />
                   <input
                     id="request-address"
                     name="address"
@@ -1270,7 +1274,7 @@ export default function ServiceDetailsPage() {
                     value={formData.address}
                     onChange={handleFieldChange}
                     placeholder="House / Road / Area details"
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 outline-none transition"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                   />
                 </div>
               </div>
@@ -1279,11 +1283,11 @@ export default function ServiceDetailsPage() {
                 <div className="flex items-center justify-between mb-1.5">
                   <label
                     htmlFor="request-description"
-                    className="text-xs font-semibold text-slate-300"
+                    className="text-xs font-semibold text-slate-700 dark:text-slate-300"
                   >
                     Problem Description *
                   </label>
-                  <span className="text-[11px] text-slate-400">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
                     Min 20 characters (
                     {formData.problemDescription.trim().length}/20)
                   </span>
@@ -1296,18 +1300,18 @@ export default function ServiceDetailsPage() {
                   value={formData.problemDescription}
                   onChange={handleFieldChange}
                   placeholder="Describe the issue clearly (at least 20 characters)..."
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 p-3.5 text-sm text-white placeholder:text-slate-500 outline-none transition resize-none"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 p-3.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => {
                     setRequestOpen(false);
                     setFormError("");
                   }}
-                  className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 text-xs sm:text-sm font-medium text-slate-200 transition cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer"
                 >
                   Cancel
                 </button>

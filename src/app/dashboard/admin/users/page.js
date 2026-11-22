@@ -265,17 +265,17 @@ export default function ManageUsersPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Segmented Filter Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-800/90">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Manage users
           </h1>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             Change a user&apos;s role. Your own role cannot be changed here.
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-slate-900/95 border border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto">
+        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto shadow-xs dark:shadow-none">
           {filterTabs.map((tab) => {
             const active = activeTab === tab.key;
             return (
@@ -286,13 +286,15 @@ export default function ManageUsersPage() {
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
                   active
                     ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-xs ${
-                    active ? "text-slate-950/80 font-bold" : "text-slate-400"
+                    active
+                      ? "text-slate-950/80 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {tab.count}
@@ -308,30 +310,30 @@ export default function ManageUsersPage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+              : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           )}
           <p className="font-medium flex-1">{feedback.message}</p>
         </div>
       )}
 
       {/* Users Table Card */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
         {filteredUsers.length === 0 ? (
           <div className="py-16 px-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
               <Users className="w-6 h-6" />
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-white">
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
               {activeTab === "all" ? "No users yet" : "No users found"}
             </h2>
-            <p className="text-sm text-slate-400 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
               {activeTab === "all"
                 ? "Registered accounts will appear here once users sign up."
                 : "There are no users matching the selected role filter right now."}
@@ -353,7 +355,7 @@ export default function ManageUsersPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/90 text-xs font-semibold text-slate-400 bg-slate-950/40">
+                <tr className="border-b border-slate-200 dark:border-slate-800/90 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40">
                   <th className="py-4 px-5">User</th>
                   <th className="py-4 px-4">Email</th>
                   <th className="py-4 px-4">Area</th>
@@ -361,7 +363,7 @@ export default function ManageUsersPage() {
                   <th className="py-4 px-5 text-right sm:text-left">Role</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/70 text-sm">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/70 text-sm">
                 {filteredUsers.map((u) => {
                   const id = u._id || u.id;
                   const selfRow = isSelfUser(u);
@@ -378,7 +380,7 @@ export default function ManageUsersPage() {
                   return (
                     <tr
                       key={id}
-                      className="hover:bg-slate-800/40 transition-colors"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       {/* User Avatar + Name + (you) */}
                       <td className="py-4 px-5 whitespace-nowrap">
@@ -396,16 +398,16 @@ export default function ManageUsersPage() {
                               className="w-10 h-10 rounded-full object-cover border border-sky-500/30 shrink-0"
                             />
                           ) : (
-                            <span className="w-10 h-10 rounded-full bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
+                            <span className="w-10 h-10 rounded-full bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs shrink-0">
                               {getInitials(displayName)}
                             </span>
                           )}
                           <div className="flex items-center gap-2">
-                            <span className="font-semibold text-white">
+                            <span className="font-semibold text-slate-900 dark:text-white">
                               {displayName}
                             </span>
                             {selfRow && (
-                              <span className="text-xs text-slate-400 font-normal">
+                              <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
                                 (you)
                               </span>
                             )}
@@ -414,24 +416,26 @@ export default function ManageUsersPage() {
                       </td>
 
                       {/* Email */}
-                      <td className="py-4 px-4 text-slate-400 whitespace-nowrap">
+                      <td className="py-4 px-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
                         {u.email}
                       </td>
 
                       {/* Area */}
-                      <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
+                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {displayArea ? (
                           <span className="inline-flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                             <span>{displayArea}</span>
                           </span>
                         ) : (
-                          <span className="text-slate-500">—</span>
+                          <span className="text-slate-400 dark:text-slate-500">
+                            —
+                          </span>
                         )}
                       </td>
 
                       {/* Joined */}
-                      <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
+                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {formatJoinedDate(u.createdAt)}
                       </td>
 
@@ -444,17 +448,26 @@ export default function ManageUsersPage() {
                           onChange={(e) => handleRoleChange(u, e.target.value)}
                           className={`rounded-xl border px-3.5 py-2 text-sm font-medium outline-none transition ${
                             selfRow
-                              ? "bg-slate-950/50 border-slate-800/80 text-slate-500 cursor-not-allowed"
-                              : "bg-slate-950 border-slate-700 hover:border-sky-500/60 focus:border-sky-500 text-white cursor-pointer"
+                              ? "bg-slate-100/70 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800/80 text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                              : "bg-slate-50 dark:bg-slate-950 border-slate-300 dark:border-slate-700 hover:border-sky-500/60 focus:border-sky-500 text-slate-900 dark:text-white cursor-pointer"
                           }`}
                         >
-                          <option value="customer" className="bg-slate-900">
+                          <option
+                            value="customer"
+                            className="bg-white dark:bg-slate-900"
+                          >
                             Customer
                           </option>
-                          <option value="technician" className="bg-slate-900">
+                          <option
+                            value="technician"
+                            className="bg-white dark:bg-slate-900"
+                          >
                             Technician
                           </option>
-                          <option value="admin" className="bg-slate-900">
+                          <option
+                            value="admin"
+                            className="bg-white dark:bg-slate-900"
+                          >
                             Admin
                           </option>
                         </select>

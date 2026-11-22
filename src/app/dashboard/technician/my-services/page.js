@@ -44,12 +44,12 @@ const SERVICE_MODES = [
 function getReviewBadgeStyle(status) {
   const normalized = (status || "pending").toLowerCase();
   if (normalized === "approved") {
-    return "bg-emerald-500/10 text-emerald-300 border-emerald-500/25";
+    return "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/25";
   }
   if (normalized === "rejected") {
-    return "bg-rose-500/10 text-rose-300 border-rose-500/25";
+    return "bg-rose-500/10 text-rose-700 dark:text-rose-300 border-rose-500/25";
   }
-  return "bg-amber-500/10 text-amber-300 border-amber-500/25";
+  return "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/25";
 }
 
 function formatReviewLabel(status) {
@@ -97,7 +97,7 @@ function ServiceThumbnail({ src, alt }) {
   }, [src]);
 
   if (!src || imgFailed) {
-    return <Wrench className="w-4 h-4 text-sky-400" />;
+    return <Wrench className="w-4 h-4 text-sky-600 dark:text-sky-400" />;
   }
 
   return (
@@ -578,27 +578,27 @@ export default function MyServicesPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-800/90">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
         <div>
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               My services
             </h1>
 
             {isPro ? (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/15 text-amber-300 border border-amber-400/35">
-                <Crown className="w-3.5 h-3.5 text-amber-400" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-400/15 text-amber-700 dark:text-amber-300 border border-amber-400/35">
+                <Crown className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                 <span>Verified Pro</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-800/90 text-slate-300 border border-slate-700">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
                 <span>
                   Free Plan ({services.length}/{FREE_SERVICE_LIMIT} services)
                 </span>
               </span>
             )}
           </div>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             Edit, pause or remove your listings.
           </p>
         </div>
@@ -621,7 +621,7 @@ export default function MyServicesPage() {
               type="button"
               onClick={() => setUpgradeModalOpen(true)}
               disabled={upgradingPro}
-              className="inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-400/30 font-semibold text-sm px-5 py-2.5 rounded-xl transition cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-amber-700 dark:text-amber-300 border border-amber-400/35 dark:border-amber-400/30 font-semibold text-sm px-5 py-2.5 rounded-xl transition cursor-pointer disabled:opacity-60"
             >
               <Lock className="w-4 h-4" />
               <span>Limit reached (3/3) — Unlock Pro</span>
@@ -641,15 +641,15 @@ export default function MyServicesPage() {
 
       {/* Plan Status Banner */}
       {isPro ? (
-        <div className="rounded-2xl px-4 py-3.5 border bg-amber-400/10 border-amber-400/25 text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
+        <div className="rounded-2xl px-4 py-3.5 border bg-amber-400/10 border-amber-400/25 text-amber-800 dark:text-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm">
           <div className="flex items-center gap-2.5">
-            <Sparkles className="w-5 h-5 shrink-0 text-amber-400" />
+            <Sparkles className="w-5 h-5 shrink-0 text-amber-600 dark:text-amber-400" />
             <span>
               <strong>Verified Pro</strong> active — you can publish unlimited
               services and display your Verified Pro badge to customers.
             </span>
           </div>
-          <span className="text-xs font-semibold uppercase tracking-wider text-amber-300 shrink-0">
+          <span className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-300 shrink-0">
             Unlimited Listings
           </span>
         </div>
@@ -657,23 +657,28 @@ export default function MyServicesPage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm ${
             hasReachedFreeLimit
-              ? "bg-rose-500/10 border-rose-500/30 text-rose-200"
-              : "bg-slate-900/90 border-slate-800 text-slate-300"
+              ? "bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-200"
+              : "bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 shadow-xs dark:shadow-none"
           }`}
         >
           <p>
             Free plan includes up to{" "}
-            <strong className="text-white">{FREE_SERVICE_LIMIT} services</strong>.{" "}
+            <strong className="text-slate-900 dark:text-white">
+              {FREE_SERVICE_LIMIT} services
+            </strong>
+            .{" "}
             {hasReachedFreeLimit ? (
               <span>
                 You have used all {FREE_SERVICE_LIMIT} free slots. Upgrade to{" "}
-                <strong className="text-amber-300">Pro</strong> for unlimited
-                services and a <strong>Verified Pro</strong> badge.
+                <strong className="text-amber-700 dark:text-amber-300">
+                  Pro
+                </strong>{" "}
+                for unlimited services and a <strong>Verified Pro</strong> badge.
               </span>
             ) : (
               <span>
                 You have{" "}
-                <strong className="text-sky-400">
+                <strong className="text-sky-600 dark:text-sky-400">
                   {remainingSlots} {remainingSlots === 1 ? "slot" : "slots"}
                 </strong>{" "}
                 remaining on the free plan.
@@ -684,7 +689,7 @@ export default function MyServicesPage() {
             type="button"
             disabled={upgradingPro}
             onClick={() => setUpgradeModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/35 text-amber-300 text-xs font-semibold transition cursor-pointer shrink-0 self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-400/15 hover:bg-amber-400/25 border border-amber-400/35 text-amber-800 dark:text-amber-300 text-xs font-semibold transition cursor-pointer shrink-0 self-start sm:self-auto"
           >
             <Crown className="w-3.5 h-3.5" />
             <span>Go Pro</span>
@@ -696,14 +701,14 @@ export default function MyServicesPage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+              : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           )}
           <div className="flex-1">
             <p className="font-medium">{feedback.message}</p>
@@ -711,16 +716,16 @@ export default function MyServicesPage() {
         </div>
       )}
 
-      <div className="bg-slate-900/90 border border-slate-800 rounded-3xl shadow-xl overflow-hidden">
+      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
         {services.length === 0 ? (
           <div className="py-16 px-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
               <Wrench className="w-6 h-6" />
             </div>
-            <h2 className="text-base font-bold text-white">
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">
               No services listed yet
             </h2>
-            <p className="text-sm text-slate-400 max-w-md mx-auto">
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
               Create your first repair service listing to start receiving customer
               requests after admin approval.
             </p>
@@ -739,7 +744,7 @@ export default function MyServicesPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-slate-800/90 text-xs font-semibold text-slate-400 bg-slate-950/40">
+                <tr className="border-b border-slate-200 dark:border-slate-800/90 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40">
                   <th className="py-4 px-5">Service</th>
                   <th className="py-4 px-4">Category</th>
                   <th className="py-4 px-4">Price</th>
@@ -748,7 +753,7 @@ export default function MyServicesPage() {
                   <th className="py-4 px-5 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/70 text-sm">
+              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/70 text-sm">
                 {services.map((service) => {
                   const id = service._id || service.id;
                   const isAvailable = service.available ?? true;
@@ -757,27 +762,27 @@ export default function MyServicesPage() {
                   return (
                     <tr
                       key={id}
-                      className="hover:bg-slate-800/40 transition-colors"
+                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
                     >
                       <td className="py-4 px-5">
                         <div className="flex items-center gap-3.5">
-                          <div className="w-12 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="w-12 h-10 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                             <ServiceThumbnail
                               src={service.image}
                               alt={service.title}
                             />
                           </div>
-                          <span className="font-semibold text-white">
+                          <span className="font-semibold text-slate-900 dark:text-white">
                             {service.title}
                           </span>
                         </div>
                       </td>
 
-                      <td className="py-4 px-4 text-slate-300 whitespace-nowrap">
+                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                         {service.category}
                       </td>
 
-                      <td className="py-4 px-4 text-sky-400 font-semibold whitespace-nowrap">
+                      <td className="py-4 px-4 text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
                         ${Number(service.price || 0)}
                       </td>
 
@@ -802,14 +807,14 @@ export default function MyServicesPage() {
                           className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer disabled:opacity-60 ${
                             isAvailable
                               ? "bg-sky-500"
-                              : "bg-slate-700 border border-slate-600"
+                              : "bg-slate-300 dark:bg-slate-700 border border-slate-400/50 dark:border-slate-600"
                           }`}
                         >
                           <span
                             className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
                               isAvailable
                                 ? "translate-x-6 bg-slate-950"
-                                : "translate-x-1 bg-slate-300"
+                                : "translate-x-1 bg-white dark:bg-slate-300"
                             }`}
                           />
                         </button>
@@ -820,9 +825,9 @@ export default function MyServicesPage() {
                           <button
                             type="button"
                             onClick={() => openEditModal(service)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs font-medium transition cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium transition cursor-pointer"
                           >
-                            <Pencil className="w-3.5 h-3.5 text-sky-400" />
+                            <Pencil className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                             <span>Edit</span>
                           </button>
 
@@ -830,7 +835,7 @@ export default function MyServicesPage() {
                             type="button"
                             disabled={isDeleting}
                             onClick={() => setServiceToDelete(service)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 dark:border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                             <span>{isDeleting ? "Deleting..." : "Delete"}</span>
@@ -848,18 +853,18 @@ export default function MyServicesPage() {
 
       {/* Upgrade to Pro Popup Modal */}
       {upgradeModalOpen && !isPro && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-amber-400/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-amber-400/30 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-300">
+                <div className="w-10 h-10 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center text-amber-600 dark:text-amber-300">
                   <Crown className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-bold text-white">
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                     Upgrade to Technician Pro
                   </h2>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
                     Free plan allows up to {FREE_SERVICE_LIMIT} services.
                   </p>
                 </div>
@@ -868,29 +873,31 @@ export default function MyServicesPage() {
                 type="button"
                 disabled={upgradingPro}
                 onClick={() => setUpgradeModalOpen(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="rounded-2xl bg-slate-950/70 border border-slate-800 p-4 space-y-2.5 text-sm">
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 p-4 space-y-2.5 text-sm">
               <div className="flex items-baseline justify-between">
-                <span className="font-semibold text-white">Pro Monthly</span>
-                <span className="text-xl font-bold text-amber-300">
+                <span className="font-semibold text-slate-900 dark:text-white">
+                  Pro Monthly
+                </span>
+                <span className="text-xl font-bold text-amber-600 dark:text-amber-300">
                   ${proPrice}
-                  <span className="text-xs font-normal text-slate-400">
+                  <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
                     /mo
                   </span>
                 </span>
               </div>
-              <ul className="space-y-1.5 text-xs text-slate-300 pt-1">
+              <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 pt-1">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Publish unlimited repair services</span>
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   <span>Display Verified Pro badge on your profile & services</span>
                 </li>
               </ul>
@@ -901,7 +908,7 @@ export default function MyServicesPage() {
                 type="button"
                 disabled={upgradingPro}
                 onClick={() => setUpgradeModalOpen(false)}
-                className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs sm:text-sm font-medium transition cursor-pointer"
               >
                 Maybe Later
               </button>
@@ -940,14 +947,16 @@ export default function MyServicesPage() {
       />
 
       {editingService && (
-        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <h2 className="text-lg font-bold text-white">Edit service</h2>
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                Edit service
+              </h2>
               <button
                 type="button"
                 onClick={() => setEditingService(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -955,7 +964,7 @@ export default function MyServicesPage() {
 
             <form onSubmit={handleSaveEdit} className="space-y-4 text-sm">
               <div>
-                <label className="block font-medium text-slate-200 mb-1.5">
+                <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1.5">
                   Service title
                 </label>
                 <input
@@ -964,23 +973,27 @@ export default function MyServicesPage() {
                   required
                   value={editForm.title}
                   onChange={handleEditChange}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-white outline-none transition"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-slate-900 dark:text-white outline-none transition"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block font-medium text-slate-200 mb-1.5">
+                  <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1.5">
                     Category
                   </label>
                   <select
                     name="category"
                     value={editForm.category}
                     onChange={handleEditChange}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-3.5 py-2.5 text-white outline-none transition cursor-pointer"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-3.5 py-2.5 text-slate-900 dark:text-white outline-none transition cursor-pointer"
                   >
                     {CATEGORIES.map((cat) => (
-                      <option key={cat} value={cat} className="bg-slate-900">
+                      <option
+                        key={cat}
+                        value={cat}
+                        className="bg-white dark:bg-slate-900"
+                      >
                         {cat}
                       </option>
                     ))}
@@ -988,17 +1001,21 @@ export default function MyServicesPage() {
                 </div>
 
                 <div>
-                  <label className="block font-medium text-slate-200 mb-1.5">
+                  <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1.5">
                     Service mode
                   </label>
                   <select
                     name="mode"
                     value={editForm.mode}
                     onChange={handleEditChange}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-3.5 py-2.5 text-white outline-none transition cursor-pointer"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-3.5 py-2.5 text-slate-900 dark:text-white outline-none transition cursor-pointer"
                   >
                     {SERVICE_MODES.map((m) => (
-                      <option key={m} value={m} className="bg-slate-900">
+                      <option
+                        key={m}
+                        value={m}
+                        className="bg-white dark:bg-slate-900"
+                      >
                         {m}
                       </option>
                     ))}
@@ -1008,7 +1025,7 @@ export default function MyServicesPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block font-medium text-slate-200 mb-1.5">
+                  <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1.5">
                     Price (USD)
                   </label>
                   <input
@@ -1019,12 +1036,12 @@ export default function MyServicesPage() {
                     required
                     value={editForm.price}
                     onChange={handleEditChange}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-white outline-none transition"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-slate-900 dark:text-white outline-none transition"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-medium text-slate-200 mb-1.5">
+                  <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1.5">
                     Estimated duration
                   </label>
                   <input
@@ -1032,13 +1049,13 @@ export default function MyServicesPage() {
                     type="text"
                     value={editForm.duration}
                     onChange={handleEditChange}
-                    className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-white outline-none transition"
+                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-slate-900 dark:text-white outline-none transition"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block font-medium text-slate-200 mb-1.5">
+                <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1.5">
                   Service area
                 </label>
                 <input
@@ -1046,12 +1063,12 @@ export default function MyServicesPage() {
                   type="text"
                   value={editForm.area}
                   onChange={handleEditChange}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-white outline-none transition"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-slate-900 dark:text-white outline-none transition"
                 />
               </div>
 
               <div>
-                <label className="block font-medium text-slate-200 mb-1.5">
+                <label className="block font-medium text-slate-800 dark:text-slate-200 mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -1059,12 +1076,12 @@ export default function MyServicesPage() {
                   rows={3}
                   value={editForm.description}
                   onChange={handleEditChange}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-white outline-none transition resize-y"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-2.5 text-slate-900 dark:text-white outline-none transition resize-y"
                 />
               </div>
 
               {editingService.status === "approved" && (
-                <p className="text-xs text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3.5 py-2.5">
+                <p className="text-xs text-amber-800 dark:text-amber-300/90 bg-amber-500/10 border border-amber-500/25 dark:border-amber-500/20 rounded-xl px-3.5 py-2.5">
                   Editing service details on an approved listing will set its
                   review status back to pending for admin re-approval.
                 </p>
@@ -1074,7 +1091,7 @@ export default function MyServicesPage() {
                 <button
                   type="button"
                   onClick={() => setEditingService(null)}
-                  className="px-4 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-medium transition cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-medium transition cursor-pointer"
                 >
                   Cancel
                 </button>

@@ -47,13 +47,12 @@ export default function RootLayout({ children }) {
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col bg-slate-950 text-slate-100 font-sans transition-colors duration-300`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300`}
         suppressHydrationWarning={true}
       >
         <ThemeProvider>
           <Toaster
-            position="botom-right"
-            theme="dark"
+            position="bottom-right"
             richColors
             closeButton
             duration={4000}

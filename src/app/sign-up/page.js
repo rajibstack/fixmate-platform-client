@@ -215,31 +215,31 @@ function SignUpContent() {
   const isBusy = loading || googleLoading;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-12 shadow-2xl">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-12 shadow-xl dark:shadow-2xl">
           <div className="mb-8">
             <Link
               href="/"
               onClick={() => setNavigating(true)}
-              className="inline-flex items-center gap-2.5 text-2xl font-bold text-sky-400 group mb-4"
+              className="inline-flex items-center gap-2.5 text-2xl font-bold text-sky-600 dark:text-sky-400 group mb-4"
             >
-              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
                 <Wrench className="w-5 h-5" />
               </div>
-              <span className="tracking-tight text-white">
-                Fix<span className="text-sky-400">Mate</span>
+              <span className="tracking-tight text-slate-900 dark:text-white">
+                Fix<span className="text-sky-600 dark:text-sky-400">Mate</span>
               </span>
             </Link>
-            <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
               Create your account
             </h1>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
               Already have one?{" "}
               <Link
                 href="/sign-in"
                 onClick={() => setNavigating(true)}
-                className="text-sky-400 hover:underline font-medium"
+                className="text-sky-600 dark:text-sky-400 hover:underline font-medium"
               >
                 Sign in
               </Link>
@@ -247,13 +247,13 @@ function SignUpContent() {
           </div>
 
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
           {isBusy ? (
-            <div className="rounded-2xl bg-slate-950/80 border border-slate-800 px-4">
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4">
               <FixMateSpinner
                 label={
                   googleLoading
@@ -266,7 +266,7 @@ function SignUpContent() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <span className="block text-sm font-medium text-slate-300 mb-3">
+                <span className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-3">
                   Account type
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -275,14 +275,14 @@ function SignUpContent() {
                     onClick={() => setAccountType("customer")}
                     className={`text-left cursor-pointer border rounded-2xl p-4 transition ${
                       accountType === "customer"
-                        ? "border-sky-500 bg-sky-500/10 text-white"
-                        : "border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700"
+                        ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white"
+                        : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
                     }`}
                   >
-                    <p className="font-semibold text-white mb-1">
+                    <p className="font-semibold text-slate-900 dark:text-white mb-1">
                       I need a repair
                     </p>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       Book technicians and track your jobs.
                     </p>
                   </button>
@@ -291,14 +291,14 @@ function SignUpContent() {
                     onClick={() => setAccountType("technician")}
                     className={`text-left cursor-pointer border rounded-2xl p-4 transition ${
                       accountType === "technician"
-                        ? "border-sky-500 bg-sky-500/10 text-white"
-                        : "border-slate-800 bg-slate-950 text-slate-400 hover:border-slate-700"
+                        ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white"
+                        : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
                     }`}
                   >
-                    <p className="font-semibold text-white mb-1">
+                    <p className="font-semibold text-slate-900 dark:text-white mb-1">
                       I fix things
                     </p>
-                    <p className="text-xs text-slate-400 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                       List services and manage incoming jobs.
                     </p>
                   </button>
@@ -308,7 +308,7 @@ function SignUpContent() {
               <div>
                 <label
                   htmlFor="signup-name"
-                  className="block text-sm font-medium text-slate-300 mb-1.5"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
                 >
                   Full name
                 </label>
@@ -320,14 +320,14 @@ function SignUpContent() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your full name"
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="signup-email"
-                  className="block text-sm font-medium text-slate-300 mb-1.5"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
                 >
                   Email
                 </label>
@@ -339,14 +339,14 @@ function SignUpContent() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="signup-password"
-                  className="block text-sm font-medium text-slate-300 mb-1.5"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
                 >
                   Password
                 </label>
@@ -358,15 +358,15 @@ function SignUpContent() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Create a password"
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm mb-3"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm mb-3"
                 />
-                <ul className="space-y-1.5 text-xs text-slate-400">
+                <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                   <li className="flex items-center gap-2">
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
                         formData.password.length >= 6
-                          ? "bg-sky-400"
-                          : "bg-slate-600"
+                          ? "bg-sky-500 dark:bg-sky-400"
+                          : "bg-slate-400 dark:bg-slate-600"
                       }`}
                     />
                     At least 6 characters
@@ -375,8 +375,8 @@ function SignUpContent() {
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
                         /[A-Z]/.test(formData.password)
-                          ? "bg-sky-400"
-                          : "bg-slate-600"
+                          ? "bg-sky-500 dark:bg-sky-400"
+                          : "bg-slate-400 dark:bg-slate-600"
                       }`}
                     />
                     One uppercase letter
@@ -385,8 +385,8 @@ function SignUpContent() {
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
                         /[a-z]/.test(formData.password)
-                          ? "bg-sky-400"
-                          : "bg-slate-600"
+                          ? "bg-sky-500 dark:bg-sky-400"
+                          : "bg-slate-400 dark:bg-slate-600"
                       }`}
                     />
                     One lowercase letter
@@ -407,7 +407,7 @@ function SignUpContent() {
                   type="button"
                   disabled={isBusy}
                   onClick={() => handleGoogleSignUp()}
-                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-slate-950 hover:bg-slate-800 disabled:opacity-50 border border-slate-800 text-white font-medium py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-3"
+                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -434,24 +434,24 @@ function SignUpContent() {
           )}
         </div>
 
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-center shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 mb-6 shadow-inner">
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-center shadow-xl dark:shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 mb-6 shadow-inner">
             <Wrench className="w-6 h-6" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold text-white mb-6 leading-snug">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-6 leading-snug">
             One account for every repair in your home.
           </h2>
-          <ul className="space-y-4 text-slate-300 text-sm">
+          <ul className="space-y-4 text-slate-700 dark:text-slate-300 text-sm">
             <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400 mt-2 shrink-0" />
               <span>Customers book and pay only after the job is completed.</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400 mt-2 shrink-0" />
               <span>Technicians list services after a quick review by our team.</span>
             </li>
             <li className="flex items-start gap-3">
-              <span className="w-2 h-2 rounded-full bg-sky-400 mt-2 shrink-0" />
+              <span className="w-2 h-2 rounded-full bg-sky-500 dark:bg-sky-400 mt-2 shrink-0" />
               <span>Admin accounts are created by FixMate, not through sign-up.</span>
             </li>
           </ul>

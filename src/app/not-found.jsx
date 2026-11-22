@@ -10,15 +10,15 @@ export default function NotFoundPage() {
 
   if (navigating) {
     return (
-      <div className="min-h-screen bg-slate-950 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
         <DashboardPageSkeleton />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4 py-12">
-      <div className="max-w-xl w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl text-center space-y-6">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center px-4 py-12">
+      <div className="max-w-xl w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xl dark:shadow-2xl text-center space-y-6">
         {/* Repair / Tools Themed Illustration */}
         <div className="relative mx-auto w-44 h-36 flex items-center justify-center">
           <div className="absolute inset-0 rounded-3xl bg-sky-500/10 blur-xl" />
@@ -37,12 +37,25 @@ export default function NotFoundPage() {
               width="152"
               height="12"
               rx="6"
-              fill="#0f172a"
-              stroke="#334155"
+              className="fill-slate-100 dark:fill-slate-900 stroke-slate-300 dark:stroke-slate-700"
               strokeWidth="2"
             />
-            <rect x="40" y="124" width="12" height="16" rx="3" fill="#1e293b" />
-            <rect x="148" y="124" width="12" height="16" rx="3" fill="#1e293b" />
+            <rect
+              x="40"
+              y="124"
+              width="12"
+              height="16"
+              rx="3"
+              className="fill-slate-200 dark:fill-slate-800"
+            />
+            <rect
+              x="148"
+              y="124"
+              width="12"
+              height="16"
+              rx="3"
+              className="fill-slate-200 dark:fill-slate-800"
+            />
 
             {/* Device / Circuit outline */}
             <rect
@@ -51,8 +64,7 @@ export default function NotFoundPage() {
               width="92"
               height="60"
               rx="10"
-              fill="#020617"
-              stroke="#38bdf8"
+              className="fill-slate-50 dark:fill-slate-950 stroke-sky-600 dark:stroke-sky-400"
               strokeWidth="2.5"
               strokeDasharray="6 4"
             />
@@ -63,7 +75,7 @@ export default function NotFoundPage() {
               x="100"
               y="80"
               textAnchor="middle"
-              fill="#38bdf8"
+              className="fill-sky-600 dark:fill-sky-400"
               fontSize="18"
               fontWeight="700"
               fontFamily="sans-serif"
@@ -79,21 +91,19 @@ export default function NotFoundPage() {
                 width="10"
                 height="48"
                 rx="4"
-                fill="#1e293b"
-                stroke="#94a3b8"
+                className="fill-slate-200 dark:fill-slate-800 stroke-slate-400 dark:stroke-slate-400"
                 strokeWidth="2"
               />
               <circle
                 cx="19"
                 cy="18"
                 r="13"
-                fill="#0f172a"
-                stroke="#38bdf8"
+                className="fill-slate-100 dark:fill-slate-900 stroke-sky-600 dark:stroke-sky-400"
                 strokeWidth="2.5"
               />
               <path
                 d="M15 10L23 18L15 26"
-                stroke="#020617"
+                className="stroke-slate-50 dark:stroke-slate-950"
                 strokeWidth="5"
                 strokeLinecap="round"
               />
@@ -114,11 +124,11 @@ export default function NotFoundPage() {
                 y="28"
                 width="4"
                 height="26"
-                fill="#cbd5e1"
+                className="fill-slate-400 dark:fill-slate-300"
               />
               <path
                 d="M16 54H22L20.5 66H17.5L16 54Z"
-                fill="#38bdf8"
+                className="fill-sky-600 dark:fill-sky-400"
               />
             </g>
           </svg>
@@ -126,16 +136,16 @@ export default function NotFoundPage() {
 
         {/* Status & Message */}
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-400 border border-sky-500/25">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/25">
             <Wrench className="w-3.5 h-3.5" />
             <span>Error 404</span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Page not found
           </h1>
 
-          <p className="text-sm text-slate-400 max-w-md mx-auto leading-relaxed">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
             The page or repair link you are looking for may have been moved,
             removed, or never existed.
           </p>
@@ -158,9 +168,9 @@ export default function NotFoundPage() {
               setNavigating(true);
               window.history.back();
             }}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-medium text-sm px-5 py-3 rounded-xl transition cursor-pointer"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-slate-800 dark:text-slate-200 font-medium text-sm px-5 py-3 rounded-xl transition cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4 text-sky-400" />
+            <ArrowLeft className="w-4 h-4 text-sky-600 dark:text-sky-400" />
             <span>Go back</span>
           </button>
         </div>

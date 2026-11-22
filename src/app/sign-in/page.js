@@ -226,32 +226,33 @@ function LoginContent() {
   const isBusy = loading || googleLoading;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         {/* Left Column: Sign In Form */}
-        <div className="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-12 shadow-2xl">
+        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-12 shadow-xl dark:shadow-2xl">
           <div className="mb-8">
             <Link
               href="/"
               onClick={() => setNavigating(true)}
-              className="inline-flex items-center gap-2.5 text-2xl font-bold text-sky-400 group mb-4"
+              className="inline-flex items-center gap-2.5 text-2xl font-bold text-sky-600 dark:text-sky-400 group mb-4"
             >
-              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
+              <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 group-hover:bg-sky-500/20 transition shadow-inner">
                 <Wrench className="w-5 h-5" />
               </div>
-              <span className="tracking-tight text-white">
-                Fix<span className="text-sky-400">Mate</span>
+              <span className="tracking-tight text-slate-900 dark:text-white">
+                Fix
+                <span className="text-sky-600 dark:text-sky-400">Mate</span>
               </span>
             </Link>
-            <h1 className="text-3xl font-bold tracking-tight text-white mb-2">
+            <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">
               Welcome back
             </h1>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-600 dark:text-slate-400 text-sm">
               Don&apos;t have an account?{" "}
               <Link
                 href="/sign-up"
                 onClick={() => setNavigating(true)}
-                className="text-sky-400 hover:underline font-medium"
+                className="text-sky-600 dark:text-sky-400 hover:underline font-medium"
               >
                 Create one
               </Link>
@@ -259,13 +260,13 @@ function LoginContent() {
           </div>
 
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
+            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-400 text-sm">
               {error}
             </div>
           )}
 
           {isBusy ? (
-            <div className="rounded-2xl bg-slate-950/80 border border-slate-800 px-4">
+            <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4">
               <FixMateSpinner
                 label={
                   googleLoading
@@ -280,7 +281,7 @@ function LoginContent() {
               <div>
                 <label
                   htmlFor="signin-email"
-                  className="block text-sm font-medium text-slate-300 mb-1.5"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
                 >
                   Email
                 </label>
@@ -292,14 +293,14 @@ function LoginContent() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
                 />
               </div>
 
               <div>
                 <label
                   htmlFor="signin-password"
-                  className="block text-sm font-medium text-slate-300 mb-1.5"
+                  className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5"
                 >
                   Password
                 </label>
@@ -311,7 +312,7 @@ function LoginContent() {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Enter your password"
-                  className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
+                  className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500 transition text-sm"
                 />
               </div>
 
@@ -328,7 +329,7 @@ function LoginContent() {
                   type="button"
                   disabled={isBusy}
                   onClick={() => handleGoogleLogin()}
-                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-slate-950 hover:bg-slate-800 disabled:opacity-50 border border-slate-800 text-white font-medium py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-3"
+                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3.5 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path
@@ -356,12 +357,12 @@ function LoginContent() {
         </div>
 
         {/* Right Column: Seed Demo Accounts */}
-        <div className="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-center shadow-2xl">
+        <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 sm:p-10 flex flex-col justify-center shadow-xl dark:shadow-2xl">
           <div className="mb-6">
-            <h2 className="text-2xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
               Demo accounts
             </h2>
-            <p className="text-slate-400 text-sm mt-1">
+            <p className="text-slate-600 dark:text-slate-400 text-sm mt-1">
               Pick one to sign in instantly and test that role.
             </p>
           </div>
@@ -378,23 +379,23 @@ function LoginContent() {
                   onClick={() => handleDemoLogin(account)}
                   className={`w-full text-left rounded-2xl border p-4 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                     isSelected
-                      ? "bg-slate-950 border-sky-500/70 ring-1 ring-sky-500/30"
-                      : "bg-slate-950/75 border-slate-800 hover:border-sky-500/40 hover:bg-slate-950"
+                      ? "bg-slate-100 dark:bg-slate-950 border-sky-500/70 ring-1 ring-sky-500/30"
+                      : "bg-slate-50 dark:bg-slate-950/75 border-slate-200 dark:border-slate-800 hover:border-sky-500/40 hover:bg-slate-100 dark:hover:bg-slate-950"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-white truncate">
+                      <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">
                         {account.roleLabel}:{" "}
-                        <span className="text-sky-400 font-medium">
+                        <span className="text-sky-600 dark:text-sky-400 font-medium">
                           {account.email}
                         </span>
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
                         {account.summary}
                       </p>
                     </div>
-                    <span className="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg shrink-0">
+                    <span className="text-xs font-mono text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-2.5 py-1 rounded-lg shrink-0">
                       {account.password}
                     </span>
                   </div>

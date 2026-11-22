@@ -209,7 +209,7 @@ export default function DashboardLayout({ children }) {
 
   if (checkingAuth || !user) {
     return (
-      <div className="min-h-screen bg-slate-950 p-4 sm:p-6 lg:p-8">
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 p-4 sm:p-6 lg:p-8">
         <DashboardPageSkeleton />
       </div>
     );
@@ -290,7 +290,7 @@ export default function DashboardLayout({ children }) {
   const showTopbarAvatar = Boolean(user?.avatar) && !avatarError;
 
   return (
-    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-slate-950 text-slate-100 flex">
+    <div className="min-h-screen lg:h-screen lg:overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
       {mobileOpen && (
         <div
           onClick={() => setMobileOpen(false)}
@@ -299,7 +299,7 @@ export default function DashboardLayout({ children }) {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col justify-between transition-all duration-200 ease-out ${
+        className={`fixed inset-y-0 left-0 z-40 shrink-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between transition-all duration-200 ease-out ${
           collapsed ? "lg:w-20" : "lg:w-64"
         } w-64 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
@@ -307,7 +307,7 @@ export default function DashboardLayout({ children }) {
       >
         <div className="flex-1 overflow-y-auto">
           <div
-            className={`h-16 flex items-center border-b border-slate-800/80 sticky top-0 bg-slate-900 z-10 ${
+            className={`h-16 flex items-center border-b border-slate-200 dark:border-slate-800/80 sticky top-0 bg-white dark:bg-slate-900 z-10 ${
               collapsed
                 ? "lg:justify-center lg:px-2 px-5"
                 : "justify-between px-5"
@@ -318,15 +318,16 @@ export default function DashboardLayout({ children }) {
               className="flex items-center gap-2.5 text-xl font-bold min-w-0"
               title="FixMate"
             >
-              <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-400 shrink-0">
+              <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
                 <Wrench className="w-5 h-5" />
               </div>
               <span
-                className={`tracking-tight text-white whitespace-nowrap transition-opacity ${
+                className={`tracking-tight text-slate-900 dark:text-white whitespace-nowrap transition-opacity ${
                   collapsed ? "lg:hidden" : "inline"
                 }`}
               >
-                Fix<span className="text-sky-400">Mate</span>
+                Fix
+                <span className="text-sky-600 dark:text-sky-400">Mate</span>
               </span>
             </Link>
 
@@ -334,7 +335,7 @@ export default function DashboardLayout({ children }) {
               type="button"
               onClick={() => setMobileOpen(false)}
               aria-label="Close sidebar"
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
+              className="lg:hidden p-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
@@ -356,8 +357,8 @@ export default function DashboardLayout({ children }) {
                       : "gap-3 px-3.5 py-3"
                   } ${
                     isActive
-                      ? "bg-sky-500/15 text-sky-400 border border-sky-500/25 shadow-sm"
-                      : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+                      ? "bg-sky-500/15 text-sky-700 dark:text-sky-400 border border-sky-500/25 shadow-sm"
+                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60"
                   }`}
                 >
                   <Icon className="w-4 h-4 shrink-0" />
@@ -372,12 +373,12 @@ export default function DashboardLayout({ children }) {
           </nav>
         </div>
 
-        <div className="p-3 border-t border-slate-800 space-y-1 bg-slate-900 shrink-0">
+        <div className="p-3 border-t border-slate-200 dark:border-slate-800 space-y-1 bg-white dark:bg-slate-900 shrink-0">
           <Link
             href="/"
             onClick={() => setMobileOpen(false)}
             title={collapsed ? "Back to site" : undefined}
-            className={`flex items-center rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition ${
+            className={`flex items-center rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition ${
               collapsed
                 ? "lg:justify-center lg:px-0 px-3.5 py-2.5"
                 : "gap-3 px-3.5 py-2.5"
@@ -393,7 +394,7 @@ export default function DashboardLayout({ children }) {
             type="button"
             onClick={handleLogout}
             title={collapsed ? "Sign out" : undefined}
-            className={`w-full cursor-pointer flex items-center rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition ${
+            className={`w-full cursor-pointer flex items-center rounded-xl text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 transition ${
               collapsed
                 ? "lg:justify-center lg:px-0 px-3.5 py-2.5"
                 : "gap-3 px-3.5 py-2.5"
@@ -412,14 +413,14 @@ export default function DashboardLayout({ children }) {
           collapsed ? "lg:pl-20" : "lg:pl-64"
         }`}
       >
-        <header className="sticky top-0 z-20 h-16 shrink-0 bg-slate-900/90 backdrop-blur border-b border-slate-800 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
+        <header className="sticky top-0 z-20 h-16 shrink-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur border-b border-slate-200 dark:border-slate-800 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
             <button
               type="button"
               onClick={handleToggleSidebar}
               aria-label="Toggle sidebar"
               title="Toggle sidebar"
-              className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition cursor-pointer shrink-0"
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition cursor-pointer shrink-0"
             >
               <PanelLeft className="w-4 h-4" />
             </button>
@@ -428,12 +429,12 @@ export default function DashboardLayout({ children }) {
               href="/"
               aria-label="Go to home page"
               title="Home"
-              className="p-2 rounded-lg text-slate-300 hover:text-sky-400 hover:bg-slate-800/80 border border-transparent hover:border-slate-700 transition shrink-0"
+              className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:text-sky-600 dark:hover:text-sky-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-transparent hover:border-slate-300 dark:hover:border-slate-700 transition shrink-0"
             >
               <Home className="w-4 h-4" />
             </Link>
 
-            <span className="text-sm text-slate-300 font-medium truncate">
+            <span className="text-sm text-slate-700 dark:text-slate-300 font-medium truncate">
               {currentTab}
             </span>
           </div>
@@ -448,7 +449,7 @@ export default function DashboardLayout({ children }) {
                 aria-expanded={profileMenuOpen}
                 aria-label="Open account and role menu"
                 onClick={() => setProfileMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-900 hover:bg-slate-800 border border-slate-800 transition cursor-pointer"
+                className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 transition cursor-pointer"
               >
                 {showTopbarAvatar ? (
                   <img
@@ -458,13 +459,15 @@ export default function DashboardLayout({ children }) {
                     className="w-8 h-8 rounded-full object-cover border border-sky-500/30 shrink-0"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs shrink-0">
                     {getInitials(user.name)}
                   </div>
                 )}
                 <ChevronDown
-                  className={`w-4 h-4 text-slate-400 transition-transform duration-150 ${
-                    profileMenuOpen ? "rotate-180 text-sky-400" : ""
+                  className={`w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform duration-150 ${
+                    profileMenuOpen
+                      ? "rotate-180 text-sky-600 dark:text-sky-400"
+                      : ""
                   }`}
                 />
               </button>
@@ -472,9 +475,9 @@ export default function DashboardLayout({ children }) {
               {profileMenuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2.5 w-72 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50"
+                  className="absolute right-0 mt-2.5 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden z-50"
                 >
-                  <div className="p-4 border-b border-slate-800 flex items-center gap-3">
+                  <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-3">
                     {showTopbarAvatar ? (
                       <img
                         src={user.avatar}
@@ -483,20 +486,20 @@ export default function DashboardLayout({ children }) {
                         className="w-11 h-11 rounded-full object-cover border border-sky-500/30 shrink-0"
                       />
                     ) : (
-                      <div className="w-11 h-11 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-300 font-bold text-xs shrink-0">
+                      <div className="w-11 h-11 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs shrink-0">
                         {getInitials(user.name)}
                       </div>
                     )}
                     <div className="min-w-0 flex-1">
-                      <p className="text-sm font-bold text-white truncate">
+                      <p className="text-sm font-bold text-slate-900 dark:text-white truncate">
                         {user.name || "FixMate User"}
                       </p>
                       {user.email && (
-                        <p className="text-xs text-slate-400 truncate mt-0.5">
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate mt-0.5">
                           {user.email}
                         </p>
                       )}
-                      <span className="inline-block mt-1.5 text-xs capitalize px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25 font-semibold">
+                      <span className="inline-block mt-1.5 text-xs capitalize px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-400 border border-sky-500/25 font-semibold">
                         {activeRole || "customer"}
                       </span>
                     </div>
@@ -514,13 +517,15 @@ export default function DashboardLayout({ children }) {
                           onClick={() => setProfileMenuOpen(false)}
                           className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition ${
                             isActive
-                              ? "bg-sky-500/15 text-sky-400 font-semibold"
-                              : "text-slate-200 hover:bg-slate-800/80 hover:text-sky-400"
+                              ? "bg-sky-500/15 text-sky-700 dark:text-sky-400 font-semibold"
+                              : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-sky-600 dark:hover:text-sky-400"
                           }`}
                         >
                           <Icon
                             className={`w-4 h-4 shrink-0 ${
-                              isActive ? "text-sky-400" : "text-slate-400"
+                              isActive
+                                ? "text-sky-600 dark:text-sky-400"
+                                : "text-slate-400"
                             }`}
                           />
                           <span className="truncate">{item.name}</span>
@@ -529,12 +534,12 @@ export default function DashboardLayout({ children }) {
                     })}
                   </div>
 
-                  <div className="border-t border-slate-800 py-1.5">
+                  <div className="border-t border-slate-200 dark:border-slate-800 py-1.5">
                     <button
                       type="button"
                       role="menuitem"
                       onClick={handleLogout}
-                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 transition cursor-pointer"
+                      className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                     >
                       <LogOut className="w-4 h-4 shrink-0" />
                       <span>Sign out</span>

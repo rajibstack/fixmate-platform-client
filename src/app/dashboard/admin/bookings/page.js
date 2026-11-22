@@ -64,18 +64,18 @@ function getBookingAmount(booking) {
 function getStatusBadgeStyle(status) {
   switch (status) {
     case "accepted":
-      return "bg-sky-500/15 text-sky-300 border-sky-500/30";
+      return "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30";
     case "in-progress":
-      return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
     case "completed":
-      return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
     case "rejected":
-      return "bg-rose-500/15 text-rose-300 border-rose-500/30";
+      return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
     case "cancelled":
-      return "bg-slate-800 text-slate-300 border-slate-700";
+      return "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700";
     case "requested":
     default:
-      return "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
+      return "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30";
   }
 }
 
@@ -86,9 +86,9 @@ function formatStatusText(status) {
 
 function getPaymentBadgeStyle(paymentStatus) {
   if (paymentStatus === "paid") {
-    return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+    return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
   }
-  return "bg-slate-800/90 text-slate-300 border-slate-700";
+  return "bg-slate-200/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700";
 }
 
 function formatPaymentText(paymentStatus) {
@@ -329,17 +329,17 @@ export default function AdminAllBookingsPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
-      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-5 border-b border-slate-800/90">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             All bookings
           </h1>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             Every repair job on the platform. Read only.
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-slate-900/95 border border-slate-800 rounded-xl p-1 gap-1 self-start xl:self-auto">
+        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start xl:self-auto shadow-xs dark:shadow-none">
           {tabs.map((tab) => {
             const active = activeTab === tab.key;
             return (
@@ -350,13 +350,15 @@ export default function AdminAllBookingsPage() {
                 className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
                   active
                     ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-xs ${
-                    active ? "text-slate-950/80 font-bold" : "text-slate-400"
+                    active
+                      ? "text-slate-950/80 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {tab.count}
@@ -369,15 +371,15 @@ export default function AdminAllBookingsPage() {
 
       {/* Error Banner */}
       {error && (
-        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-300 flex items-center justify-between gap-3">
+        <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-4 py-3.5 text-sm text-rose-700 dark:text-rose-300 flex items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
             <p className="font-medium">{error}</p>
           </div>
           <button
             type="button"
             onClick={() => fetchAllBookings()}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-800 dark:text-rose-200 text-xs font-semibold transition cursor-pointer shrink-0"
           >
             <RefreshCw className="w-3.5 h-3.5" />
             <span>Retry</span>
@@ -387,14 +389,14 @@ export default function AdminAllBookingsPage() {
 
       {/* Bookings Table / Cards */}
       {filteredBookings.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <ClipboardList className="w-6 h-6" />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-white">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             {activeTab === "all" ? "No bookings yet" : "No bookings found"}
           </h2>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
             {activeTab === "all"
               ? "There are no repair jobs recorded on the platform yet."
               : "There are no repair jobs matching this status filter."}
@@ -413,9 +415,9 @@ export default function AdminAllBookingsPage() {
               <button
                 type="button"
                 onClick={() => fetchAllBookings()}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 border border-slate-700 text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
-                <RefreshCw className="w-4 h-4 text-sky-400" />
+                <RefreshCw className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>Refresh bookings</span>
               </button>
             )}
@@ -424,11 +426,11 @@ export default function AdminAllBookingsPage() {
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden lg:block bg-slate-900/90 border border-slate-800 rounded-3xl overflow-hidden shadow-xl">
+          <div className="hidden lg:block bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-md dark:shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-800 bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <th className="py-4 px-5">Ticket</th>
                     <th className="py-4 px-5">Service</th>
                     <th className="py-4 px-5">Customer</th>
@@ -439,7 +441,7 @@ export default function AdminAllBookingsPage() {
                     <th className="py-4 px-5 text-right">Amount</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-800/80 text-sm">
+                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80 text-sm">
                   {filteredBookings.map((booking) => {
                     const id = booking._id || booking.id;
                     const status = normalizeStatus(booking?.status);
@@ -458,21 +460,21 @@ export default function AdminAllBookingsPage() {
                     return (
                       <tr
                         key={id}
-                        className="hover:bg-slate-800/40 transition"
+                        className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition"
                       >
-                        <td className="py-4 px-5 font-mono text-xs text-slate-400 whitespace-nowrap">
+                        <td className="py-4 px-5 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                           {getTicketCode(booking)}
                         </td>
-                        <td className="py-4 px-5 font-semibold text-white">
+                        <td className="py-4 px-5 font-semibold text-slate-900 dark:text-white">
                           {booking?.serviceTitle || "Repair Service"}
                         </td>
-                        <td className="py-4 px-5 text-slate-300 whitespace-nowrap">
+                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {customerName}
                         </td>
-                        <td className="py-4 px-5 text-slate-300 whitespace-nowrap">
+                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {technicianName}
                         </td>
-                        <td className="py-4 px-5 text-slate-300 whitespace-nowrap">
+                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap">
                           {formatShortDate(
                             booking?.preferredDate || booking?.createdAt
                           )}
@@ -494,12 +496,12 @@ export default function AdminAllBookingsPage() {
                             )}`}
                           >
                             {paymentStatus === "paid" && (
-                              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                              <CheckCircle2 className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                             )}
                             {formatPaymentText(paymentStatus)}
                           </span>
                         </td>
-                        <td className="py-4 px-5 text-right font-bold text-white whitespace-nowrap">
+                        <td className="py-4 px-5 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
                           ${getBookingAmount(booking)}
                         </td>
                       </tr>
@@ -527,41 +529,41 @@ export default function AdminAllBookingsPage() {
               return (
                 <div
                   key={id}
-                  className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 shadow-lg space-y-3"
+                  className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-md dark:shadow-lg space-y-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <span className="text-[11px] font-mono text-slate-400">
+                      <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
                         {getTicketCode(booking)}
                       </span>
-                      <h2 className="text-sm sm:text-base font-bold text-white truncate">
+                      <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
                         {booking?.serviceTitle || "Repair Service"}
                       </h2>
                     </div>
-                    <span className="text-base sm:text-lg font-bold text-white shrink-0">
+                    <span className="text-base sm:text-lg font-bold text-slate-900 dark:text-white shrink-0">
                       ${getBookingAmount(booking)}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-400">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-600 dark:text-slate-400">
                     <span className="inline-flex items-center gap-1.5 truncate">
-                      <User className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <User className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                       Customer:{" "}
-                      <strong className="text-slate-200 font-medium">
+                      <strong className="text-slate-800 dark:text-slate-200 font-medium">
                         {customerName}
                       </strong>
                     </span>
                     <span className="inline-flex items-center gap-1.5 truncate">
-                      <Wrench className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                      <Wrench className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
                       Tech:{" "}
-                      <strong className="text-slate-200 font-medium">
+                      <strong className="text-slate-800 dark:text-slate-200 font-medium">
                         {technicianName}
                       </strong>
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <Calendar className="w-3.5 h-3.5 text-sky-400 shrink-0" />
+                      <Calendar className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                       Date:{" "}
-                      <strong className="text-slate-200 font-medium">
+                      <strong className="text-slate-800 dark:text-slate-200 font-medium">
                         {formatShortDate(
                           booking?.preferredDate || booking?.createdAt
                         )}
@@ -569,7 +571,7 @@ export default function AdminAllBookingsPage() {
                     </span>
                   </div>
 
-                  <div className="pt-2.5 border-t border-slate-800/80 flex items-center justify-between gap-2">
+                  <div className="pt-2.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <span
                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(

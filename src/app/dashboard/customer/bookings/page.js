@@ -147,17 +147,17 @@ function getBookingReviewText(booking) {
 function getStatusBadgeStyle(status) {
   switch (status) {
     case "accepted":
-      return "bg-sky-500/15 text-sky-300 border-sky-500/30";
+      return "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/30";
     case "in-progress":
-      return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+      return "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30";
     case "completed":
-      return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+      return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
     case "cancelled":
     case "rejected":
-      return "bg-rose-500/15 text-rose-300 border-rose-500/30";
+      return "bg-rose-500/15 text-rose-700 dark:text-rose-300 border-rose-500/30";
     case "requested":
     default:
-      return "bg-indigo-500/15 text-indigo-300 border-indigo-500/30";
+      return "bg-indigo-500/15 text-indigo-700 dark:text-indigo-300 border-indigo-500/30";
   }
 }
 
@@ -168,9 +168,9 @@ function formatStatusText(status) {
 
 function getPaymentBadgeStyle(paymentStatus) {
   if (paymentStatus === "paid") {
-    return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+    return "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30";
   }
-  return "bg-slate-800/90 text-slate-300 border-slate-700";
+  return "bg-slate-200/90 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700";
 }
 
 function formatPaymentText(paymentStatus) {
@@ -237,9 +237,12 @@ function buildTimelineState(booking) {
     steps: TIMELINE_STEPS.map((step, idx) => {
       const hasHistoryEntry = historyMap.has(step.key);
       const isCompleted =
-        !isClosed && (idx < activeStepIndex || (idx === 4 && paymentStatus === "paid"));
+        !isClosed &&
+        (idx < activeStepIndex || (idx === 4 && paymentStatus === "paid"));
       const isCurrent =
-        !isClosed && idx === activeStepIndex && !(idx === 4 && paymentStatus === "paid");
+        !isClosed &&
+        idx === activeStepIndex &&
+        !(idx === 4 && paymentStatus === "paid");
       const isReached = isCompleted || isCurrent || hasHistoryEntry;
 
       return {
@@ -257,15 +260,15 @@ function JobTimelineTracker({ booking }) {
   const timeline = useMemo(() => buildTimelineState(booking), [booking]);
 
   return (
-    <div className="mt-4 pt-3.5 border-t border-slate-800/80 space-y-2.5">
+    <div className="mt-4 pt-3.5 border-t border-slate-200 dark:border-slate-800/80 space-y-2.5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
-        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Job Timeline
         </span>
 
         {timeline.isClosed ? (
-          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-300">
-            <Ban className="w-3 h-3 text-rose-400" />
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-300">
+            <Ban className="w-3 h-3 text-rose-600 dark:text-rose-400" />
             <span>
               {formatStatusText(timeline.closedStatus)}
               {timeline.closedAt
@@ -274,7 +277,7 @@ function JobTimelineTracker({ booking }) {
             </span>
           </span>
         ) : (
-          <span className="text-[11px] text-slate-400">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
             Step {Math.min(timeline.activeStepIndex + 1, 5)} of{" "}
             {TIMELINE_STEPS.length}
           </span>
@@ -286,12 +289,13 @@ function JobTimelineTracker({ booking }) {
           const timestampLabel = formatTimelineTimestamp(step.changedAt);
 
           let cardStyle =
-            "bg-slate-950/60 border-slate-800/80 text-slate-500";
+            "bg-slate-100/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 text-slate-500";
           if (step.isCompleted) {
             cardStyle =
-              "bg-emerald-500/10 border-emerald-500/30 text-emerald-200";
+              "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-200";
           } else if (step.isCurrent) {
-            cardStyle = "bg-sky-500/15 border-sky-400/50 text-sky-200";
+            cardStyle =
+              "bg-sky-500/15 border-sky-400/50 text-sky-700 dark:text-sky-200";
           }
 
           return (
@@ -301,15 +305,15 @@ function JobTimelineTracker({ booking }) {
             >
               <div className="flex items-center gap-1.5">
                 {step.isCompleted ? (
-                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center justify-center shrink-0">
+                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
                     <Check className="w-2.5 h-2.5 stroke-[3]" />
                   </span>
                 ) : step.isCurrent ? (
-                  <span className="w-4 h-4 rounded-full bg-sky-400/20 border border-sky-400 text-sky-300 flex items-center justify-center shrink-0">
+                  <span className="w-4 h-4 rounded-full bg-sky-400/20 border border-sky-400 text-sky-700 dark:text-sky-300 flex items-center justify-center shrink-0">
                     <Clock className="w-2.5 h-2.5" />
                   </span>
                 ) : (
-                  <span className="w-4 h-4 rounded-full bg-slate-900 border border-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center shrink-0">
+                  <span className="w-4 h-4 rounded-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center shrink-0">
                     {index + 1}
                   </span>
                 )}
@@ -319,7 +323,7 @@ function JobTimelineTracker({ booking }) {
                 </span>
               </div>
 
-              <p className="text-[10px] text-slate-400 mt-1 pl-5.5 truncate">
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-5.5 truncate">
                 {timestampLabel || (step.isReached ? "Recorded" : "Pending")}
               </p>
             </div>
@@ -338,7 +342,7 @@ function BookingThumbnail({ src, alt }) {
   }, [src]);
 
   if (!src || imgFailed) {
-    return <Wrench className="w-8 h-8 text-sky-400" />;
+    return <Wrench className="w-8 h-8 text-sky-600 dark:text-sky-400" />;
   }
 
   return (
@@ -830,17 +834,17 @@ export default function CustomerMyBookingsPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
-      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-800/90">
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             My bookings
           </h1>
-          <p className="text-slate-400 text-sm mt-1.5">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             Track each repair from request to payment.
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-slate-900/95 border border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto">
+        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto shadow-xs dark:shadow-none">
           {tabs.map((tab) => {
             const active = activeTab === tab.key;
             return (
@@ -851,13 +855,15 @@ export default function CustomerMyBookingsPage() {
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
                   active
                     ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-300 hover:text-white hover:bg-slate-800/70"
+                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
                 }`}
               >
                 <span>{tab.label}</span>
                 <span
                   className={`text-xs ${
-                    active ? "text-slate-950/80 font-bold" : "text-slate-400"
+                    active
+                      ? "text-slate-950/80 font-bold"
+                      : "text-slate-500 dark:text-slate-400"
                   }`}
                 >
                   {tab.count}
@@ -873,14 +879,14 @@ export default function CustomerMyBookingsPage() {
         <div
           className={`rounded-2xl px-4 py-3.5 border flex items-start gap-3 text-sm ${
             feedback.type === "success"
-              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-300"
-              : "bg-rose-500/10 border-rose-500/30 text-rose-300"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300"
+              : "bg-rose-500/10 border-rose-500/30 text-rose-700 dark:text-rose-300"
           }`}
         >
           {feedback.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-400" />
+            <CheckCircle2 className="w-5 h-5 shrink-0 mt-0.5 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-400" />
+            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5 text-rose-600 dark:text-rose-400" />
           )}
           <p className="font-medium flex-1">{feedback.message}</p>
         </div>
@@ -888,14 +894,14 @@ export default function CustomerMyBookingsPage() {
 
       {/* Bookings List / States */}
       {filteredBookings.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-slate-900/90 border border-slate-800 rounded-3xl space-y-3">
-          <div className="w-12 h-12 rounded-2xl bg-slate-950 border border-slate-800 text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
+          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <Wrench className="w-6 h-6" />
           </div>
-          <h2 className="text-base sm:text-lg font-bold text-white">
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
             No bookings found
           </h2>
-          <p className="text-sm text-slate-400 max-w-md mx-auto">
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
             There are no repair bookings under this filter right now.
           </p>
           <div className="pt-2">
@@ -941,11 +947,11 @@ export default function CustomerMyBookingsPage() {
             return (
               <div
                 key={id}
-                className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
+                className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
               >
                 {/* Left Section: Fixed-Size Thumbnail + Info + Problem Description + Saved Review + Job Timeline */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
-                  <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     <BookingThumbnail
                       src={booking?.serviceImage}
                       alt={booking?.serviceTitle || "Repair Service"}
@@ -953,40 +959,40 @@ export default function CustomerMyBookingsPage() {
                   </div>
 
                   <div className="space-y-2 flex-1 min-w-0">
-                    <h2 className="text-base sm:text-lg font-bold text-white truncate">
+                    <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                       {booking?.serviceTitle || "Repair Service"}
                     </h2>
 
-                    <p className="text-xs sm:text-sm text-slate-400 truncate">
+                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 truncate">
                       {techName}
                       {booking?.technicianEmail
                         ? `, ${booking.technicianEmail}`
                         : ""}
                     </p>
 
-                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-400">
+                    <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                       <span>
                         Requested{" "}
-                        <strong className="font-semibold text-slate-200">
+                        <strong className="font-semibold text-slate-800 dark:text-slate-200">
                           {formatShortDate(booking?.createdAt)}
                         </strong>
                       </span>
                       <span>
                         Preferred{" "}
-                        <strong className="font-semibold text-slate-200">
+                        <strong className="font-semibold text-slate-800 dark:text-slate-200">
                           {formatShortDate(booking?.preferredDate)}
                         </strong>
                       </span>
                     </div>
 
                     {booking?.problemDescription && (
-                      <p className="text-xs sm:text-sm text-slate-300/90 pt-1 leading-relaxed">
+                      <p className="text-xs sm:text-sm text-slate-700 dark:text-slate-300/90 pt-1 leading-relaxed">
                         {booking.problemDescription}
                       </p>
                     )}
 
                     {hasReview && (
-                      <div className="mt-2 rounded-2xl bg-slate-950/80 border border-amber-400/20 px-3.5 py-2.5 space-y-1">
+                      <div className="mt-2 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-amber-400/30 dark:border-amber-400/20 px-3.5 py-2.5 space-y-1">
                         <div className="flex items-center gap-1.5">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
@@ -994,16 +1000,16 @@ export default function CustomerMyBookingsPage() {
                               className={`w-3.5 h-3.5 ${
                                 star <= savedRating
                                   ? "text-amber-400 fill-amber-400"
-                                  : "text-slate-700"
+                                  : "text-slate-300 dark:text-slate-700"
                               }`}
                             />
                           ))}
-                          <span className="text-xs font-semibold text-amber-300 ml-1">
+                          <span className="text-xs font-semibold text-amber-700 dark:text-amber-300 ml-1">
                             {savedRating}/5
                           </span>
                         </div>
                         {savedReview && (
-                          <p className="text-xs text-slate-300 leading-relaxed">
+                          <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
                             “{savedReview}”
                           </p>
                         )}
@@ -1015,17 +1021,17 @@ export default function CustomerMyBookingsPage() {
                 </div>
 
                 {/* Right Section: Expanded Leftward, No Top Dash, Side-by-Side Badges & Action */}
-                <div className="w-full xl:w-[27rem] xl:pl-6 xl:border-l xl:border-dashed xl:border-slate-800 flex flex-col justify-between gap-4 shrink-0">
+                <div className="w-full xl:w-[27rem] xl:pl-6 xl:border-l xl:border-dashed xl:border-slate-200 dark:xl:border-slate-800 flex flex-col justify-between gap-4 shrink-0">
                   <div className="flex items-start justify-between gap-4">
-                    <span className="text-xs font-medium text-slate-400 pt-0.5">
+                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pt-0.5">
                       Ticket {getTicketCode(booking)}
                     </span>
 
                     <div className="text-right">
-                      <span className="block text-[11px] text-slate-400 leading-tight">
+                      <span className="block text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                         {amountLabel}
                       </span>
-                      <span className="text-2xl font-bold text-white leading-tight">
+                      <span className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">
                         ${amount}
                       </span>
                     </div>
@@ -1057,7 +1063,7 @@ export default function CustomerMyBookingsPage() {
                           type="button"
                           disabled={busy}
                           onClick={() => setBookingToCancel(booking)}
-                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-300 hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-700 dark:text-rose-300 hover:text-rose-800 dark:hover:text-rose-200 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           {busy ? (
                             <FixMateSpinner compact />
@@ -1089,7 +1095,7 @@ export default function CustomerMyBookingsPage() {
                           type="button"
                           disabled={busy}
                           onClick={() => handleDownloadInvoice(booking, techName)}
-                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-emerald-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/35 text-emerald-700 dark:text-emerald-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
                           <FileDown className="w-3.5 h-3.5" />
                           <span>PDF Invoice</span>
@@ -1101,9 +1107,9 @@ export default function CustomerMyBookingsPage() {
                           type="button"
                           disabled={busy}
                           onClick={() => openReviewModal(booking)}
-                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/35 text-sky-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
+                          className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl bg-sky-500/15 hover:bg-sky-500/25 border border-sky-400/35 text-sky-700 dark:text-sky-300 text-xs font-semibold transition cursor-pointer disabled:opacity-50 whitespace-nowrap"
                         >
-                          <Star className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                          <Star className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400" />
                           <span>
                             {hasReview ? "Edit review" : "Rate & review"}
                           </span>
@@ -1120,14 +1126,14 @@ export default function CustomerMyBookingsPage() {
 
       {/* Rating & Review Modal (After Booking Is Paid) */}
       {reviewBooking && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
+                <p className="text-xs font-semibold uppercase tracking-wider text-amber-600 dark:text-amber-400">
                   Paid Booking Review
                 </p>
-                <h2 className="text-lg font-bold text-white mt-0.5">
+                <h2 className="text-lg font-bold text-slate-900 dark:text-white mt-0.5">
                   Rate &amp; Review — {reviewBooking.serviceTitle || "Service"}
                 </h2>
               </div>
@@ -1136,22 +1142,22 @@ export default function CustomerMyBookingsPage() {
                 disabled={submittingReview}
                 onClick={() => setReviewBooking(null)}
                 aria-label="Close review modal"
-                className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {reviewError && (
-              <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-3.5 py-2.5 text-xs text-rose-300 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="rounded-2xl bg-rose-500/10 border border-rose-500/30 px-3.5 py-2.5 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
                 <span>{reviewError}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmitReview} className="space-y-4">
               <div>
-                <span className="block text-xs font-semibold text-slate-300 mb-2">
+                <span className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">
                   Select Star Rating (1–5) *
                 </span>
                 <div className="flex items-center gap-2">
@@ -1168,19 +1174,19 @@ export default function CustomerMyBookingsPage() {
                           if (reviewError) setReviewError("");
                         }}
                         aria-label={`Rate ${star} out of 5 stars`}
-                        className="p-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-amber-400/40 transition cursor-pointer"
+                        className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 hover:border-amber-400/40 transition cursor-pointer"
                       >
                         <Star
                           className={`w-6 h-6 transition ${
                             activeStar
                               ? "text-amber-400 fill-amber-400"
-                              : "text-slate-600"
+                              : "text-slate-300 dark:text-slate-600"
                           }`}
                         />
                       </button>
                     );
                   })}
-                  <span className="text-sm font-bold text-amber-300 ml-2">
+                  <span className="text-sm font-bold text-amber-600 dark:text-amber-300 ml-2">
                     {ratingValue} / 5
                   </span>
                 </div>
@@ -1189,7 +1195,7 @@ export default function CustomerMyBookingsPage() {
               <div>
                 <label
                   htmlFor="booking-review-text"
-                  className="block text-xs font-semibold text-slate-300 mb-1.5"
+                  className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                 >
                   Short Review *
                 </label>
@@ -1203,16 +1209,16 @@ export default function CustomerMyBookingsPage() {
                     if (reviewError) setReviewError("");
                   }}
                   placeholder="Share your experience with the repair and technician..."
-                  className="w-full rounded-xl bg-slate-950 border border-slate-800 focus:border-sky-500 p-3 text-sm text-white placeholder:text-slate-500 outline-none transition resize-none"
+                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 p-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-800">
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   disabled={submittingReview}
                   onClick={() => setReviewBooking(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 text-xs sm:text-sm font-medium text-slate-200 transition cursor-pointer"
+                  className="px-4 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer"
                 >
                   Cancel
                 </button>

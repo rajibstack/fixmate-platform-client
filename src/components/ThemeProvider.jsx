@@ -50,6 +50,21 @@ export function ThemeProvider({ children }) {
     const initial = readInitialTheme();
     setThemeState(initial);
     applyThemeToDom(initial);
+
+    if (!window.matchMedia) return;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
+    const handleSystemChange = (e) => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved === "light" || saved === "dark") return;
+      } catch {}
+      const next = e.matches ? "light" : "dark";
+      setThemeState(next);
+      applyThemeToDom(next);
+    };
+
+    mediaQuery.addEventListener("change", handleSystemChange);
+    return () => mediaQuery.removeEventListener("change", handleSystemChange);
   }, []);
 
   const setTheme = useCallback((nextTheme) => {
@@ -62,15 +77,9 @@ export function ThemeProvider({ children }) {
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setThemeState((prev) => {
-      const next = prev === "dark" ? "light" : "dark";
-      applyThemeToDom(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch {}
-      return next;
-    });
-  }, []);
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+  }, [setTheme, theme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, toggleTheme }}>
