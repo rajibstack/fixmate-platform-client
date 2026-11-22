@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from "sonner";
 import "./globals.css";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import LayoutWrapper from "@/components/LayoutWrapper";
 import { PublicPageSkeleton } from "@/components/ui/LoadingState";
 
@@ -20,36 +21,57 @@ export const metadata = {
   description: "On-Demand Device & Home Appliance Repair Service Platform",
 };
 
+const themeInitScript = `
+  (function() {
+    try {
+      var saved = localStorage.getItem("fixmate_theme");
+      var prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
+      var theme = (saved === "light" || saved === "dark") ? saved : (prefersLight ? "light" : "dark");
+      var root = document.documentElement;
+      root.classList.remove("light", "dark");
+      root.classList.add(theme);
+      root.setAttribute("data-theme", theme);
+      root.style.colorScheme = theme;
+    } catch (e) {}
+  })();
+`;
+
 export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      suppressHydrationWarning
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col bg-slate-950 text-slate-100 font-sans`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col bg-slate-950 text-slate-100 font-sans transition-colors duration-300`}
         suppressHydrationWarning={true}
       >
-        <Toaster
-          position="top-right"
-          theme="dark"
-          richColors
-          closeButton
-          duration={4000}
-          toastOptions={{
-            style: {
-              background: "#0EA6F4",
-              border: "1px solid #0EA6F4",
-              color: "#ffffff",
-              borderRadius: "14px",
-            },
-          }}
-        />
-        <LayoutWrapper>
-          <Suspense fallback={<PublicPageSkeleton cards={6} />}>
-            {children}
-          </Suspense>
-        </LayoutWrapper>
+        <ThemeProvider>
+          <Toaster
+            position="botom-right"
+            theme="dark"
+            richColors
+            closeButton
+            duration={4000}
+            toastOptions={{
+              style: {
+                background: "#0EA6F4",
+                border: "1px solid #0EA6F4",
+                color: "#ffffff",
+                borderRadius: "14px",
+              },
+            }}
+          />
+          <LayoutWrapper>
+            <Suspense fallback={<PublicPageSkeleton cards={6} />}>
+              {children}
+            </Suspense>
+          </LayoutWrapper>
+        </ThemeProvider>
       </body>
     </html>
   );

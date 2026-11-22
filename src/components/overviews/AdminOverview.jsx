@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import {
   Users,
@@ -13,6 +13,10 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
+
+const API_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
+).replace(/\/+$/, "");
 
 function getBookingAmount(booking) {
   const raw =
@@ -73,6 +77,16 @@ function readStoredUser() {
   }
 }
 
+function readStoredToken() {
+  if (typeof window === "undefined") return "";
+  return (
+    localStorage.getItem("token") ||
+    localStorage.getItem("authToken") ||
+    localStorage.getItem("accessToken") ||
+    ""
+  );
+}
+
 function buildUserLookup(users = [], activeUser = null) {
   const byId = new Map();
   const byEmail = new Map();
@@ -120,6 +134,26 @@ function resolveName(
   return defaultLabel;
 }
 
+async function fetchJsonWithTimeout(url, headers, timeoutMs = 4000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(url, {
+      cache: "no-store",
+      credentials: "include",
+      headers,
+      signal: controller.signal,
+    });
+    const json = await res.json().catch(() => ({}));
+    return { ok: res.ok, status: res.status, json };
+  } catch (err) {
+    return { ok: false, status: 0, json: {}, error: err };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 export default function AdminOverview({ user: propUser = null, syncVersion = 0 }) {
   const [loading, setLoading] = useState(true);
   const [navigating, setNavigating] = useState(false);
@@ -137,166 +171,121 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
   });
   const [pendingServicesList, setPendingServicesList] = useState([]);
   const [latestBookingsList, setLatestBookingsList] = useState([]);
+  const activeRef = useRef(true);
 
-  const apiUrl = (
-    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
-  ).replace(/\/+$/, "");
+  const loadAdminOverview = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) {
+      setLoading(true);
+      setError("");
+    }
 
-  const loadAdminOverview = useCallback(
-    async ({ silent = false } = {}) => {
-      if (!silent) {
-        setLoading(true);
-        setError("");
-      }
+    try {
+      const token = readStoredToken();
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
 
-      try {
-        const token =
-          localStorage.getItem("token") ||
-          localStorage.getItem("authToken") ||
-          localStorage.getItem("accessToken") ||
-          "";
-        const headers = {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        };
-
-        const usersRes = await fetch(`${apiUrl}/api/admin/users`, {
-          cache: "no-store",
-          headers,
-        });
-        const usersJson = usersRes.ok
-          ? await usersRes.json().catch(() => ({}))
-          : {};
-        const users = Array.isArray(usersJson?.data)
-          ? usersJson.data
-          : Array.isArray(usersJson)
-          ? usersJson
-          : [];
-        if (users.length > 0) {
-          setUsers(users);
-        }
-
-        const overviewRes = await fetch(`${apiUrl}/api/admin/overview`, {
-          cache: "no-store",
-          headers,
-        });
-
-        if (overviewRes.ok) {
-          const overviewData = await overviewRes.json().catch(() => ({}));
-          const payload = overviewData?.data || overviewData;
-          if (payload?.stats && typeof payload.stats === "object") {
-            setStats((prev) => ({
-              ...prev,
-              totalUsers:
-                Number(payload.stats.totalUsers ?? prev.totalUsers) || 0,
-              customerCount:
-                Number(payload.stats.customerCount ?? prev.customerCount) || 0,
-              totalTechnicians:
-                Number(
-                  payload.stats.totalTechnicians ?? prev.totalTechnicians
-                ) || 0,
-              pendingServices:
-                Number(payload.stats.pendingServices ?? prev.pendingServices) ||
-                0,
-              approvedServices:
-                Number(
-                  payload.stats.approvedServices ?? prev.approvedServices
-                ) || 0,
-              totalRevenue:
-                Number(payload.stats.totalRevenue ?? prev.totalRevenue) || 0,
-              paymentCount:
-                Number(payload.stats.paymentCount ?? prev.paymentCount) || 0,
-            }));
-            setPendingServicesList(
-              Array.isArray(payload.pendingServices)
-                ? payload.pendingServices.slice(0, 5)
-                : []
-            );
-            setLatestBookingsList(
-              Array.isArray(payload.recentBookings)
-                ? payload.recentBookings.slice(0, 5)
-                : []
-            );
-            if (!silent) setLoading(false);
-            return;
-          }
-        }
-
-        const [servicesRes, bookingsRes] = await Promise.all([
-          fetch(`${apiUrl}/api/admin/services`, { cache: "no-store", headers }),
-          fetch(`${apiUrl}/api/admin/bookings`, { cache: "no-store", headers }),
+      const [usersResult, servicesResult, bookingsResult] =
+        await Promise.all([
+          fetchJsonWithTimeout(`${API_URL}/api/admin/users`, headers),
+          fetchJsonWithTimeout(`${API_URL}/api/admin/services`, headers),
+          fetchJsonWithTimeout(`${API_URL}/api/admin/bookings`, headers),
         ]);
 
-        if (!usersRes.ok && !servicesRes.ok && !bookingsRes.ok) {
-          throw new Error("Failed to load platform overview data.");
-        }
+      if (!activeRef.current) return;
 
-        const servicesJson = servicesRes.ok
-          ? await servicesRes.json().catch(() => ({}))
-          : {};
-        const bookingsJson = bookingsRes.ok
-          ? await bookingsRes.json().catch(() => ({}))
-          : {};
+      const anySuccess =
+        usersResult.ok || servicesResult.ok || bookingsResult.ok;
 
-        const services = Array.isArray(servicesJson?.data)
-          ? servicesJson.data
-          : Array.isArray(servicesJson)
-          ? servicesJson
-          : [];
-        const bookings = Array.isArray(bookingsJson?.data)
-          ? bookingsJson.data
-          : Array.isArray(bookingsJson)
-          ? bookingsJson
-          : [];
-
-        const customerCount = users.filter(
-          (u) => (u?.role || "").toLowerCase().trim() === "customer"
-        ).length;
-        const totalTechnicians = users.filter(
-          (u) => (u?.role || "").toLowerCase().trim() === "technician"
-        ).length;
-
-        const pendingList = services.filter(
-          (s) => (s?.status || "").toLowerCase().trim() === "pending"
-        );
-        const approvedCount = services.filter(
-          (s) =>
-            (s?.status || "approved").toString().toLowerCase().trim() ===
-            "approved"
-        ).length;
-
-        const paidBookings = bookings.filter(
-          (b) => (b?.paymentStatus || "").toLowerCase().trim() === "paid"
-        );
-        const totalRevenue = paidBookings.reduce(
-          (sum, item) => sum + getBookingAmount(item),
-          0
-        );
-
-        setStats({
-          totalUsers: users.length,
-          customerCount,
-          totalTechnicians,
-          pendingServices: pendingList.length,
-          approvedServices: approvedCount,
-          totalRevenue,
-          paymentCount: paidBookings.length,
-        });
-
-        setPendingServicesList(pendingList.slice(0, 5));
-        setLatestBookingsList(bookings.slice(0, 5));
-      } catch (err) {
+      if (!anySuccess) {
         if (!silent) {
-          setError(err.message || "Could not load platform overview.");
+          setError("Could not load platform overview data.");
         }
-      } finally {
-        if (!silent) {
-          setLoading(false);
-        }
+        return;
       }
-    },
-    [apiUrl]
-  );
+
+      const fetchedUsers = usersResult.ok
+        ? Array.isArray(usersResult.json?.data)
+          ? usersResult.json.data
+          : Array.isArray(usersResult.json)
+          ? usersResult.json
+          : []
+        : [];
+
+      if (fetchedUsers.length > 0) {
+        setUsers(fetchedUsers);
+      }
+
+      const services = servicesResult.ok
+        ? Array.isArray(servicesResult.json?.data)
+          ? servicesResult.json.data
+          : Array.isArray(servicesResult.json)
+          ? servicesResult.json
+          : []
+        : [];
+
+      const bookings = bookingsResult.ok
+        ? Array.isArray(bookingsResult.json?.data)
+          ? bookingsResult.json.data
+          : Array.isArray(bookingsResult.json)
+          ? bookingsResult.json
+          : []
+        : [];
+
+      const customerCount = fetchedUsers.filter(
+        (u) => (u?.role || "").toLowerCase().trim() === "customer"
+      ).length;
+      const totalTechnicians = fetchedUsers.filter(
+        (u) => (u?.role || "").toLowerCase().trim() === "technician"
+      ).length;
+
+      const pendingList = services.filter(
+        (s) => (s?.status || "").toLowerCase().trim() === "pending"
+      );
+      const approvedCount = services.filter(
+        (s) =>
+          (s?.status || "approved").toString().toLowerCase().trim() ===
+          "approved"
+      ).length;
+
+      const paidBookings = bookings.filter(
+        (b) => (b?.paymentStatus || "").toLowerCase().trim() === "paid"
+      );
+      const totalRevenue = paidBookings.reduce(
+        (sum, item) => sum + getBookingAmount(item),
+        0
+      );
+
+      setStats({
+        totalUsers: fetchedUsers.length,
+        customerCount,
+        totalTechnicians,
+        pendingServices: pendingList.length,
+        approvedServices: approvedCount,
+        totalRevenue,
+        paymentCount: paidBookings.length,
+      });
+
+      setPendingServicesList(pendingList.slice(0, 5));
+      setLatestBookingsList(bookings.slice(0, 5));
+    } catch (err) {
+      if (!silent && activeRef.current) {
+        setError(err?.message || "Could not load platform overview.");
+      }
+    } finally {
+      if (!silent) {
+        setLoading(false);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    activeRef.current = true;
+    return () => {
+      activeRef.current = false;
+    };
+  }, []);
 
   useEffect(() => {
     setStoredUser(propUser || readStoredUser());

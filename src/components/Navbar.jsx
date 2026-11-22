@@ -7,12 +7,78 @@ import {
   Wrench,
   ChevronDown,
   LayoutDashboard,
+  PlusCircle,
+  Inbox,
+  CalendarCheck,
+  CreditCard,
+  Users,
+  Settings,
+  MessageSquare,
   User,
   LogOut,
   Menu,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ThemeToggle } from "@/components/ThemeProvider";
+
+const MENU_BY_ROLE = {
+  customer: [
+    { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+    {
+      name: "My bookings",
+      href: "/dashboard/customer/bookings",
+      icon: CalendarCheck,
+    },
+    {
+      name: "Payment history",
+      href: "/dashboard/customer/payments",
+      icon: CreditCard,
+    },
+  ],
+  technician: [
+    { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+    {
+      name: "Add a service",
+      href: "/dashboard/technician/add-service",
+      icon: PlusCircle,
+    },
+    {
+      name: "My services",
+      href: "/dashboard/technician/my-services",
+      icon: Wrench,
+    },
+    {
+      name: "Manage requests",
+      href: "/dashboard/technician/requests",
+      icon: Inbox,
+    },
+  ],
+  admin: [
+    { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+    { name: "Manage users", href: "/dashboard/admin/users", icon: Users },
+    {
+      name: "Manage services",
+      href: "/dashboard/admin/services",
+      icon: Settings,
+    },
+    {
+      name: "All bookings",
+      href: "/dashboard/admin/bookings",
+      icon: CalendarCheck,
+    },
+    {
+      name: "Transactions",
+      href: "/dashboard/admin/transactions",
+      icon: CreditCard,
+    },
+    {
+      name: "Messages",
+      href: "/dashboard/admin/messages",
+      icon: MessageSquare,
+    },
+  ],
+};
 
 function getInitials(name = "") {
   return (
@@ -135,6 +201,13 @@ export default function Navbar() {
 
   const showAvatarImage = Boolean(user?.avatar) && !avatarError;
 
+  const dropdownMenuItems = user
+    ? [
+        ...(MENU_BY_ROLE[user.role] || MENU_BY_ROLE.customer),
+        { name: "Update profile", href: "/dashboard/profile", icon: User },
+      ]
+    : [];
+
   return (
     <header className="sticky top-0 z-40 bg-slate-950/85 backdrop-blur border-b border-slate-800/80 text-slate-100">
       <div className="max-w-7xl mx-auto h-16 px-4 sm:px-8 flex items-center justify-between gap-3">
@@ -190,8 +263,10 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* Right: Auth / Profile Dropdown */}
+        {/* Right: Theme Toggle + Auth / Profile Dropdown */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          <ThemeToggle />
+
           {!user ? (
             <>
               <Link
@@ -239,7 +314,7 @@ export default function Navbar() {
               {menuOpen && (
                 <div
                   role="menu"
-                  className="absolute right-0 mt-2.5 w-64 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50"
+                  className="absolute right-0 mt-2.5 w-72 rounded-2xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden z-50"
                 >
                   <div className="p-4 border-b border-slate-800 flex items-center gap-3">
                     {showAvatarImage ? (
@@ -269,26 +344,31 @@ export default function Navbar() {
                     </div>
                   </div>
 
-                  <div className="py-1.5">
-                    <Link
-                      href="/dashboard/overview"
-                      role="menuitem"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800/80 hover:text-sky-400 transition"
-                    >
-                      <LayoutDashboard className="w-4 h-4 text-slate-400" />
-                      <span>Dashboard</span>
-                    </Link>
-
-                    <Link
-                      href="/dashboard/profile"
-                      role="menuitem"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center gap-2.5 px-4 py-2.5 text-sm text-slate-200 hover:bg-slate-800/80 hover:text-sky-400 transition"
-                    >
-                      <User className="w-4 h-4 text-slate-400" />
-                      <span>Update profile</span>
-                    </Link>
+                  <div className="py-1.5 max-h-80 overflow-y-auto">
+                    {dropdownMenuItems.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = pathname === item.href;
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          role="menuitem"
+                          onClick={() => setMenuOpen(false)}
+                          className={`flex items-center gap-2.5 px-4 py-2.5 text-sm transition ${
+                            isActive
+                              ? "bg-sky-500/15 text-sky-400 font-semibold"
+                              : "text-slate-200 hover:bg-slate-800/80 hover:text-sky-400"
+                          }`}
+                        >
+                          <Icon
+                            className={`w-4 h-4 shrink-0 ${
+                              isActive ? "text-sky-400" : "text-slate-400"
+                            }`}
+                          />
+                          <span className="truncate">{item.name}</span>
+                        </Link>
+                      );
+                    })}
                   </div>
 
                   <div className="border-t border-slate-800 py-1.5">
@@ -298,7 +378,7 @@ export default function Navbar() {
                       onClick={handleSignOut}
                       className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/10 transition cursor-pointer"
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut className="w-4 h-4 shrink-0" />
                       <span>Sign out</span>
                     </button>
                   </div>
