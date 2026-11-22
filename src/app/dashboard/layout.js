@@ -25,7 +25,9 @@ import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 import { ThemeToggle } from "@/components/ThemeProvider";
 
-function getDashboardPath() {
+function getDashboardPath(role = "") {
+  const normalized = role.toString().toLowerCase().trim();
+  if (normalized === "admin") return "/dashboard/admin";
   return "/dashboard/overview";
 }
 
@@ -103,26 +105,30 @@ export default function DashboardLayout({ children }) {
     }
 
     const isSharedRoute =
-      pathname === "/dashboard/profile" || pathname === "/dashboard/overview";
+      pathname === "/dashboard/profile" ||
+      (role !== "admin" && pathname === "/dashboard/overview");
 
     if (!isSharedRoute) {
       if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
-        router.replace(getDashboardPath());
+        router.replace(getDashboardPath(role));
         return;
       }
       if (
         pathname.startsWith("/dashboard/technician") &&
         role !== "technician"
       ) {
-        router.replace(getDashboardPath());
+        router.replace(getDashboardPath(role));
         return;
       }
       if (pathname.startsWith("/dashboard/customer") && role !== "customer") {
-        router.replace(getDashboardPath());
+        router.replace(getDashboardPath(role));
         return;
       }
-      if (pathname === "/dashboard") {
-        router.replace(getDashboardPath());
+      if (
+        pathname === "/dashboard" ||
+        (role === "admin" && pathname === "/dashboard/overview")
+      ) {
+        router.replace(getDashboardPath(role));
         return;
       }
     }
@@ -241,7 +247,7 @@ export default function DashboardLayout({ children }) {
       },
     ],
     admin: [
-      { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+      { name: "Overview", href: "/dashboard/admin", icon: LayoutDashboard },
       { name: "Manage users", href: "/dashboard/admin/users", icon: Users },
       {
         name: "Manage services",
