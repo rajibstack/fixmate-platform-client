@@ -801,6 +801,8 @@ export default function CustomerMyBookingsPage() {
         )
       );
 
+      window.dispatchEvent(new Event("reviews-updated"));
+
       setReviewBooking(null);
       const successMsg = `Rating & review saved for "${reviewBooking.serviceTitle}".`;
       setFeedback({ type: "success", message: successMsg });

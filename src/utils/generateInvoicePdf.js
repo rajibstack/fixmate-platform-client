@@ -62,7 +62,7 @@ function resolveTransactionId(booking = {}) {
   if (booking?.paymentId) return String(booking.paymentId);
   const rawId = String(booking?._id || booking?.id || "").replace(
     /[^a-zA-Z0-9]/g,
-    ""
+    "",
   );
   if (!rawId) return "pi_FM000000";
   return `pi_${rawId.slice(-10).toUpperCase()}`;
@@ -71,19 +71,22 @@ function resolveTransactionId(booking = {}) {
 export function downloadPaidJobInvoice(booking) {
   if (!booking || typeof window === "undefined") return false;
 
-  const paymentStatus = String(
-    booking.paymentStatus || booking.status || ""
-  )
+  const paymentStatus = String(booking.paymentStatus || booking.status || "")
     .toLowerCase()
     .trim();
   if (paymentStatus !== "paid") return false;
 
   const bookingId = String(booking._id || booking.id || "N/A");
   const cleanTail =
-    bookingId.replace(/[^a-zA-Z0-9]/g, "").slice(-8).toUpperCase() || "000001";
+    bookingId
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .slice(-8)
+      .toUpperCase() || "000001";
   const invoiceNumber = `INV-${cleanTail}`;
   const transactionId = resolveTransactionId(booking);
-  const paidDate = formatDate(booking.paidAt || booking.updatedAt || new Date());
+  const paidDate = formatDate(
+    booking.paidAt || booking.updatedAt || new Date(),
+  );
   const serviceDate = formatDate(booking.preferredDate || booking.createdAt);
 
   const numericAmount = resolvePaidAmount(booking);
@@ -93,17 +96,14 @@ export function downloadPaidJobInvoice(booking) {
 
   const customerName =
     booking.customerName || booking.customer?.name || "Customer";
-  const customerEmail =
-    booking.customerEmail || booking.customer?.email || "";
+  const customerEmail = booking.customerEmail || booking.customer?.email || "";
   const customerPhone =
     booking.phone || booking.customerPhone || booking.customer?.phone || "";
   const customerAddress =
     booking.address || booking.customerAddress || booking.serviceArea || "";
 
   const technicianName =
-    booking.technicianName ||
-    booking.technician?.name ||
-    "Verified Technician";
+    booking.technicianName || booking.technician?.name || "Verified Technician";
   const technicianEmail =
     booking.technicianEmail || booking.technician?.email || "";
   const technicianArea =
@@ -290,7 +290,7 @@ export function downloadPaidJobInvoice(booking) {
   <div class="invoice-card">
     <div class="top-bar">
       <div>
-        <div class="brand">Fix<span>Mate</span></div>
+        <div class="brand"><span>Fix</span>Mate</div>
         <div class="badge-paid">Paid</div>
       </div>
       <div class="inv-meta">
