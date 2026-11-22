@@ -255,103 +255,105 @@ export default function ChooseHowYouUseSection({
     <>
       <section
         aria-labelledby="roles-benefits-heading"
-        className={`${
+        className={`bg-white dark:bg-slate-900/45 py-12 sm:py-16 transition-colors duration-200 ${
           showTopBorder
-            ? "pt-8 border-t border-slate-200 dark:border-slate-800/90"
+            ? "border-t border-slate-200 dark:border-slate-800/80"
             : ""
-        } space-y-6 ${className}`}
+        } ${className}`}
       >
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-              Accounts &amp; Plans
-            </p>
-            <h2
-              id="roles-benefits-heading"
-              className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1"
-            >
-              Choose How You Use FixMate
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 max-w-2xl">
-              Whether you need reliable repairs as a customer or want to offer
-              services as a technician, pick the option that fits your workflow.
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {cards.map((card) => {
-            const Icon = card.icon || User;
-            const action = getCardActionDisplay(card);
-
-            return (
-              <article
-                key={card.key}
-                className={`h-full flex flex-col justify-between rounded-3xl p-6 transition shadow-md dark:shadow-xl border ${
-                  card.highlighted
-                    ? "bg-white dark:bg-slate-900 border-sky-500/60 ring-1 ring-sky-500/25"
-                    : "bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-sky-500/40"
-                }`}
+        <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                Accounts &amp; Plans
+              </p>
+              <h2
+                id="roles-benefits-heading"
+                className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white mt-1"
               >
-                <div className="space-y-5">
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                Choose How You Use FixMate
+              </h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1.5 max-w-2xl">
+                Whether you need reliable repairs as a customer or want to offer
+                services as a technician, pick the option that fits your workflow.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {cards.map((card) => {
+              const Icon = card.icon || User;
+              const action = getCardActionDisplay(card);
+
+              return (
+                <article
+                  key={card.key}
+                  className={`h-full flex flex-col justify-between rounded-3xl p-6 transition shadow-md dark:shadow-xl border ${
+                    card.highlighted
+                      ? "bg-white dark:bg-slate-900 border-sky-500/60 ring-1 ring-sky-500/25"
+                      : "bg-slate-50/80 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-sky-500/40"
+                  }`}
+                >
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
+                          card.highlighted
+                            ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/35"
+                            : "bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
+                        }`}
+                      >
+                        <Icon className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                        <span>{card.badge}</span>
+                      </span>
+
+                      <span className="text-xs font-bold text-sky-600 dark:text-sky-400">
+                        {card.priceTag}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900 dark:text-white">
+                        {card.title}
+                      </h3>
+                      <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
+                        {card.subtitle}
+                      </p>
+                    </div>
+
+                    <ul className="space-y-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+                      {card.benefits.map((benefit) => (
+                        <li
+                          key={benefit}
+                          className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300"
+                        >
+                          <span className="w-4 h-4 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                            <Check className="w-2.5 h-2.5 stroke-[3]" />
+                          </span>
+                          <span className="leading-relaxed">{benefit}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="pt-6 mt-6 border-t border-slate-200 dark:border-slate-800/80">
+                    <Link
+                      href={action.href}
+                      onClick={(e) => handleRoleCardActionClick(e, card)}
+                      className={`w-full inline-flex items-center justify-center gap-2 font-semibold text-xs sm:text-sm px-4 py-3 rounded-xl transition cursor-pointer ${
                         card.highlighted
-                          ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/35"
-                          : "bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
+                          ? "bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-md shadow-sky-500/20"
+                          : "bg-white dark:bg-slate-800 hover:bg-sky-500 text-slate-900 dark:text-white hover:text-slate-950 border border-slate-300 dark:border-slate-700 hover:border-sky-400"
                       }`}
                     >
-                      <Icon className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                      <span>{card.badge}</span>
-                    </span>
-
-                    <span className="text-xs font-bold text-sky-600 dark:text-sky-400">
-                      {card.priceTag}
-                    </span>
+                      <span>{action.label}</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </Link>
                   </div>
-
-                  <div>
-                    <h3 className="text-xl font-bold text-slate-900 dark:text-white">
-                      {card.title}
-                    </h3>
-                    <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1.5 leading-relaxed">
-                      {card.subtitle}
-                    </p>
-                  </div>
-
-                  <ul className="space-y-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80">
-                    {card.benefits.map((benefit) => (
-                      <li
-                        key={benefit}
-                        className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300"
-                      >
-                        <span className="w-4 h-4 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
-                          <Check className="w-2.5 h-2.5 stroke-[3]" />
-                        </span>
-                        <span className="leading-relaxed">{benefit}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-6 mt-6 border-t border-slate-200 dark:border-slate-800/80">
-                  <Link
-                    href={action.href}
-                    onClick={(e) => handleRoleCardActionClick(e, card)}
-                    className={`w-full inline-flex items-center justify-center gap-2 font-semibold text-xs sm:text-sm px-4 py-3 rounded-xl transition cursor-pointer ${
-                      card.highlighted
-                        ? "bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-md shadow-sky-500/20"
-                        : "bg-slate-100 dark:bg-slate-800 hover:bg-sky-500 text-slate-900 dark:text-white hover:text-slate-950 border border-slate-300 dark:border-slate-700 hover:border-sky-400"
-                    }`}
-                  >
-                    <span>{action.label}</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </article>
-            );
-          })}
+                </article>
+              );
+            })}
+          </div>
         </div>
       </section>
 

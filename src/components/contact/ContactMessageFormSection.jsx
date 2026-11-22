@@ -255,7 +255,7 @@ export default function ContactMessageFormSection({
             <textarea
               id="message"
               name="message"
-              rows={5}
+              rows={3}
               value={formData.message}
               onChange={handleChange}
               placeholder="Describe your question, booking ID, or device issue..."

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,16 +11,25 @@ import {
 } from "lucide-react";
 
 const HERO_FALLBACK_IMAGE =
-  "https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=1000&q=80";
+  "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=1400&q=85";
 
 export default function HomeHeroSection({
   averageRating = null,
   reviewsCount = 0,
+  heroImage = "",
   onNavigate,
 }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
-  const [heroImgSrc, setHeroImgSrc] = useState(HERO_FALLBACK_IMAGE);
+  const [heroImgSrc, setHeroImgSrc] = useState(
+    (heroImage && String(heroImage).trim()) || HERO_FALLBACK_IMAGE
+  );
+
+  useEffect(() => {
+    setHeroImgSrc(
+      (heroImage && String(heroImage).trim()) || HERO_FALLBACK_IMAGE
+    );
+  }, [heroImage]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -33,11 +42,14 @@ export default function HomeHeroSection({
     }
   };
 
-  return (
-    <section className="relative overflow-hidden border-b border-slate-200 dark:border-slate-800/80 bg-white/70 dark:bg-transparent">
-      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[720px] h-[340px] rounded-full bg-sky-500/10 blur-3xl" />
+  const displayRating =
+    averageRating && reviewsCount > 0 ? averageRating : "4.9";
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 py-14 lg:py-20 relative">
+  return (
+    <section className="relative min-h-[580px] lg:min-h-[680px] flex items-center overflow-hidden border-b border-slate-200 dark:border-slate-800/80 bg-white/70 dark:bg-transparent">
+      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[780px] h-[380px] rounded-full bg-sky-500/10 blur-3xl" />
+
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 py-16 lg:py-24 relative">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/10 border border-sky-500/25 text-sky-700 dark:text-sky-300 text-xs font-semibold">
@@ -45,7 +57,7 @@ export default function HomeHeroSection({
               <span>On-Demand Device &amp; Appliance Repair</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.15]">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-slate-900 dark:text-white leading-[1.08]">
               Broken Device? Get It Fixed by{" "}
               <span className="text-sky-600 dark:text-sky-400">
                 Verified Technicians
@@ -107,8 +119,8 @@ export default function HomeHeroSection({
           </div>
 
           <div className="lg:col-span-5">
-            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-xl dark:shadow-2xl space-y-5">
-              <div className="aspect-[16/10] w-full rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden relative flex items-center justify-center">
+            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl dark:shadow-2xl space-y-4">
+              <div className="aspect-[4/3] min-h-[280px] sm:min-h-[320px] lg:min-h-[360px] w-full rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden relative flex items-center justify-center">
                 <img
                   src={heroImgSrc}
                   alt="Technician repairing electronics with precision tools"
@@ -124,10 +136,9 @@ export default function HomeHeroSection({
                   <span className="text-xs font-semibold px-3 py-1 rounded-full bg-sky-500/20 text-sky-200 border border-sky-400/30 backdrop-blur-xs">
                     Same-Day Slot Available
                   </span>
-                  <span className="text-xs font-medium text-slate-100 bg-slate-900/85 px-3 py-1 rounded-full border border-slate-700/80">
-                    {averageRating && reviewsCount > 0
-                      ? `${averageRating} ★ Rating`
-                      : "4.9 ★ Rating"}
+                  <span className="inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/15 text-amber-400 dark:text-amber-300 border border-amber-500/30 backdrop-blur-xs">
+                    <span className="text-amber-500 dark:text-amber-400">★</span>
+                    <span>{displayRating} Rating</span>
                   </span>
                 </div>
               </div>

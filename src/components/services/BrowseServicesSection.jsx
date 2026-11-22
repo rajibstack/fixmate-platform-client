@@ -486,7 +486,6 @@ export default function BrowseServicesSection({
         limit: itemsPerPage,
       });
     }
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleResetFilters = () => {
@@ -528,352 +527,363 @@ export default function BrowseServicesSection({
   const endItem = Math.min(startIndex + services.length, totalCount);
 
   return (
-    <div className={`space-y-8 ${className}`}>
-      {showHeader && (
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800/90 pb-6">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
-              Service Directory
-            </p>
-            <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
-              Browse Services
-            </h1>
-            <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1.5 max-w-2xl">
-              Explore verified repair services available for home visit or shop
-              drop-off with clear starting prices.
-            </p>
-          </div>
+    <section
+      aria-label="Browse Services"
+      className={`bg-slate-50/90 dark:bg-slate-950/60 py-12 sm:py-16 transition-colors duration-200 ${className}`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
+        {showHeader && (
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
+                Service Directory
+              </p>
+              <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">
+                Browse Services
+              </h1>
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-1.5 max-w-2xl">
+                Explore verified repair services available for home visit or shop
+                drop-off with clear starting prices.
+              </p>
+            </div>
 
-          <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 shrink-0">
-            {fetching && (
-              <span className="inline-flex items-center gap-1.5 text-sky-600 dark:text-sky-400 font-medium">
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Updating...</span>
+            <div className="flex items-center gap-2.5 text-xs sm:text-sm text-slate-600 dark:text-slate-400 shrink-0">
+              {fetching && (
+                <span className="inline-flex items-center gap-1.5 text-sky-600 dark:text-sky-400 font-medium">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Updating...</span>
+                </span>
+              )}
+              <span>
+                Showing{" "}
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {totalCount === 0 ? 0 : `${startItem}-${endItem}`}
+                </span>{" "}
+                of{" "}
+                <span className="font-bold text-slate-900 dark:text-white">
+                  {totalCount}
+                </span>{" "}
+                {totalCount === 1 ? "service" : "services"}
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* Search, Category, Service Mode & Sort Toolbar */}
+        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl space-y-4">
+          <form
+            onSubmit={handleSearchSubmit}
+            className="grid grid-cols-1 md:grid-cols-12 gap-3.5"
+          >
+            <div className="md:col-span-4 relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                ref={searchInputRef}
+                type="text"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                placeholder="Search by service title or category..."
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+              />
+            </div>
+
+            <div className="md:col-span-3 relative">
+              <SlidersHorizontal className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                aria-label="Filter by category"
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e.target.value)}
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+              >
+                {CATEGORY_OPTIONS.map((category) => (
+                  <option
+                    key={category}
+                    value={category}
+                    className="bg-white dark:bg-slate-900"
+                  >
+                    {category === "All" ? "All Categories" : category}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="md:col-span-3 relative">
+              <Laptop className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <select
+                aria-label="Filter by service mode"
+                value={selectedMode}
+                onChange={(e) => handleModeChange(e.target.value)}
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+              >
+                {MODE_OPTIONS.map((modeOption) => (
+                  <option
+                    key={modeOption}
+                    value={modeOption}
+                    className="bg-white dark:bg-slate-900"
+                  >
+                    {modeOption === "All" ? "All Service Modes" : modeOption}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="md:col-span-2">
+              <select
+                aria-label="Sort services"
+                value={sortBy}
+                onChange={(e) => handleSortChange(e.target.value)}
+                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+              >
+                <option value="newest" className="bg-white dark:bg-slate-900">
+                  Newest
+                </option>
+                <option
+                  value="price-asc"
+                  className="bg-white dark:bg-slate-900"
+                >
+                  Price: Low to High
+                </option>
+                <option
+                  value="price-desc"
+                  className="bg-white dark:bg-slate-900"
+                >
+                  Price: High to Low
+                </option>
+              </select>
+            </div>
+          </form>
+
+          <div className="flex items-center gap-2 overflow-x-auto pb-1">
+            {CATEGORY_OPTIONS.map((category) => {
+              const active =
+                selectedCategory.toLowerCase() === category.toLowerCase();
+              return (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => handleCategoryChange(category)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
+                    active
+                      ? "bg-sky-500 text-slate-950 border-sky-400 shadow-sm"
+                      : "bg-slate-100 dark:bg-slate-950/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700"
+                  }`}
+                >
+                  {category}
+                </button>
+              );
+            })}
+
+            {hasActiveFilter && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-rose-600 dark:text-rose-300 hover:text-rose-700 dark:hover:text-rose-200 bg-rose-500/10 border border-rose-500/25 whitespace-nowrap transition cursor-pointer shrink-0"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset</span>
+              </button>
             )}
-            <span>
-              Showing{" "}
-              <span className="font-bold text-slate-900 dark:text-white">
-                {totalCount === 0 ? 0 : `${startItem}-${endItem}`}
-              </span>{" "}
-              of{" "}
-              <span className="font-bold text-slate-900 dark:text-white">
-                {totalCount}
-              </span>{" "}
-              {totalCount === 1 ? "service" : "services"}
-            </span>
           </div>
         </div>
-      )}
 
-      {/* Search, Category, Service Mode & Sort Toolbar */}
-      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl space-y-4">
-        <form
-          onSubmit={handleSearchSubmit}
-          className="grid grid-cols-1 md:grid-cols-12 gap-3.5"
-        >
-          <div className="md:col-span-4 relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <input
-              ref={searchInputRef}
-              type="text"
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              placeholder="Search by service title or category..."
-              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
-            />
-          </div>
-
-          <div className="md:col-span-3 relative">
-            <SlidersHorizontal className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <select
-              aria-label="Filter by category"
-              value={selectedCategory}
-              onChange={(e) => handleCategoryChange(e.target.value)}
-              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+        {/* Services Grid / States */}
+        {error ? (
+          <div className="py-14 px-6 text-center bg-white dark:bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
+            <p className="text-sm font-medium text-rose-600 dark:text-rose-300">
+              {error}
+            </p>
+            <button
+              type="button"
+              onClick={() =>
+                fetchServicesFromServer({
+                  search: searchTerm,
+                  category: selectedCategory,
+                  mode: selectedMode,
+                  sort: sortBy,
+                  page: currentPage,
+                  limit: itemsPerPage,
+                })
+              }
+              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition cursor-pointer"
             >
-              {CATEGORY_OPTIONS.map((category) => (
-                <option
-                  key={category}
-                  value={category}
-                  className="bg-white dark:bg-slate-900"
-                >
-                  {category === "All" ? "All Categories" : category}
-                </option>
-              ))}
-            </select>
+              Retry
+            </button>
           </div>
-
-          <div className="md:col-span-3 relative">
-            <Laptop className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-            <select
-              aria-label="Filter by service mode"
-              value={selectedMode}
-              onChange={(e) => handleModeChange(e.target.value)}
-              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
-            >
-              {MODE_OPTIONS.map((modeOption) => (
-                <option
-                  key={modeOption}
-                  value={modeOption}
-                  className="bg-white dark:bg-slate-900"
-                >
-                  {modeOption === "All" ? "All Service Modes" : modeOption}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="md:col-span-2">
-            <select
-              aria-label="Sort services"
-              value={sortBy}
-              onChange={(e) => handleSortChange(e.target.value)}
-              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
-            >
-              <option value="newest" className="bg-white dark:bg-slate-900">
-                Newest
-              </option>
-              <option value="price-asc" className="bg-white dark:bg-slate-900">
-                Price: Low to High
-              </option>
-              <option value="price-desc" className="bg-white dark:bg-slate-900">
-                Price: High to Low
-              </option>
-            </select>
-          </div>
-        </form>
-
-        <div className="flex items-center gap-2 overflow-x-auto pb-1">
-          {CATEGORY_OPTIONS.map((category) => {
-            const active =
-              selectedCategory.toLowerCase() === category.toLowerCase();
-            return (
-              <button
-                key={category}
-                type="button"
-                onClick={() => handleCategoryChange(category)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
-                  active
-                    ? "bg-sky-500 text-slate-950 border-sky-400 shadow-sm"
-                    : "bg-slate-100 dark:bg-slate-950/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700"
-                }`}
-              >
-                {category}
-              </button>
-            );
-          })}
-
-          {hasActiveFilter && (
+        ) : services.length === 0 ? (
+          <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+              <Wrench className="w-6 h-6" />
+            </div>
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+              No services found
+            </h2>
+            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+              No approved and available services matched your current search or
+              filter selection. Try clearing your filters to view all services.
+            </p>
             <button
               type="button"
               onClick={handleResetFilters}
-              className="ml-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-rose-600 dark:text-rose-300 hover:text-rose-700 dark:hover:text-rose-200 bg-rose-500/10 border border-rose-500/25 whitespace-nowrap transition cursor-pointer shrink-0"
+              className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20 cursor-pointer"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset</span>
+              <RotateCcw className="w-4 h-4" />
+              <span>Reset Filters</span>
             </button>
-          )}
-        </div>
-      </div>
-
-      {/* Services Grid / States */}
-      {error ? (
-        <div className="py-14 px-6 text-center bg-white dark:bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
-          <p className="text-sm font-medium text-rose-600 dark:text-rose-300">
-            {error}
-          </p>
-          <button
-            type="button"
-            onClick={() =>
-              fetchServicesFromServer({
-                search: searchTerm,
-                category: selectedCategory,
-                mode: selectedMode,
-                sort: sortBy,
-                page: currentPage,
-                limit: itemsPerPage,
-              })
-            }
-            className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition cursor-pointer"
-          >
-            Retry
-          </button>
-        </div>
-      ) : services.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
-            <Wrench className="w-6 h-6" />
           </div>
-          <h2 className="text-lg font-bold text-slate-900 dark:text-white">
-            No services found
-          </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-            No approved and available services matched your current search or
-            filter selection. Try clearing your filters to view all services.
-          </p>
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20 cursor-pointer"
-          >
-            <RotateCcw className="w-4 h-4" />
-            <span>Reset Filters</span>
-          </button>
-        </div>
-      ) : (
-        <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {services.map((service, index) => {
-              const rawId = service?._id || service?.id || service?.slug;
-              const id = rawId ? String(rawId).trim() : "";
-              const modeLabel =
-                service?.mode || service?.serviceMode || "Home Visit";
-              const areaLabel =
-                service?.area ||
-                service?.serviceArea ||
-                "Service Area Available";
-              const techName = resolveTechnicianName(service, currentUser);
+        ) : (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {services.map((service, index) => {
+                const rawId = service?._id || service?.id || service?.slug;
+                const id = rawId ? String(rawId).trim() : "";
+                const modeLabel =
+                  service?.mode || service?.serviceMode || "Home Visit";
+                const areaLabel =
+                  service?.area ||
+                  service?.serviceArea ||
+                  "Service Area Available";
+                const techName = resolveTechnicianName(service, currentUser);
 
-              return (
-                <article
-                  key={id || `service-${index}`}
-                  className="h-full flex flex-col justify-between bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-sky-500/40 rounded-3xl overflow-hidden shadow-md dark:shadow-xl transition"
-                >
-                  <div>
-                    <div className="h-44 w-full bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 overflow-hidden flex items-center justify-center">
-                      <ServiceCardImage
-                        src={service?.image}
-                        alt={service?.title || "Repair Service"}
-                      />
-                    </div>
-
-                    <div className="p-5 space-y-3">
-                      <div className="flex items-center justify-between gap-2 text-xs">
-                        <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25 font-semibold truncate">
-                          {service?.category || "General Repair"}
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 font-medium truncate shrink-0">
-                          <Laptop className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-                          <span>{modeLabel}</span>
-                        </span>
-                      </div>
-
-                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
-                        {service?.title}
-                      </h2>
-
-                      <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 pt-0.5">
-                        <p className="flex items-center gap-1.5 truncate">
-                          <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
-                          <span className="truncate">{areaLabel}</span>
-                        </p>
-                        <p className="flex items-center gap-1.5 truncate">
-                          <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate text-slate-700 dark:text-slate-300">
-                            {techName}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="px-5 pb-5 pt-3 border-t border-slate-200 dark:border-slate-800/70 flex items-center justify-between gap-3">
+                return (
+                  <article
+                    key={id || `service-${index}`}
+                    className="h-full flex flex-col justify-between bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-sky-500/40 rounded-3xl overflow-hidden shadow-md dark:shadow-xl transition"
+                  >
                     <div>
-                      <span className="block text-[11px] text-slate-500 dark:text-slate-400">
-                        Starting at
-                      </span>
-                      <span className="text-lg font-bold text-sky-600 dark:text-sky-400">
-                        ${Number(service?.price || 0)}
-                      </span>
+                      <div className="h-44 w-full bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 overflow-hidden flex items-center justify-center">
+                        <ServiceCardImage
+                          src={service?.image}
+                          alt={service?.title || "Repair Service"}
+                        />
+                      </div>
+
+                      <div className="p-5 space-y-3">
+                        <div className="flex items-center justify-between gap-2 text-xs">
+                          <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25 font-semibold truncate">
+                            {service?.category || "General Repair"}
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 font-medium truncate shrink-0">
+                            <Laptop className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                            <span>{modeLabel}</span>
+                          </span>
+                        </div>
+
+                        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white line-clamp-1">
+                          {service?.title}
+                        </h2>
+
+                        <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 pt-0.5">
+                          <p className="flex items-center gap-1.5 truncate">
+                            <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                            <span className="truncate">{areaLabel}</span>
+                          </p>
+                          <p className="flex items-center gap-1.5 truncate">
+                            <UserCheck className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span className="truncate text-slate-700 dark:text-slate-300">
+                              {techName}
+                            </span>
+                          </p>
+                        </div>
+                      </div>
                     </div>
 
-                    {id ? (
-                      <Link
-                        href={`/services/${encodeURIComponent(id)}`}
-                        className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
-                      >
-                        <span>View Details</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    ) : (
-                      <button
-                        type="button"
-                        disabled
-                        className="inline-flex items-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-semibold text-xs px-3.5 py-2.5 rounded-xl cursor-not-allowed shrink-0"
-                      >
-                        <span>View Details</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    )}
-                  </div>
-                </article>
-              );
-            })}
-          </div>
+                    <div className="px-5 pb-5 pt-3 border-t border-slate-200 dark:border-slate-800/70 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="block text-[11px] text-slate-500 dark:text-slate-400">
+                          Starting at
+                        </span>
+                        <span className="text-lg font-bold text-sky-600 dark:text-sky-400">
+                          ${Number(service?.price || 0)}
+                        </span>
+                      </div>
 
-          {totalPages > 1 && (
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 dark:border-slate-800/80">
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                Page{" "}
-                <span className="font-semibold text-slate-900 dark:text-white">
-                  {currentPage}
-                </span>{" "}
-                of{" "}
-                <span className="font-semibold text-slate-900 dark:text-white">
-                  {totalPages}
-                </span>
-              </p>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  disabled={currentPage === 1 || fetching}
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/40 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  <span>Previous</span>
-                </button>
-
-                <div className="flex items-center gap-1.5">
-                  {Array.from({ length: totalPages }, (_, index) => {
-                    const pageNum = index + 1;
-                    const isActive = pageNum === currentPage;
-                    return (
-                      <button
-                        key={pageNum}
-                        type="button"
-                        disabled={fetching}
-                        onClick={() => handlePageChange(pageNum)}
-                        aria-label={`Page ${pageNum}`}
-                        aria-current={isActive ? "page" : undefined}
-                        className={`w-9 h-9 rounded-xl text-xs font-bold transition cursor-pointer border ${
-                          isActive
-                            ? "bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20"
-                            : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-white disabled:opacity-50"
-                        }`}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                <button
-                  type="button"
-                  disabled={currentPage === totalPages || fetching}
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/40 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
-                >
-                  <span>Next</span>
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+                      {id ? (
+                        <Link
+                          href={`/services/${encodeURIComponent(id)}`}
+                          className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
+                        >
+                          <span>View Details</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </Link>
+                      ) : (
+                        <button
+                          type="button"
+                          disabled
+                          className="inline-flex items-center gap-1.5 bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 font-semibold text-xs px-3.5 py-2.5 rounded-xl cursor-not-allowed shrink-0"
+                        >
+                          <span>View Details</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                );
+              })}
             </div>
-          )}
-        </>
-      )}
-    </div>
+
+            {totalPages > 1 && (
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-slate-200 dark:border-slate-800/80">
+                <p className="text-xs text-slate-600 dark:text-slate-400">
+                  Page{" "}
+                  <span className="font-semibold text-slate-900 dark:text-white">
+                    {currentPage}
+                  </span>{" "}
+                  of{" "}
+                  <span className="font-semibold text-slate-900 dark:text-white">
+                    {totalPages}
+                  </span>
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={currentPage === 1 || fetching}
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/40 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span>Previous</span>
+                  </button>
+
+                  <div className="flex items-center gap-1.5">
+                    {Array.from({ length: totalPages }, (_, index) => {
+                      const pageNum = index + 1;
+                      const isActive = pageNum === currentPage;
+                      return (
+                        <button
+                          key={pageNum}
+                          type="button"
+                          disabled={fetching}
+                          onClick={() => handlePageChange(pageNum)}
+                          aria-label={`Page ${pageNum}`}
+                          aria-current={isActive ? "page" : undefined}
+                          className={`w-9 h-9 rounded-xl text-xs font-bold transition cursor-pointer border ${
+                            isActive
+                              ? "bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20"
+                              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-white disabled:opacity-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={currentPage === totalPages || fetching}
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/40 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+    </section>
   );
 }
