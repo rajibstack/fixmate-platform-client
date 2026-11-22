@@ -20,13 +20,9 @@ export const metadata = {
   title: "FixMate - Repair Service Platform",
   description: "On-Demand Device & Home Appliance Repair Service Platform",
   icons: {
-    icon: [
-      { url: "/fixmate.png", type: "image/png" },
-    ],
+    icon: [{ url: "/fixmate.png", type: "image/png" }],
     shortcut: ["/fixmate.png"],
-    apple: [
-      { url: "/fixmate.png", type: "image/png" },
-    ],
+    apple: [{ url: "/fixmate.png", type: "image/png" }],
   },
 };
 

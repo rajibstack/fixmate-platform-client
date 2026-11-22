@@ -3,15 +3,26 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
+  Ban,
   Calendar,
+  Check,
   CheckCircle2,
   ClipboardList,
+  Clock,
   RefreshCw,
   RotateCcw,
   User,
   Wrench,
 } from "lucide-react";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
+
+const TIMELINE_STEPS = [
+  { key: "requested", label: "Requested" },
+  { key: "accepted", label: "Accepted" },
+  { key: "in-progress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+  { key: "paid", label: "Paid" },
+];
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -21,6 +32,18 @@ function formatShortDate(dateValue) {
     day: "numeric",
     month: "short",
     year: "numeric",
+  });
+}
+
+function formatTimelineTimestamp(dateValue) {
+  if (!dateValue) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -42,6 +65,7 @@ function normalizeStatus(status) {
     .trim()
     .replace(/_/g, "-");
   if (normalized === "pending") return "requested";
+  if (normalized === "in progress") return "in-progress";
   return normalized;
 }
 
@@ -93,6 +117,167 @@ function getPaymentBadgeStyle(paymentStatus) {
 
 function formatPaymentText(paymentStatus) {
   return paymentStatus === "paid" ? "Paid" : "Unpaid";
+}
+
+function buildTimelineState(booking) {
+  const status = normalizeStatus(booking?.status);
+  const paymentStatus = normalizePaymentStatus(booking?.paymentStatus);
+  const rawHistory = Array.isArray(booking?.statusHistory)
+    ? booking.statusHistory
+    : [];
+
+  const historyMap = new Map();
+  for (const item of rawHistory) {
+    if (!item) continue;
+    const stepKey = normalizeStatus(
+      typeof item === "string" ? item : item.status
+    );
+    if (!stepKey) continue;
+    historyMap.set(stepKey, item?.changedAt || item?.timestamp || null);
+  }
+
+  if (!historyMap.has("requested")) {
+    historyMap.set("requested", booking?.createdAt || null);
+  }
+
+  if (paymentStatus === "paid" && !historyMap.has("paid")) {
+    historyMap.set("paid", booking?.paidAt || booking?.updatedAt || null);
+  }
+
+  const isClosed = status === "cancelled" || status === "rejected";
+  let highestReachedIndex = -1;
+
+  if (paymentStatus === "paid") {
+    highestReachedIndex = 4;
+  } else if (status === "completed") {
+    highestReachedIndex = 3;
+  } else if (status === "in-progress") {
+    highestReachedIndex = 2;
+  } else if (status === "accepted") {
+    highestReachedIndex = 1;
+  } else if (status === "requested") {
+    highestReachedIndex = 0;
+  }
+
+  for (let i = 0; i < TIMELINE_STEPS.length; i++) {
+    if (historyMap.has(TIMELINE_STEPS[i].key) && i > highestReachedIndex) {
+      highestReachedIndex = i;
+    }
+  }
+
+  const activeStepIndex = isClosed
+    ? -1
+    : paymentStatus === "paid"
+    ? 4
+    : highestReachedIndex;
+
+  return {
+    isClosed,
+    closedStatus: status,
+    closedAt: historyMap.get(status) || booking?.updatedAt || null,
+    activeStepIndex,
+    steps: TIMELINE_STEPS.map((step, idx) => {
+      const hasHistoryEntry = historyMap.has(step.key);
+      const isCompleted =
+        !isClosed &&
+        (idx < activeStepIndex || (idx === 4 && paymentStatus === "paid"));
+      const isCurrent =
+        !isClosed &&
+        idx === activeStepIndex &&
+        !(idx === 4 && paymentStatus === "paid");
+      const isReached = isCompleted || isCurrent || hasHistoryEntry;
+
+      return {
+        ...step,
+        isCompleted,
+        isCurrent,
+        isReached,
+        changedAt: historyMap.get(step.key) || null,
+      };
+    }),
+  };
+}
+
+function JobTimelineTracker({ booking, compact = false }) {
+  const timeline = useMemo(() => buildTimelineState(booking), [booking]);
+
+  return (
+    <div
+      className={`${
+        compact ? "mt-2 pt-2.5" : "mt-3 pt-3"
+      } border-t border-slate-200 dark:border-slate-800/80 space-y-2`}
+    >
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Job Timeline
+        </span>
+
+        {timeline.isClosed ? (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-300">
+            <Ban className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+            <span>
+              {formatStatusText(timeline.closedStatus)}
+              {timeline.closedAt
+                ? ` • ${formatTimelineTimestamp(timeline.closedAt)}`
+                : ""}
+            </span>
+          </span>
+        ) : (
+          <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            Step {Math.min(timeline.activeStepIndex + 1, 5)} of{" "}
+            {TIMELINE_STEPS.length}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
+        {timeline.steps.map((step, index) => {
+          const timestampLabel = formatTimelineTimestamp(step.changedAt);
+
+          let cardStyle =
+            "bg-slate-100/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 text-slate-500";
+          if (step.isCompleted) {
+            cardStyle =
+              "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-200";
+          } else if (step.isCurrent) {
+            cardStyle =
+              "bg-sky-500/15 border-sky-400/50 text-sky-700 dark:text-sky-200";
+          }
+
+          return (
+            <div
+              key={step.key}
+              className={`rounded-xl border px-2 py-1.5 transition ${cardStyle}`}
+            >
+              <div className="flex items-center gap-1.5">
+                {step.isCompleted ? (
+                  <span className="w-3.5 h-3.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                  </span>
+                ) : step.isCurrent ? (
+                  <span className="w-3.5 h-3.5 rounded-full bg-sky-400/20 border border-sky-400 text-sky-700 dark:text-sky-300 flex items-center justify-center shrink-0">
+                    <Clock className="w-2.5 h-2.5" />
+                  </span>
+                ) : (
+                  <span className="w-3.5 h-3.5 rounded-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-500 text-[9px] font-bold flex items-center justify-center shrink-0">
+                    {index + 1}
+                  </span>
+                )}
+
+                <span className="text-[11px] font-semibold truncate">
+                  {step.label}
+                </span>
+              </div>
+
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5 pl-5 truncate">
+                {timestampLabel || (step.isReached ? "Recorded" : "Pending")}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function readStoredUser() {
@@ -217,7 +402,7 @@ export default function AdminAllBookingsPage() {
           fetch(`${apiUrl}/api/admin/users`, {
             cache: "no-store",
             headers,
-          }),
+          }).catch(() => null),
         ]);
 
         const data = await bookingsRes.json().catch(() => ({}));
@@ -232,14 +417,16 @@ export default function AdminAllBookingsPage() {
           : [];
         setBookings(list);
 
-        if (usersRes.ok) {
+        if (usersRes && usersRes.ok) {
           const usersData = await usersRes.json().catch(() => ({}));
           const userList = Array.isArray(usersData?.data)
             ? usersData.data
             : Array.isArray(usersData)
             ? usersData
             : [];
-          setUsers(userList);
+          if (userList.length > 0) {
+            setUsers(userList);
+          }
         }
       } catch (err) {
         if (!silent) {
@@ -265,9 +452,11 @@ export default function AdminAllBookingsPage() {
 
     window.addEventListener("auth-change", handleLiveSync);
     window.addEventListener("storage", handleLiveSync);
+    window.addEventListener("bookings-updated", handleLiveSync);
     return () => {
       window.removeEventListener("auth-change", handleLiveSync);
       window.removeEventListener("storage", handleLiveSync);
+      window.removeEventListener("bookings-updated", handleLiveSync);
     };
   }, [fetchAllBookings]);
 
@@ -462,24 +651,25 @@ export default function AdminAllBookingsPage() {
                         key={id}
                         className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition"
                       >
-                        <td className="py-4 px-5 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                        <td className="py-4 px-5 font-mono text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap align-top">
                           {getTicketCode(booking)}
                         </td>
-                        <td className="py-4 px-5 font-semibold text-slate-900 dark:text-white">
-                          {booking?.serviceTitle || "Repair Service"}
+                        <td className="py-4 px-5 font-semibold text-slate-900 dark:text-white align-top">
+                          <div>{booking?.serviceTitle || "Repair Service"}</div>
+                          <JobTimelineTracker booking={booking} compact />
                         </td>
-                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap align-top">
                           {customerName}
                         </td>
-                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap align-top">
                           {technicianName}
                         </td>
-                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                        <td className="py-4 px-5 text-slate-700 dark:text-slate-300 whitespace-nowrap align-top">
                           {formatShortDate(
                             booking?.preferredDate || booking?.createdAt
                           )}
                         </td>
-                        <td className="py-4 px-5 whitespace-nowrap">
+                        <td className="py-4 px-5 whitespace-nowrap align-top">
                           <span
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(
                               status
@@ -489,7 +679,7 @@ export default function AdminAllBookingsPage() {
                             {formatStatusText(status)}
                           </span>
                         </td>
-                        <td className="py-4 px-5 whitespace-nowrap">
+                        <td className="py-4 px-5 whitespace-nowrap align-top">
                           <span
                             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border ${getPaymentBadgeStyle(
                               paymentStatus
@@ -501,7 +691,7 @@ export default function AdminAllBookingsPage() {
                             {formatPaymentText(paymentStatus)}
                           </span>
                         </td>
-                        <td className="py-4 px-5 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                        <td className="py-4 px-5 text-right font-bold text-slate-900 dark:text-white whitespace-nowrap align-top">
                           ${getBookingAmount(booking)}
                         </td>
                       </tr>
@@ -591,6 +781,8 @@ export default function AdminAllBookingsPage() {
                       </span>
                     </div>
                   </div>
+
+                  <JobTimelineTracker booking={booking} compact />
                 </div>
               );
             })}

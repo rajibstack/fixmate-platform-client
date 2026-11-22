@@ -12,6 +12,8 @@ import {
   Wrench,
   RotateCcw,
   RefreshCw,
+  Clock,
+  Ban,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -19,6 +21,14 @@ import {
   FixMateSpinner,
 } from "@/components/ui/LoadingState";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+
+const TIMELINE_STEPS = [
+  { key: "requested", label: "Requested" },
+  { key: "accepted", label: "Accepted" },
+  { key: "in-progress", label: "In Progress" },
+  { key: "completed", label: "Completed" },
+  { key: "paid", label: "Paid" },
+];
 
 function formatShortDate(dateValue) {
   if (!dateValue) return "—";
@@ -28,6 +38,18 @@ function formatShortDate(dateValue) {
     day: "numeric",
     month: "short",
     year: "numeric",
+  });
+}
+
+function formatTimelineTimestamp(dateValue) {
+  if (!dateValue) return "";
+  const parsed = new Date(dateValue);
+  if (Number.isNaN(parsed.getTime())) return "";
+  return parsed.toLocaleString("en-GB", {
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -108,7 +130,16 @@ function resolveCustomerDetails(booking, lookup) {
 }
 
 function normalizeStatus(status) {
-  return (status || "requested").toString().toLowerCase().trim();
+  const clean = (status || "requested")
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/_/g, "-");
+  return clean === "in progress" ? "in-progress" : clean;
+}
+
+function normalizePaymentStatus(paymentStatus) {
+  return (paymentStatus || "unpaid").toString().toLowerCase().trim();
 }
 
 function getStatusBadgeStyle(status) {
@@ -131,6 +162,163 @@ function getStatusBadgeStyle(status) {
 function formatStatusText(status) {
   if (status === "in-progress") return "In Progress";
   return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function buildTimelineState(booking) {
+  const status = normalizeStatus(booking?.status);
+  const paymentStatus = normalizePaymentStatus(booking?.paymentStatus);
+  const rawHistory = Array.isArray(booking?.statusHistory)
+    ? booking.statusHistory
+    : [];
+
+  const historyMap = new Map();
+  for (const item of rawHistory) {
+    if (!item) continue;
+    const stepKey = normalizeStatus(
+      typeof item === "string" ? item : item.status
+    );
+    if (!stepKey) continue;
+    historyMap.set(stepKey, item?.changedAt || item?.timestamp || null);
+  }
+
+  if (!historyMap.has("requested")) {
+    historyMap.set("requested", booking?.createdAt || null);
+  }
+
+  if (paymentStatus === "paid" && !historyMap.has("paid")) {
+    historyMap.set("paid", booking?.paidAt || booking?.updatedAt || null);
+  }
+
+  const isClosed = status === "cancelled" || status === "rejected";
+  let highestReachedIndex = -1;
+
+  if (paymentStatus === "paid") {
+    highestReachedIndex = 4;
+  } else if (status === "completed") {
+    highestReachedIndex = 3;
+  } else if (status === "in-progress") {
+    highestReachedIndex = 2;
+  } else if (status === "accepted") {
+    highestReachedIndex = 1;
+  } else if (status === "requested") {
+    highestReachedIndex = 0;
+  }
+
+  for (let i = 0; i < TIMELINE_STEPS.length; i++) {
+    if (historyMap.has(TIMELINE_STEPS[i].key) && i > highestReachedIndex) {
+      highestReachedIndex = i;
+    }
+  }
+
+  const activeStepIndex = isClosed
+    ? -1
+    : paymentStatus === "paid"
+    ? 4
+    : highestReachedIndex;
+
+  return {
+    isClosed,
+    closedStatus: status,
+    closedAt: historyMap.get(status) || booking?.updatedAt || null,
+    activeStepIndex,
+    steps: TIMELINE_STEPS.map((step, idx) => {
+      const hasHistoryEntry = historyMap.has(step.key);
+      const isCompleted =
+        !isClosed &&
+        (idx < activeStepIndex || (idx === 4 && paymentStatus === "paid"));
+      const isCurrent =
+        !isClosed &&
+        idx === activeStepIndex &&
+        !(idx === 4 && paymentStatus === "paid");
+      const isReached = isCompleted || isCurrent || hasHistoryEntry;
+
+      return {
+        ...step,
+        isCompleted,
+        isCurrent,
+        isReached,
+        changedAt: historyMap.get(step.key) || null,
+      };
+    }),
+  };
+}
+
+function RequestJobTimeline({ booking }) {
+  const timeline = useMemo(() => buildTimelineState(booking), [booking]);
+
+  return (
+    <div className="mt-3 pt-3 border-t border-slate-200 dark:border-slate-800/80 space-y-2">
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          Job Timeline
+        </span>
+
+        {timeline.isClosed ? (
+          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-300">
+            <Ban className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+            <span>
+              {formatStatusText(timeline.closedStatus)}
+              {timeline.closedAt
+                ? ` • ${formatTimelineTimestamp(timeline.closedAt)}`
+                : ""}
+            </span>
+          </span>
+        ) : (
+          <span className="text-[11px] text-slate-500 dark:text-slate-400">
+            Step {Math.min(timeline.activeStepIndex + 1, 5)} of{" "}
+            {TIMELINE_STEPS.length}
+          </span>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {timeline.steps.map((step, index) => {
+          const timestampLabel = formatTimelineTimestamp(step.changedAt);
+
+          let cardStyle =
+            "bg-slate-100/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 text-slate-500";
+          if (step.isCompleted) {
+            cardStyle =
+              "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-200";
+          } else if (step.isCurrent) {
+            cardStyle =
+              "bg-sky-500/15 border-sky-400/50 text-sky-700 dark:text-sky-200";
+          }
+
+          return (
+            <div
+              key={step.key}
+              className={`rounded-xl border px-2.5 py-2 transition ${cardStyle}`}
+            >
+              <div className="flex items-center gap-1.5">
+                {step.isCompleted ? (
+                  <span className="w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0">
+                    <Check className="w-2.5 h-2.5 stroke-[3]" />
+                  </span>
+                ) : step.isCurrent ? (
+                  <span className="w-4 h-4 rounded-full bg-sky-400/20 border border-sky-400 text-sky-700 dark:text-sky-300 flex items-center justify-center shrink-0">
+                    <Clock className="w-2.5 h-2.5" />
+                  </span>
+                ) : (
+                  <span className="w-4 h-4 rounded-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-500 text-[10px] font-bold flex items-center justify-center shrink-0">
+                    {index + 1}
+                  </span>
+                )}
+
+                <span className="text-xs font-semibold truncate">
+                  {step.label}
+                </span>
+              </div>
+
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1 pl-5.5 truncate">
+                {timestampLabel || (step.isReached ? "Recorded" : "Pending")}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 function RequestThumbnail({ src, alt }) {
@@ -249,9 +437,11 @@ export default function TechnicianManageRequestsPage() {
 
     window.addEventListener("auth-change", handleLiveSync);
     window.addEventListener("storage", handleLiveSync);
+    window.addEventListener("bookings-updated", handleLiveSync);
     return () => {
       window.removeEventListener("auth-change", handleLiveSync);
       window.removeEventListener("storage", handleLiveSync);
+      window.removeEventListener("bookings-updated", handleLiveSync);
     };
   }, [fetchTechnicianRequests]);
 
@@ -317,13 +507,32 @@ export default function TechnicianManageRequestsPage() {
       }
 
       const updatedDoc = data?.data || {};
+      const nowIso = new Date().toISOString();
+
       setRequests((prev) =>
-        prev.map((item) =>
-          (item._id || item.id) === id
-            ? { ...item, ...updatedDoc, status: nextStatus }
-            : item
-        )
+        prev.map((item) => {
+          if ((item._id || item.id) !== id) return item;
+          const prevHistory = Array.isArray(item.statusHistory)
+            ? item.statusHistory
+            : [];
+          return {
+            ...item,
+            ...updatedDoc,
+            status: nextStatus,
+            updatedAt: updatedDoc.updatedAt || nowIso,
+            statusHistory:
+              Array.isArray(updatedDoc.statusHistory) &&
+              updatedDoc.statusHistory.length > 0
+                ? updatedDoc.statusHistory
+                : [
+                    ...prevHistory,
+                    { status: nextStatus, changedAt: nowIso },
+                  ],
+          };
+        })
       );
+
+      window.dispatchEvent(new Event("bookings-updated"));
 
       const isRejected = nextStatus === "rejected";
       const toastMsg = isRejected
@@ -479,10 +688,7 @@ export default function TechnicianManageRequestsPage() {
           {filteredRequests.map((booking) => {
             const id = booking._id || booking.id;
             const status = normalizeStatus(booking?.status);
-            const paymentStatus = (booking?.paymentStatus || "unpaid")
-              .toString()
-              .toLowerCase()
-              .trim();
+            const paymentStatus = normalizePaymentStatus(booking?.paymentStatus);
             const customer = resolveCustomerDetails(booking, userLookup);
             const amount = Number(
               booking?.finalAmount ||
@@ -506,7 +712,7 @@ export default function TechnicianManageRequestsPage() {
                 key={id}
                 className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
               >
-                {/* Left Section: Fixed-Size Service Image + Details with Equal Vertical Spacing */}
+                {/* Left Section: Fixed-Size Service Image + Details + Job Timeline */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
                   <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     <RequestThumbnail
@@ -515,7 +721,7 @@ export default function TechnicianManageRequestsPage() {
                     />
                   </div>
 
-                  <div className="flex-1 min-w-0 space-y-3 py-0.5">
+                  <div className="flex-1 min-w-0 space-y-2.5 py-0.5">
                     <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
                       {booking?.serviceTitle || "Repair Service"}
                     </h2>
@@ -562,6 +768,8 @@ export default function TechnicianManageRequestsPage() {
                         {booking.problemDescription}
                       </p>
                     )}
+
+                    <RequestJobTimeline booking={booking} />
                   </div>
                 </div>
 
