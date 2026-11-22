@@ -25,10 +25,15 @@ import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
 import { ThemeToggle } from "@/components/ThemeProvider";
 
+function normalizeRole(role = "") {
+  return role.toString().toLowerCase().trim();
+}
+
 function getDashboardPath(role = "") {
-  const normalized = role.toString().toLowerCase().trim();
+  const normalized = normalizeRole(role);
   if (normalized === "admin") return "/dashboard/admin";
-  return "/dashboard/overview";
+  if (normalized === "technician") return "/dashboard/technician";
+  return "/dashboard/customer";
 }
 
 function getInitials(name = "") {
@@ -58,10 +63,10 @@ function readUserFromStorage() {
     const hasToken = Boolean(token || parsed.token);
     if (!hasToken) return null;
 
-    const normalizedRole = (parsed.role || "").toString().toLowerCase().trim();
+    const normalized = normalizeRole(parsed.role);
     return {
       ...parsed,
-      role: normalizedRole || parsed.role,
+      role: normalized || parsed.role,
     };
   } catch {
     return null;
@@ -94,7 +99,7 @@ export default function DashboardLayout({ children }) {
       return;
     }
 
-    const role = (currentUser?.role || "").toString().toLowerCase().trim();
+    const role = normalizeRole(currentUser?.role);
     if (!role) {
       setUser(null);
       setCheckingAuth(false);
@@ -104,31 +109,27 @@ export default function DashboardLayout({ children }) {
       return;
     }
 
-    const isSharedRoute =
-      pathname === "/dashboard/profile" ||
-      (role !== "admin" && pathname === "/dashboard/overview");
+    const roleHomePath = getDashboardPath(role);
 
-    if (!isSharedRoute) {
+    if (pathname === "/dashboard" || pathname === "/dashboard/overview") {
+      router.replace(roleHomePath);
+      return;
+    }
+
+    if (pathname !== "/dashboard/profile") {
       if (pathname.startsWith("/dashboard/admin") && role !== "admin") {
-        router.replace(getDashboardPath(role));
+        router.replace(roleHomePath);
         return;
       }
       if (
         pathname.startsWith("/dashboard/technician") &&
         role !== "technician"
       ) {
-        router.replace(getDashboardPath(role));
+        router.replace(roleHomePath);
         return;
       }
       if (pathname.startsWith("/dashboard/customer") && role !== "customer") {
-        router.replace(getDashboardPath(role));
-        return;
-      }
-      if (
-        pathname === "/dashboard" ||
-        (role === "admin" && pathname === "/dashboard/overview")
-      ) {
-        router.replace(getDashboardPath(role));
+        router.replace(roleHomePath);
         return;
       }
     }
@@ -214,9 +215,11 @@ export default function DashboardLayout({ children }) {
     );
   }
 
+  const activeRole = normalizeRole(user.role);
+
   const menuByRole = {
     customer: [
-      { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+      { name: "Overview", href: "/dashboard/customer", icon: LayoutDashboard },
       {
         name: "My bookings",
         href: "/dashboard/customer/bookings",
@@ -229,7 +232,11 @@ export default function DashboardLayout({ children }) {
       },
     ],
     technician: [
-      { name: "Overview", href: "/dashboard/overview", icon: LayoutDashboard },
+      {
+        name: "Overview",
+        href: "/dashboard/technician",
+        icon: LayoutDashboard,
+      },
       {
         name: "Add a service",
         href: "/dashboard/technician/add-service",
@@ -273,7 +280,7 @@ export default function DashboardLayout({ children }) {
   };
 
   const navItems = [
-    ...(menuByRole[user.role] || []),
+    ...(menuByRole[activeRole] || []),
     { name: "Update profile", href: "/dashboard/profile", icon: User },
   ];
 
@@ -490,7 +497,7 @@ export default function DashboardLayout({ children }) {
                         </p>
                       )}
                       <span className="inline-block mt-1.5 text-xs capitalize px-2.5 py-0.5 rounded-full bg-sky-500/15 text-sky-400 border border-sky-500/25 font-semibold">
-                        {user.role || "customer"}
+                        {activeRole || "customer"}
                       </span>
                     </div>
                   </div>
