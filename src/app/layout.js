@@ -30,8 +30,7 @@ const themeInitScript = `
   (function() {
     try {
       var saved = localStorage.getItem("fixmate_theme");
-      var prefersLight = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches;
-      var theme = (saved === "light" || saved === "dark") ? saved : (prefersLight ? "light" : "dark");
+      var theme = (saved === "light" || saved === "dark") ? saved : "light";
       var root = document.documentElement;
       root.classList.remove("light", "dark");
       root.classList.add(theme);
@@ -45,14 +44,14 @@ export default function RootLayout({ children }) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} dark h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} light h-full antialiased`}
       suppressHydrationWarning
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300`}
+        className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,rgba(14,165,233,0.12),rgba(255,255,255,1))] dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300`}
         suppressHydrationWarning={true}
       >
         <ThemeProvider>

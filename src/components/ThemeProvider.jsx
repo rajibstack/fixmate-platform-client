@@ -10,7 +10,7 @@ import {
 import { Moon, Sun } from "lucide-react";
 
 const ThemeContext = createContext({
-  theme: "dark",
+  theme: "light",
   setTheme: () => {},
   toggleTheme: () => {},
 });
@@ -18,19 +18,13 @@ const ThemeContext = createContext({
 const STORAGE_KEY = "fixmate_theme";
 
 function readInitialTheme() {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved === "light" || saved === "dark") return saved;
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: light)").matches
-    ) {
-      return "light";
-    }
-    return "dark";
+    return "light";
   } catch {
-    return "dark";
+    return "light";
   }
 }
 
@@ -44,7 +38,7 @@ function applyThemeToDom(theme) {
 }
 
 export function ThemeProvider({ children }) {
-  const [theme, setThemeState] = useState("dark");
+  const [theme, setThemeState] = useState("light");
 
   useEffect(() => {
     const initial = readInitialTheme();
@@ -53,14 +47,13 @@ export function ThemeProvider({ children }) {
 
     if (!window.matchMedia) return;
     const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
-    const handleSystemChange = (e) => {
+    const handleSystemChange = () => {
       try {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved === "light" || saved === "dark") return;
       } catch {}
-      const next = e.matches ? "light" : "dark";
-      setThemeState(next);
-      applyThemeToDom(next);
+      setThemeState("light");
+      applyThemeToDom("light");
     };
 
     mediaQuery.addEventListener("change", handleSystemChange);
@@ -68,7 +61,7 @@ export function ThemeProvider({ children }) {
   }, []);
 
   const setTheme = useCallback((nextTheme) => {
-    const normalized = nextTheme === "light" ? "light" : "dark";
+    const normalized = nextTheme === "dark" ? "dark" : "light";
     setThemeState(normalized);
     applyThemeToDom(normalized);
     try {
