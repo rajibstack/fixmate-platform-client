@@ -39,7 +39,7 @@ function ReviewerAvatar({ src, name }) {
       src={src}
       alt={name}
       onError={() => setFailed(true)}
-      className="w-12 h-12 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0"
+      className="w-12 h-12 rounded-2xl object-cover border border-sky-500/25 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0"
     />
   );
 }
@@ -142,7 +142,7 @@ export default function CustomerReviewsSection({
       onMouseLeave={() => setIsPaused(false)}
       onFocusCapture={() => setIsPaused(true)}
       onBlurCapture={() => setIsPaused(false)}
-      className={`border-t border-slate-200 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-900/40 py-14 sm:py-16 ${className}`}
+      className={`border-t border-slate-200 dark:border-slate-800/80 bg-slate-100/70 dark:bg-slate-900/40 py-14 sm:py-16 transition-colors duration-200 ${className}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-8 space-y-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-5">
@@ -161,7 +161,7 @@ export default function CustomerReviewsSection({
 
           <div className="flex items-center gap-2.5 self-start sm:self-auto">
             {averageRating && reviews.length > 0 && (
-              <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white shadow-xs">
+              <div className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white/90 dark:bg-slate-900 border border-sky-500/25 dark:border-slate-800 text-xs font-bold text-slate-900 dark:text-white shadow-xs">
                 <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                 <span>{averageRating}</span>
                 <span className="text-slate-500 dark:text-slate-400 font-medium">
@@ -175,7 +175,7 @@ export default function CustomerReviewsSection({
               onClick={() => onRefresh?.({ silent: false })}
               aria-label="Refresh reviews"
               title="Refresh reviews"
-              className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+              className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/90 dark:bg-slate-900 hover:bg-sky-500/10 dark:hover:bg-slate-800 border border-sky-500/25 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-xs"
             >
               <RefreshCw
                 className={`w-4 h-4 ${
@@ -190,7 +190,7 @@ export default function CustomerReviewsSection({
                   type="button"
                   onClick={handlePrevSlide}
                   aria-label="Previous reviews"
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer"
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/90 dark:bg-slate-900 hover:bg-sky-500/10 dark:hover:bg-slate-800 border border-sky-500/25 dark:border-slate-700 text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-xs"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -198,7 +198,7 @@ export default function CustomerReviewsSection({
                   type="button"
                   onClick={handleNextSlide}
                   aria-label="Next reviews"
-                  className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 transition shadow-md shadow-sky-500/20 cursor-pointer"
+                  className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 transition shadow-lg shadow-sky-500/20 cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -212,39 +212,39 @@ export default function CustomerReviewsSection({
             {[1, 2, 3].map((skeletonCard) => (
               <div
                 key={skeletonCard}
-                className="h-64 rounded-3xl bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 p-6 animate-pulse flex flex-col justify-between"
+                className="h-64 rounded-3xl bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 p-6 animate-pulse flex flex-col justify-between shadow-md dark:shadow-xl"
               >
                 <div className="space-y-3">
-                  <div className="h-4 w-24 rounded-full bg-slate-200 dark:bg-slate-800" />
-                  <div className="h-4 w-full rounded bg-slate-200 dark:bg-slate-800" />
-                  <div className="h-4 w-4/5 rounded bg-slate-200 dark:bg-slate-800" />
+                  <div className="h-4 w-24 rounded-full bg-slate-200/80 dark:bg-slate-800" />
+                  <div className="h-4 w-full rounded bg-slate-200/80 dark:bg-slate-800" />
+                  <div className="h-4 w-4/5 rounded bg-slate-200/80 dark:bg-slate-800" />
                 </div>
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-200 dark:border-slate-800">
-                  <div className="w-12 h-12 rounded-2xl bg-slate-200 dark:bg-slate-800" />
+                <div className="flex items-center gap-3 pt-4 border-t border-sky-500/15 dark:border-slate-800">
+                  <div className="w-12 h-12 rounded-2xl bg-slate-200/80 dark:bg-slate-800" />
                   <div className="space-y-2 flex-1">
-                    <div className="h-3.5 w-32 rounded bg-slate-200 dark:bg-slate-800" />
-                    <div className="h-3 w-20 rounded bg-slate-200 dark:bg-slate-800" />
+                    <div className="h-3.5 w-32 rounded bg-slate-200/80 dark:bg-slate-800" />
+                    <div className="h-3 w-20 rounded bg-slate-200/80 dark:bg-slate-800" />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : error && reviews.length === 0 ? (
-          <div className="py-12 px-6 text-center bg-white dark:bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
+          <div className="py-12 px-6 text-center bg-gradient-to-tl from-rose-500/10 via-white to-white dark:from-rose-500/15 dark:via-slate-900 dark:to-slate-900 border border-rose-500/30 rounded-3xl space-y-3 shadow-md dark:shadow-xl">
             <p className="text-sm font-medium text-rose-600 dark:text-rose-300">
               {error}
             </p>
             <button
               type="button"
               onClick={() => onRefresh?.({ silent: false })}
-              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition cursor-pointer"
             >
               Retry Loading Reviews
             </button>
           </div>
         ) : reviews.length === 0 ? (
-          <div className="py-14 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+          <div className="py-14 px-6 text-center bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-white/85 dark:bg-slate-950 border border-sky-500/25 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto shadow-xs">
               <Quote className="w-6 h-6" />
             </div>
             <h3 className="text-base font-bold text-slate-900 dark:text-white">
@@ -261,25 +261,25 @@ export default function CustomerReviewsSection({
               {visibleReviews.map((item) => (
                 <article
                   key={item.id}
-                  className="h-full flex flex-col justify-between bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-sky-500/40 rounded-3xl p-6 shadow-md dark:shadow-xl transition"
+                  className="h-full flex flex-col justify-between bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 hover:border-sky-500/50 rounded-3xl p-6 shadow-md dark:shadow-xl transition"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center justify-between gap-2">
                       <RatingStars rating={item.rating} />
-                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25 truncate max-w-[150px]">
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/25 truncate max-w-[150px]">
                         {item.serviceTitle}
                       </span>
                     </div>
 
                     <div className="relative">
-                      <Quote className="w-5 h-5 text-sky-500/30 dark:text-sky-400/25 mb-1.5" />
+                      <Quote className="w-5 h-5 text-sky-500/35 dark:text-sky-400/25 mb-1.5" />
                       <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed line-clamp-4">
                         &ldquo;{item.comment}&rdquo;
                       </p>
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-3">
+                  <div className="mt-6 pt-4 border-t border-sky-500/15 dark:border-slate-800/80 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <ReviewerAvatar
                         src={item.customerImage}
@@ -313,7 +313,7 @@ export default function CustomerReviewsSection({
                       aria-label={`Go to review slide ${idx + 1}`}
                       className={`h-2.5 rounded-full transition-all cursor-pointer ${
                         active
-                          ? "w-7 bg-sky-500"
+                          ? "w-7 bg-sky-500 shadow-xs shadow-sky-500/40"
                           : "w-2.5 bg-slate-300 dark:bg-slate-700 hover:bg-slate-400 dark:hover:bg-slate-600"
                       }`}
                     />

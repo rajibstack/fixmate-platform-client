@@ -570,7 +570,7 @@ export default function BrowseServicesSection({
         )}
 
         {/* Search, Category, Service Mode & Sort Toolbar */}
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl space-y-4">
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl space-y-4">
           <form
             onSubmit={handleSearchSubmit}
             className="grid grid-cols-1 md:grid-cols-12 gap-3.5"
@@ -583,7 +583,7 @@ export default function BrowseServicesSection({
                 value={searchTerm}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search by service title or category..."
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
               />
             </div>
 
@@ -593,7 +593,7 @@ export default function BrowseServicesSection({
                 aria-label="Filter by category"
                 value={selectedCategory}
                 onChange={(e) => handleCategoryChange(e.target.value)}
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
               >
                 {CATEGORY_OPTIONS.map((category) => (
                   <option
@@ -613,7 +613,7 @@ export default function BrowseServicesSection({
                 aria-label="Filter by service mode"
                 value={selectedMode}
                 onChange={(e) => handleModeChange(e.target.value)}
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-10 pr-4 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
               >
                 {MODE_OPTIONS.map((modeOption) => (
                   <option
@@ -632,7 +632,7 @@ export default function BrowseServicesSection({
                 aria-label="Sort services"
                 value={sortBy}
                 onChange={(e) => handleSortChange(e.target.value)}
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
               >
                 <option value="newest" className="bg-white dark:bg-slate-900">
                   Newest
@@ -665,7 +665,7 @@ export default function BrowseServicesSection({
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition cursor-pointer border ${
                     active
                       ? "bg-sky-500 text-slate-950 border-sky-400 shadow-sm"
-                      : "bg-slate-100 dark:bg-slate-950/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700"
+                      : "bg-white/80 dark:bg-slate-950/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-sky-500/20 dark:border-slate-800 hover:border-sky-500/40 dark:hover:border-slate-700"
                   }`}
                 >
                   {category}
@@ -688,7 +688,7 @@ export default function BrowseServicesSection({
 
         {/* Services Grid / States */}
         {error ? (
-          <div className="py-14 px-6 text-center bg-white dark:bg-slate-900/90 border border-rose-500/30 rounded-3xl space-y-3">
+          <div className="py-14 px-6 text-center bg-gradient-to-tl from-rose-500/10 via-white to-white dark:from-rose-500/15 dark:via-slate-900 dark:to-slate-900 border border-rose-500/30 rounded-3xl space-y-3 shadow-md dark:shadow-xl">
             <p className="text-sm font-medium text-rose-600 dark:text-rose-300">
               {error}
             </p>
@@ -704,14 +704,14 @@ export default function BrowseServicesSection({
                   limit: itemsPerPage,
                 })
               }
-              className="px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition cursor-pointer"
             >
               Retry
             </button>
           </div>
         ) : services.length === 0 ? (
-          <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+          <div className="py-16 px-6 text-center bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl space-y-3.5 shadow-md dark:shadow-xl">
+            <div className="w-12 h-12 rounded-2xl bg-white/85 dark:bg-slate-950 border border-sky-500/25 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto shadow-xs">
               <Wrench className="w-6 h-6" />
             </div>
             <h2 className="text-lg font-bold text-slate-900 dark:text-white">
@@ -724,7 +724,7 @@ export default function BrowseServicesSection({
             <button
               type="button"
               onClick={handleResetFilters}
-              className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20 cursor-pointer"
+              className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20 cursor-pointer"
             >
               <RotateCcw className="w-4 h-4" />
               <span>Reset Filters</span>
@@ -747,10 +747,10 @@ export default function BrowseServicesSection({
                 return (
                   <article
                     key={id || `service-${index}`}
-                    className="h-full flex flex-col justify-between bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-sky-500/40 rounded-3xl overflow-hidden shadow-md dark:shadow-xl transition"
+                    className="h-full flex flex-col justify-between bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 hover:border-sky-500/50 rounded-3xl overflow-hidden shadow-md dark:shadow-xl transition"
                   >
                     <div>
-                      <div className="h-44 w-full bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 overflow-hidden flex items-center justify-center">
+                      <div className="h-44 w-full bg-slate-100 dark:bg-slate-950 border-b border-sky-500/15 dark:border-slate-800/80 overflow-hidden flex items-center justify-center">
                         <ServiceCardImage
                           src={service?.image}
                           alt={service?.title || "Repair Service"}
@@ -759,7 +759,7 @@ export default function BrowseServicesSection({
 
                       <div className="p-5 space-y-3">
                         <div className="flex items-center justify-between gap-2 text-xs">
-                          <span className="px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25 font-semibold truncate">
+                          <span className="px-2.5 py-1 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/25 font-semibold truncate">
                             {service?.category || "General Repair"}
                           </span>
                           <span className="inline-flex items-center gap-1 text-slate-600 dark:text-slate-300 font-medium truncate shrink-0">
@@ -787,7 +787,7 @@ export default function BrowseServicesSection({
                       </div>
                     </div>
 
-                    <div className="px-5 pb-5 pt-3 border-t border-slate-200 dark:border-slate-800/70 flex items-center justify-between gap-3">
+                    <div className="px-5 pb-5 pt-3 border-t border-sky-500/15 dark:border-slate-800/70 flex items-center justify-between gap-3">
                       <div>
                         <span className="block text-[11px] text-slate-500 dark:text-slate-400">
                           Starting at
@@ -800,7 +800,7 @@ export default function BrowseServicesSection({
                       {id ? (
                         <Link
                           href={`/services/${encodeURIComponent(id)}`}
-                          className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/15 shrink-0"
+                          className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs px-3.5 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20 shrink-0"
                         >
                           <span>View Details</span>
                           <ArrowRight className="w-3.5 h-3.5" />
@@ -839,7 +839,7 @@ export default function BrowseServicesSection({
                     type="button"
                     disabled={currentPage === 1 || fetching}
                     onClick={() => handlePageChange(currentPage - 1)}
-                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/40 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/90 dark:bg-slate-900 border border-sky-500/20 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/45 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer shadow-xs"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span>Previous</span>
@@ -859,8 +859,8 @@ export default function BrowseServicesSection({
                           aria-current={isActive ? "page" : undefined}
                           className={`w-9 h-9 rounded-xl text-xs font-bold transition cursor-pointer border ${
                             isActive
-                              ? "bg-sky-500 text-slate-950 border-sky-400 shadow-md shadow-sky-500/20"
-                              : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-800 hover:border-slate-400 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-white disabled:opacity-50"
+                              ? "bg-sky-500 text-slate-950 border-sky-400 shadow-lg shadow-sky-500/20"
+                              : "bg-white/90 dark:bg-slate-900 text-slate-700 dark:text-slate-300 border-sky-500/20 dark:border-slate-800 hover:border-sky-500/40 dark:hover:border-slate-700 hover:text-slate-900 dark:hover:text-white disabled:opacity-50"
                           }`}
                         >
                           {pageNum}
@@ -873,7 +873,7 @@ export default function BrowseServicesSection({
                     type="button"
                     disabled={currentPage === totalPages || fetching}
                     onClick={() => handlePageChange(currentPage + 1)}
-                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/40 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer"
+                    className="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl bg-white/90 dark:bg-slate-900 border border-sky-500/20 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:border-sky-500/45 hover:text-slate-900 dark:hover:text-white disabled:opacity-40 disabled:pointer-events-none transition cursor-pointer shadow-xs"
                   >
                     <span>Next</span>
                     <ChevronRight className="w-4 h-4" />

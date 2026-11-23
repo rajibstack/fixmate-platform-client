@@ -5,7 +5,7 @@ import { MessageSquare } from "lucide-react";
 export default function ContactHeaderSection({ className = "" }) {
   return (
     <section
-      className={`bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-xl dark:shadow-2xl ${className}`}
+      className={`bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-md dark:shadow-2xl transition-colors duration-200 ${className}`}
     >
       <div className="max-w-3xl space-y-4">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300 text-xs font-semibold">

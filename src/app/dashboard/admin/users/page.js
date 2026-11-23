@@ -7,6 +7,8 @@ import {
   AlertCircle,
   MapPin,
   RotateCcw,
+  Mail,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
@@ -266,7 +268,7 @@ export default function ManageUsersPage() {
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Segmented Filter Tabs */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
-        <div>
+        <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Manage users
           </h1>
@@ -275,31 +277,45 @@ export default function ManageUsersPage() {
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto shadow-xs dark:shadow-none">
-          {filterTabs.map((tab) => {
+        <div
+          role="tablist"
+          aria-label="User role filter"
+          className="inline-flex flex-wrap items-center justify-center sm:justify-start bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-2 py-1.5 mx-auto lg:mx-0 self-center lg:self-auto shadow-xs"
+        >
+          {filterTabs.map((tab, index) => {
             const active = activeTab === tab.key;
             return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
-                  active
-                    ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`text-xs ${
+              <div key={tab.key} className="inline-flex items-center">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer whitespace-nowrap ${
                     active
-                      ? "text-slate-950/80 font-bold"
-                      : "text-slate-500 dark:text-slate-400"
+                      ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-sky-500/10 dark:hover:bg-slate-800/70"
                   }`}
                 >
-                  {tab.count}
-                </span>
-              </button>
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-xs ${
+                      active
+                        ? "text-slate-950/85 font-bold"
+                        : "text-slate-500 dark:text-slate-400"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+
+                {index < filterTabs.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-1"
+                  />
+                )}
+              </div>
             );
           })}
         </div>
@@ -323,163 +339,270 @@ export default function ManageUsersPage() {
         </div>
       )}
 
-      {/* Users Table Card */}
-      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
-        {filteredUsers.length === 0 ? (
-          <div className="py-16 px-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
-              <Users className="w-6 h-6" />
-            </div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              {activeTab === "all" ? "No users yet" : "No users found"}
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              {activeTab === "all"
-                ? "Registered accounts will appear here once users sign up."
-                : "There are no users matching the selected role filter right now."}
-            </p>
-            {activeTab !== "all" && (
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("all")}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Show all users</span>
-                </button>
-              </div>
-            )}
+      {/* Users Content */}
+      {filteredUsers.length === 0 ? (
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl py-16 px-6 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+            <Users className="w-6 h-6" />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800/90 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40">
-                  <th className="py-4 px-5">User</th>
-                  <th className="py-4 px-4">Email</th>
-                  <th className="py-4 px-4">Area</th>
-                  <th className="py-4 px-4">Joined</th>
-                  <th className="py-4 px-5 text-right sm:text-left">Role</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/70 text-sm">
-                {filteredUsers.map((u) => {
-                  const id = u._id || u.id;
-                  const selfRow = isSelfUser(u);
-                  const displayName =
-                    (selfRow && currentUser?.name) || u.name || "Unnamed User";
-                  const displayAvatar =
-                    (selfRow && currentUser?.avatar) || u.avatar || "";
-                  const displayArea =
-                    (selfRow && currentUser?.area) || u.area || "";
-                  const currentRole = (u.role || "customer").toLowerCase();
-                  const showAvatarImg =
-                    Boolean(displayAvatar) && !brokenAvatars[id];
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            {activeTab === "all" ? "No users yet" : "No users found"}
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            {activeTab === "all"
+              ? "Registered accounts will appear here once users sign up."
+              : "There are no users matching the selected role filter right now."}
+          </p>
+          {activeTab !== "all" && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("all")}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Show all users</span>
+              </button>
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-sky-500/15 dark:border-slate-800/90 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-sky-500/[0.04] dark:bg-slate-950/50">
+                    <th className="py-4 px-5">User</th>
+                    <th className="py-4 px-4">Email</th>
+                    <th className="py-4 px-4">Area</th>
+                    <th className="py-4 px-4">Joined</th>
+                    <th className="py-4 px-5 text-right sm:text-left">Role</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sky-500/15 dark:divide-slate-800/70 text-sm">
+                  {filteredUsers.map((u) => {
+                    const id = u._id || u.id;
+                    const selfRow = isSelfUser(u);
+                    const displayName =
+                      (selfRow && currentUser?.name) || u.name || "Unnamed User";
+                    const displayAvatar =
+                      (selfRow && currentUser?.avatar) || u.avatar || "";
+                    const displayArea =
+                      (selfRow && currentUser?.area) || u.area || "";
+                    const currentRole = (u.role || "customer").toLowerCase();
+                    const showAvatarImg =
+                      Boolean(displayAvatar) && !brokenAvatars[id];
 
-                  return (
-                    <tr
-                      key={id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-                    >
-                      {/* User Avatar + Name + (you) */}
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        <div className="flex items-center gap-3.5">
-                          {showAvatarImg ? (
-                            <img
-                              src={displayAvatar}
-                              alt={displayName}
-                              onError={() =>
-                                setBrokenAvatars((prev) => ({
-                                  ...prev,
-                                  [id]: true,
-                                }))
-                              }
-                              className="w-10 h-10 rounded-full object-cover border border-sky-500/30 shrink-0"
-                            />
-                          ) : (
-                            <span className="w-10 h-10 rounded-full bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs shrink-0">
-                              {getInitials(displayName)}
-                            </span>
-                          )}
-                          <div className="flex items-center gap-2">
-                            <span className="font-semibold text-slate-900 dark:text-white">
-                              {displayName}
-                            </span>
-                            {selfRow && (
-                              <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
-                                (you)
+                    return (
+                      <tr
+                        key={id}
+                        className="hover:bg-sky-500/[0.05] dark:hover:bg-slate-800/40 transition-colors"
+                      >
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          <div className="flex items-center gap-3.5">
+                            {showAvatarImg ? (
+                              <img
+                                src={displayAvatar}
+                                alt={displayName}
+                                onError={() =>
+                                  setBrokenAvatars((prev) => ({
+                                    ...prev,
+                                    [id]: true,
+                                  }))
+                                }
+                                className="w-10 h-10 rounded-full object-cover border border-sky-500/30 shrink-0"
+                              />
+                            ) : (
+                              <span className="w-10 h-10 rounded-full bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs shrink-0">
+                                {getInitials(displayName)}
                               </span>
                             )}
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold text-slate-900 dark:text-white">
+                                {displayName}
+                              </span>
+                              {selfRow && (
+                                <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                                  (you)
+                                </span>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
+                        </td>
 
-                      {/* Email */}
-                      <td className="py-4 px-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
-                        {u.email}
-                      </td>
+                        <td className="py-4 px-4 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                          {u.email}
+                        </td>
 
-                      {/* Area */}
-                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {displayArea ? (
-                          <span className="inline-flex items-center gap-1.5">
-                            <MapPin className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 shrink-0" />
-                            <span>{displayArea}</span>
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 dark:text-slate-500">
-                            —
-                          </span>
-                        )}
-                      </td>
+                        <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {displayArea ? (
+                            <span className="inline-flex items-center gap-1.5">
+                              <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                              <span>{displayArea}</span>
+                            </span>
+                          ) : (
+                            <span className="text-slate-400 dark:text-slate-500">
+                              —
+                            </span>
+                          )}
+                        </td>
 
-                      {/* Joined */}
-                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {formatJoinedDate(u.createdAt)}
-                      </td>
+                        <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {formatJoinedDate(u.createdAt)}
+                        </td>
 
-                      {/* Role Dropdown */}
-                      <td className="py-4 px-5 whitespace-nowrap">
-                        <select
-                          aria-label={`Change role for ${displayName}`}
-                          disabled={selfRow || updatingId === id}
-                          value={currentRole}
-                          onChange={(e) => handleRoleChange(u, e.target.value)}
-                          className={`rounded-xl border px-3.5 py-2 text-sm font-medium outline-none transition ${
-                            selfRow
-                              ? "bg-slate-100/70 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800/80 text-slate-400 dark:text-slate-500 cursor-not-allowed"
-                              : "bg-slate-50 dark:bg-slate-950 border-slate-300 dark:border-slate-700 hover:border-sky-500/60 focus:border-sky-500 text-slate-900 dark:text-white cursor-pointer"
-                          }`}
-                        >
-                          <option
-                            value="customer"
-                            className="bg-white dark:bg-slate-900"
+                        <td className="py-4 px-5 whitespace-nowrap">
+                          <select
+                            aria-label={`Change role for ${displayName}`}
+                            disabled={selfRow || updatingId === id}
+                            value={currentRole}
+                            onChange={(e) => handleRoleChange(u, e.target.value)}
+                            className={`rounded-xl border px-3.5 py-2 text-sm font-medium outline-none transition ${
+                              selfRow
+                                ? "bg-slate-100/80 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800/80 text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                                : "bg-white/90 dark:bg-slate-950 border-slate-300 dark:border-slate-700 hover:border-sky-500/60 focus:border-sky-500 text-slate-900 dark:text-white cursor-pointer"
+                            }`}
                           >
-                            Customer
-                          </option>
-                          <option
-                            value="technician"
-                            className="bg-white dark:bg-slate-900"
-                          >
-                            Technician
-                          </option>
-                          <option
-                            value="admin"
-                            className="bg-white dark:bg-slate-900"
-                          >
-                            Admin
-                          </option>
-                        </select>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                            <option
+                              value="customer"
+                              className="bg-white dark:bg-slate-900"
+                            >
+                              Customer
+                            </option>
+                            <option
+                              value="technician"
+                              className="bg-white dark:bg-slate-900"
+                            >
+                              Technician
+                            </option>
+                            <option
+                              value="admin"
+                              className="bg-white dark:bg-slate-900"
+                            >
+                              Admin
+                            </option>
+                          </select>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Mobile / Tablet Card View */}
+          <div className="lg:hidden space-y-3.5">
+            {filteredUsers.map((u) => {
+              const id = u._id || u.id;
+              const selfRow = isSelfUser(u);
+              const displayName =
+                (selfRow && currentUser?.name) || u.name || "Unnamed User";
+              const displayAvatar =
+                (selfRow && currentUser?.avatar) || u.avatar || "";
+              const displayArea =
+                (selfRow && currentUser?.area) || u.area || "";
+              const currentRole = (u.role || "customer").toLowerCase();
+              const showAvatarImg =
+                Boolean(displayAvatar) && !brokenAvatars[id];
+
+              return (
+                <div
+                  key={id}
+                  className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-4 shadow-md dark:shadow-lg space-y-3.5 transition"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {showAvatarImg ? (
+                        <img
+                          src={displayAvatar}
+                          alt={displayName}
+                          onError={() =>
+                            setBrokenAvatars((prev) => ({
+                              ...prev,
+                              [id]: true,
+                            }))
+                          }
+                          className="w-10 h-10 rounded-full object-cover border border-sky-500/30 shrink-0"
+                        />
+                      ) : (
+                        <span className="w-10 h-10 rounded-full bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-700 dark:text-sky-300 font-bold text-xs shrink-0">
+                          {getInitials(displayName)}
+                        </span>
+                      )}
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                            {displayName}
+                          </h2>
+                          {selfRow && (
+                            <span className="text-xs text-slate-500 dark:text-slate-400 shrink-0">
+                              (you)
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 truncate inline-flex items-center gap-1 mt-0.5">
+                          <Mail className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0" />
+                          <span>{u.email}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 dark:text-slate-400 pt-1">
+                    <span className="inline-flex items-center gap-1.5">
+                      <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                      <span>{displayArea || "—"}</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                      <span>{formatJoinedDate(u.createdAt)}</span>
+                    </span>
+                  </div>
+
+                  <div className="pt-3 border-t border-sky-500/15 dark:border-slate-800/80 flex items-center justify-between gap-3">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                      Role
+                    </span>
+                    <select
+                      aria-label={`Change role for ${displayName}`}
+                      disabled={selfRow || updatingId === id}
+                      value={currentRole}
+                      onChange={(e) => handleRoleChange(u, e.target.value)}
+                      className={`rounded-xl border px-3 py-1.5 text-xs sm:text-sm font-medium outline-none transition ${
+                        selfRow
+                          ? "bg-slate-100/80 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800/80 text-slate-400 dark:text-slate-500 cursor-not-allowed"
+                          : "bg-white/90 dark:bg-slate-950 border-slate-300 dark:border-slate-700 hover:border-sky-500/60 focus:border-sky-500 text-slate-900 dark:text-white cursor-pointer"
+                      }`}
+                    >
+                      <option
+                        value="customer"
+                        className="bg-white dark:bg-slate-900"
+                      >
+                        Customer
+                      </option>
+                      <option
+                        value="technician"
+                        className="bg-white dark:bg-slate-900"
+                      >
+                        Technician
+                      </option>
+                      <option
+                        value="admin"
+                        className="bg-white dark:bg-slate-900"
+                      >
+                        Admin
+                      </option>
+                    </select>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 }

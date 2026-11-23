@@ -50,7 +50,7 @@ export default function ContactInfoCardsSection({
         return (
           <div
             key={item.label}
-            className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg transition"
+            className="bg-gradient-to-br from-sky-500/15 via-white to-slate-100 dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/30 hover:border-sky-500/50 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg transition"
           >
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-slate-600 dark:text-slate-400">

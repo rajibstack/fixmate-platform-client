@@ -600,8 +600,8 @@ export default function AddServicePage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
-        <div>
-          <div className="flex items-center gap-2.5 flex-wrap">
+        <div className="text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2.5 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               Add a service
             </h1>
@@ -615,7 +615,7 @@ export default function AddServicePage() {
                 Verified Pro
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-sky-500/25 dark:border-slate-700">
                 Free ({serviceCount}/{FREE_SERVICE_LIMIT})
               </span>
             )}
@@ -628,7 +628,7 @@ export default function AddServicePage() {
         <Link
           href="/dashboard/technician/my-services"
           onClick={() => setNavigating(true)}
-          className="inline-flex items-center gap-2 self-start sm:self-auto text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-800 px-4 py-2.5 rounded-xl transition shadow-xs dark:shadow-none"
+          className="inline-flex items-center gap-2 self-center sm:self-auto text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-sky-500/25 dark:border-slate-800 px-4 py-2.5 rounded-xl transition shadow-xs"
         >
           <ArrowLeft className="w-4 h-4 text-sky-600 dark:text-sky-400" />
           <span>Back to My services</span>
@@ -680,8 +680,8 @@ export default function AddServicePage() {
         className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start"
       >
         <div className="lg:col-span-7 space-y-6">
-          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
+          <section className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-sky-500/15 dark:border-slate-800/80 pb-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Service basics
@@ -711,7 +711,7 @@ export default function AddServicePage() {
                 value={formData.title}
                 onChange={handleChange}
                 placeholder="e.g. iPhone Screen Replacement"
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
               />
             </div>
 
@@ -728,7 +728,7 @@ export default function AddServicePage() {
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+                  className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
                 >
                   {CATEGORIES.map((cat) => (
                     <option
@@ -754,7 +754,7 @@ export default function AddServicePage() {
                   name="mode"
                   value={formData.mode}
                   onChange={handleChange}
-                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
+                  className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white outline-none transition cursor-pointer"
                 >
                   {SERVICE_MODES.map((m) => (
                     <option
@@ -770,8 +770,8 @@ export default function AddServicePage() {
             </div>
           </section>
 
-          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
+          <section className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-sky-500/15 dark:border-slate-800/80 pb-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Pricing, timeline &amp; coverage
@@ -808,7 +808,7 @@ export default function AddServicePage() {
                     value={formData.price}
                     onChange={handleChange}
                     placeholder="45"
-                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-8 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                    className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-8 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                   />
                 </div>
               </div>
@@ -827,7 +827,7 @@ export default function AddServicePage() {
                   value={formData.duration}
                   onChange={handleChange}
                   placeholder="2-3 hours"
-                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                  className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                 />
               </div>
             </div>
@@ -848,13 +848,13 @@ export default function AddServicePage() {
                 value={formData.area}
                 onChange={handleChange}
                 placeholder="Mirpur, Dhaka"
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
               />
             </div>
           </section>
 
-          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-4">
+          <section className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-5">
+            <div className="flex items-center justify-between border-b border-sky-500/15 dark:border-slate-800/80 pb-4">
               <div>
                 <h2 className="text-base font-bold text-slate-900 dark:text-white">
                   Scope &amp; technician details
@@ -884,7 +884,7 @@ export default function AddServicePage() {
                 value={formData.description}
                 onChange={handleChange}
                 placeholder="What the service includes, models you cover, warranty"
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-y"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-y"
               />
             </div>
 
@@ -905,7 +905,7 @@ export default function AddServicePage() {
                   aria-readonly="true"
                   value={formData.technicianName}
                   placeholder="Technician name"
-                  className="w-full rounded-xl bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
+                  className="w-full rounded-xl bg-white/60 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
                 />
               </div>
 
@@ -925,12 +925,12 @@ export default function AddServicePage() {
                   aria-readonly="true"
                   value={formData.technicianEmail}
                   placeholder="technician@fixmate.com"
-                  className="w-full rounded-xl bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
+                  className="w-full rounded-xl bg-white/60 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 placeholder:text-slate-400 dark:placeholder:text-slate-600 outline-none cursor-not-allowed select-none"
                 />
               </div>
             </div>
 
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Account details are locked here and can only be updated from{" "}
               <Link
                 href="/dashboard/profile"
@@ -945,7 +945,7 @@ export default function AddServicePage() {
         </div>
 
         <div className="lg:col-span-5 space-y-6">
-          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-4">
+          <section className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <label className="text-sm font-bold text-slate-900 dark:text-white">
                 Service image
@@ -956,7 +956,7 @@ export default function AddServicePage() {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="relative w-full sm:w-32 h-28 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-dashed border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="relative w-full sm:w-32 h-28 rounded-2xl bg-white/85 dark:bg-slate-950 border border-dashed border-sky-500/35 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
                 {previewImageSrc ? (
                   <>
                     <img
@@ -976,14 +976,14 @@ export default function AddServicePage() {
                   </>
                 ) : (
                   <div className="flex flex-col items-center text-center px-2 text-slate-400 dark:text-slate-500">
-                    <ImageIcon className="w-5 h-5 mb-1 text-slate-400 dark:text-slate-600" />
+                    <ImageIcon className="w-5 h-5 mb-1 text-sky-600/70 dark:text-sky-400/70" />
                     <span className="text-xs">No image yet</span>
                   </div>
                 )}
               </div>
 
               <div className="flex-1 space-y-2">
-                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white transition cursor-pointer">
+                <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/90 dark:bg-slate-800 hover:bg-sky-500/10 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white transition cursor-pointer">
                   {uploadingImage ? (
                     <FixMateSpinner compact />
                   ) : (
@@ -1007,7 +1007,7 @@ export default function AddServicePage() {
             </div>
           </section>
 
-          <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-4">
+          <section className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-sky-600 dark:text-sky-400" />
@@ -1020,7 +1020,7 @@ export default function AddServicePage() {
               </span>
             </div>
 
-            <div className="rounded-2xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/90 overflow-hidden">
+            <div className="rounded-2xl bg-white/85 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800/90 overflow-hidden">
               <div className="h-36 w-full bg-slate-100 dark:bg-slate-900 relative flex items-center justify-center border-b border-slate-200 dark:border-slate-800/80">
                 {previewImageSrc ? (
                   <img
@@ -1031,7 +1031,7 @@ export default function AddServicePage() {
                   />
                 ) : (
                   <div className="flex flex-col items-center text-slate-400 dark:text-slate-500 gap-1.5">
-                    <Wrench className="w-6 h-6 text-slate-400 dark:text-slate-600" />
+                    <Wrench className="w-6 h-6 text-sky-600/70 dark:text-sky-400/70" />
                     <span className="text-xs">Service visual preview</span>
                   </div>
                 )}
@@ -1129,6 +1129,7 @@ export default function AddServicePage() {
                 type="button"
                 disabled={upgradingPro}
                 onClick={() => setUpgradeModalOpen(false)}
+                aria-label="Close upgrade modal"
                 className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />

@@ -319,9 +319,9 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90">
+      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90 text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Platform overview
         </h1>
@@ -350,12 +350,14 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
 
       {/* 4 Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 transition">
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg transition">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
               Total users
             </span>
-            <Users className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+            <div className="w-8 h-8 rounded-lg bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400">
+              <Users className="w-4 h-4" />
+            </div>
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -367,12 +369,14 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 transition">
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg transition">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
               Total technicians
             </span>
-            <Wrench className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+            <div className="w-8 h-8 rounded-lg bg-sky-500/10 dark:bg-sky-500/15 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400">
+              <Wrench className="w-4 h-4" />
+            </div>
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -384,12 +388,14 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
           </div>
         </div>
 
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg hover:border-slate-300 dark:hover:border-slate-700 transition">
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg transition">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
               Pending services
             </span>
-            <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/25 flex items-center justify-center text-amber-600 dark:text-amber-400">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
           </div>
           <div className="mt-4">
             <p className="text-3xl font-bold text-slate-900 dark:text-white">
@@ -401,7 +407,7 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-sky-500/15 via-white to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/30 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg shadow-sky-500/5">
+        <div className="bg-gradient-to-tl from-sky-500/20 via-sky-500/[0.07] to-white dark:from-sky-500/25 dark:via-slate-900 dark:to-slate-900 border border-sky-500/35 rounded-2xl p-6 flex flex-col justify-between shadow-md dark:shadow-lg shadow-sky-500/10">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-sky-700 dark:text-sky-300">
               Total revenue
@@ -411,7 +417,7 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">
+            <p className="text-3xl font-bold text-sky-600 dark:text-sky-400">
               {`$${stats.totalRevenue}`}
             </p>
             <p className="text-xs text-sky-700/80 dark:text-sky-300/80 mt-1.5">
@@ -424,9 +430,9 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
       {/* Bottom Two Panels */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Services waiting for review */}
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl flex flex-col justify-between">
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between gap-3 mb-6">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   Services waiting for review
@@ -438,7 +444,7 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
               <Link
                 href="/dashboard/admin/services"
                 onClick={() => setNavigating(true)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 transition"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 transition shrink-0"
               >
                 <span>Review services</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -446,8 +452,8 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
             </div>
 
             {pendingServicesList.length === 0 ? (
-              <div className="py-10 px-5 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+              <div className="py-10 px-5 text-center bg-white/75 dark:bg-slate-950/60 border border-dashed border-sky-500/30 dark:border-slate-800 rounded-2xl space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -456,14 +462,14 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
                 <Link
                   href="/dashboard/admin/services"
                   onClick={() => setNavigating(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition"
                 >
                   <span>Manage services</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                 </Link>
               </div>
             ) : (
-              <div className="divide-y divide-slate-200 dark:divide-slate-800/80">
+              <div className="divide-y divide-sky-500/15 dark:divide-slate-800/80">
                 {pendingServicesList.map((srv) => {
                   const id = srv._id || srv.id;
                   const techName = resolveName(
@@ -491,7 +497,7 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
                           {metaParts.join(", ")}
                         </p>
                       </div>
-                      <span className="text-base font-bold text-slate-900 dark:text-white shrink-0">
+                      <span className="text-base font-bold text-sky-600 dark:text-sky-400 shrink-0">
                         {`$${Number(srv.price || 0)}`}
                       </span>
                     </div>
@@ -503,9 +509,9 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
         </div>
 
         {/* Latest bookings */}
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl flex flex-col justify-between">
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center justify-between gap-3 mb-6">
               <div>
                 <h2 className="text-lg font-bold text-slate-900 dark:text-white">
                   Latest bookings
@@ -517,7 +523,7 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
               <Link
                 href="/dashboard/admin/bookings"
                 onClick={() => setNavigating(true)}
-                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 transition"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-sky-600 dark:text-sky-400 hover:text-sky-500 dark:hover:text-sky-300 transition shrink-0"
               >
                 <span>All bookings</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
@@ -525,8 +531,8 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
             </div>
 
             {latestBookingsList.length === 0 ? (
-              <div className="py-10 px-5 text-center border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl space-y-3">
-                <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+              <div className="py-10 px-5 text-center bg-white/75 dark:bg-slate-950/60 border border-dashed border-sky-500/30 dark:border-slate-800 rounded-2xl space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
                   <CalendarCheck className="w-5 h-5" />
                 </div>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
@@ -535,14 +541,14 @@ export default function AdminOverview({ user: propUser = null, syncVersion = 0 }
                 <Link
                   href="/dashboard/admin/bookings"
                   onClick={() => setNavigating(true)}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-xs font-semibold text-slate-900 dark:text-white transition"
                 >
                   <span>View all bookings</span>
                   <ArrowUpRight className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                 </Link>
               </div>
             ) : (
-              <div className="divide-y divide-slate-200 dark:divide-slate-800/80">
+              <div className="divide-y divide-sky-500/15 dark:divide-slate-800/80">
                 {latestBookingsList.map((booking) => {
                   const id = booking._id || booking.id;
                   const customerName = resolveName(

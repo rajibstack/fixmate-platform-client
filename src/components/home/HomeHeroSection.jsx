@@ -175,8 +175,8 @@ export default function HomeHeroSection({
           );
         })}
 
-        <div className="absolute inset-0 bg-gradient-to-r from-white/75 via-white/45 to-white/30 dark:from-slate-950/80 dark:via-slate-950/55 dark:to-slate-950/45" />
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[780px] h-[380px] rounded-full bg-sky-500/10 blur-3xl" />
+        <div className="absolute inset-0 bg-gradient-to-r from-white/80 via-white/50 to-sky-500/10 dark:from-slate-950/85 dark:via-slate-950/60 dark:to-sky-950/35" />
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[780px] h-[380px] rounded-full bg-sky-500/15 blur-3xl" />
       </div>
 
       <div className="max-w-7xl w-full mx-auto px-4 sm:px-8 py-12 lg:py-0 relative z-10">
@@ -190,7 +190,7 @@ export default function HomeHeroSection({
                 style={{
                   transitionTimingFunction: "cubic-bezier(0.22, 1, 0.36, 1)",
                 }}
-                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/85 border border-sky-500/35 text-sky-700 dark:text-sky-300 text-xs font-semibold backdrop-blur-xs shadow-2xs transition-all duration-500"
+                className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 dark:bg-slate-900/85 border border-sky-500/35 text-sky-700 dark:text-sky-300 text-xs font-semibold backdrop-blur-xs shadow-xs transition-all duration-500"
               >
                 <Sparkles className="w-3.5 h-3.5 text-sky-500 dark:text-sky-400" />
                 <span>{activeSlide.badge}</span>
@@ -242,7 +242,7 @@ export default function HomeHeroSection({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={activeSlide.placeholder}
-                  className="w-full rounded-xl bg-white/95 dark:bg-slate-900/95 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                  className="w-full rounded-xl bg-white/95 dark:bg-slate-900/95 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-11 pr-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition shadow-xs"
                 />
               </div>
 
@@ -257,7 +257,7 @@ export default function HomeHeroSection({
               <Link
                 href="/services"
                 onClick={() => onNavigate?.()}
-                className="inline-flex items-center justify-center gap-2 bg-white/90 dark:bg-slate-900/90 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-sm px-5 py-3 rounded-xl transition shrink-0"
+                className="inline-flex items-center justify-center gap-2 bg-white/90 dark:bg-slate-900/90 hover:bg-sky-500/10 dark:hover:bg-slate-800 border border-sky-500/25 dark:border-slate-700 text-slate-900 dark:text-white font-semibold text-sm px-5 py-3 rounded-xl transition shrink-0 shadow-xs"
               >
                 <span>Explore Services</span>
               </Link>
@@ -303,7 +303,7 @@ export default function HomeHeroSection({
                   type="button"
                   onClick={handlePrev}
                   aria-label="Previous slide"
-                  className="w-9 h-9 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-sky-500 hover:text-slate-950 dark:hover:bg-sky-500 dark:hover:text-slate-950 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition duration-300 cursor-pointer shadow-xs"
+                  className="w-9 h-9 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-sky-500 hover:text-slate-950 dark:hover:bg-sky-500 dark:hover:text-slate-950 border border-sky-500/25 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition duration-300 cursor-pointer shadow-xs"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -311,7 +311,7 @@ export default function HomeHeroSection({
                   type="button"
                   onClick={handleNext}
                   aria-label="Next slide"
-                  className="w-9 h-9 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-sky-500 hover:text-slate-950 dark:hover:bg-sky-500 dark:hover:text-slate-950 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition duration-300 cursor-pointer shadow-xs"
+                  className="w-9 h-9 rounded-full bg-white/95 dark:bg-slate-900/95 hover:bg-sky-500 hover:text-slate-950 dark:hover:bg-sky-500 dark:hover:text-slate-950 border border-sky-500/25 dark:border-slate-700 text-slate-700 dark:text-slate-200 flex items-center justify-center transition duration-300 cursor-pointer shadow-xs"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -350,8 +350,8 @@ export default function HomeHeroSection({
 
           {/* Right Preview Card Column */}
           <div className="lg:col-span-5">
-            <div className="bg-white/95 dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl dark:shadow-2xl space-y-4 backdrop-blur-xs">
-              <div className="aspect-[4/3] h-[270px] sm:h-[310px] lg:h-[340px] w-full rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 overflow-hidden relative flex items-center justify-center">
+            <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-2xl space-y-4 backdrop-blur-xs">
+              <div className="aspect-[4/3] h-[270px] sm:h-[310px] lg:h-[340px] w-full rounded-2xl bg-slate-100 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800 overflow-hidden relative flex items-center justify-center">
                 {HERO_SLIDES.map((slide, index) => {
                   const isActive = index === activeIndex;
                   const cardImgSrc = resolveSlideImage(slide, index);
@@ -402,7 +402,7 @@ export default function HomeHeroSection({
               </div>
 
               <div className="grid grid-cols-2 gap-3.5">
-                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-4">
+                <div className="rounded-2xl bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-950 dark:to-slate-950 border border-sky-500/20 dark:border-slate-800 p-4 shadow-xs">
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Turnaround
                   </p>
@@ -417,7 +417,7 @@ export default function HomeHeroSection({
                     {activeSlide.turnaround}
                   </p>
                 </div>
-                <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-4">
+                <div className="rounded-2xl bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-950 dark:to-slate-950 border border-sky-500/20 dark:border-slate-800 p-4 shadow-xs">
                   <p className="text-xs text-slate-500 dark:text-slate-400">
                     Service Modes
                   </p>

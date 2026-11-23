@@ -34,6 +34,7 @@ export default function ContactMessageFormSection({
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (feedback) setFeedback(null);
   };
 
   const handleSubmit = async (e) => {
@@ -127,7 +128,7 @@ export default function ContactMessageFormSection({
 
   return (
     <div
-      className={`bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md dark:shadow-xl ${className}`}
+      className={`bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md dark:shadow-xl transition-colors duration-200 ${className}`}
     >
       <div className="mb-6">
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
@@ -156,7 +157,7 @@ export default function ContactMessageFormSection({
       )}
 
       {submitting ? (
-        <div className="rounded-2xl bg-slate-100 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4">
+        <div className="rounded-2xl bg-white/80 dark:bg-slate-950/80 border border-sky-500/20 dark:border-slate-800 px-4">
           <FixMateSpinner label="Sending your message..." compact />
         </div>
       ) : (
@@ -176,7 +177,7 @@ export default function ContactMessageFormSection({
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Your name"
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
               />
             </div>
 
@@ -194,7 +195,7 @@ export default function ContactMessageFormSection({
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="you@example.com"
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
               />
             </div>
           </div>
@@ -214,7 +215,7 @@ export default function ContactMessageFormSection({
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+880 1XXX-XXXXXX"
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition"
               />
             </div>
 
@@ -230,7 +231,7 @@ export default function ContactMessageFormSection({
                 name="topic"
                 value={formData.topic}
                 onChange={handleChange}
-                className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white transition"
+                className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white transition cursor-pointer"
               >
                 {topics.map((topic) => (
                   <option
@@ -259,7 +260,7 @@ export default function ContactMessageFormSection({
               value={formData.message}
               onChange={handleChange}
               placeholder="Describe your question, booking ID, or device issue..."
-              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition resize-y"
+              className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 focus:outline-none px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 transition resize-y"
             />
           </div>
 

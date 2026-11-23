@@ -11,7 +11,7 @@ import { FixMateSpinner, PublicPageSkeleton } from "@/components/ui/LoadingState
 const DEMO_PASSWORD = "FixMate@123";
 
 const INITIAL_DEMO_ACCOUNTS = [
-   {
+  {
     name: "FixMate Admin",
     roleLabel: "Admin",
     email: "admin@fixmate.app",
@@ -38,7 +38,7 @@ const INITIAL_DEMO_ACCOUNTS = [
     email: "arif.customer@fixmate.app",
     password: DEMO_PASSWORD,
     avatar: "",
-  }
+  },
 ];
 
 const roleBadgeStyles = {
@@ -119,7 +119,7 @@ function DemoUserAvatar({ src, name }) {
       src={src}
       alt={name}
       onError={() => setImgFailed(true)}
-      className="w-14 h-14 rounded-full object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0"
+      className="w-14 h-14 rounded-full object-cover border border-sky-500/25 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0"
     />
   );
 }
@@ -402,12 +402,12 @@ function LoginContent() {
   const isBusy = loading || googleLoading;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-10 sm:py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-10 sm:py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center transition-colors duration-200">
       <div className="pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 w-[780px] h-[360px] rounded-full bg-sky-500/10 blur-3xl" />
 
       <div className="relative w-full max-w-4xl grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
         {/* Left Card: Sign-In */}
-        <div className="h-full w-full bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl flex flex-col justify-between">
+        <div className="h-full w-full bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 backdrop-blur-md border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md dark:shadow-2xl flex flex-col justify-between">
           <div>
             <div className="text-center mb-6">
               <Link
@@ -438,7 +438,7 @@ function LoginContent() {
             )}
 
             {isBusy ? (
-              <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4 py-8">
+              <div className="rounded-2xl bg-white/80 dark:bg-slate-950/80 border border-sky-500/20 dark:border-slate-800 px-4 py-8">
                 <FixMateSpinner
                   label={
                     googleLoading
@@ -465,7 +465,7 @@ function LoginContent() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="name@company.com"
-                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
+                    className="w-full px-4 py-3 bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
                   />
                 </div>
 
@@ -485,7 +485,7 @@ function LoginContent() {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="••••••••"
-                      className="w-full pl-4 pr-11 py-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
+                      className="w-full pl-4 pr-11 py-3 bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
                     />
                     <button
                       type="button"
@@ -518,7 +518,7 @@ function LoginContent() {
                     type="button"
                     disabled={isBusy}
                     onClick={() => handleGoogleLogin()}
-                    className="w-full cursor-pointer disabled:cursor-not-allowed bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
+                    className="w-full cursor-pointer disabled:cursor-not-allowed bg-white/90 dark:bg-slate-950 hover:bg-sky-500/10 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
                   >
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                       <path
@@ -558,7 +558,7 @@ function LoginContent() {
         </div>
 
         {/* Right Card: Demo Accounts (Same Height as Left Card) */}
-        <div className="h-full w-full bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl flex flex-col justify-between">
+        <div className="h-full w-full bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 backdrop-blur-md border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md dark:shadow-2xl flex flex-col justify-between">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
               Quick Access
@@ -581,8 +581,8 @@ function LoginContent() {
                   onClick={() => handleDemoLogin(account)}
                   className={`w-full text-left rounded-2xl border p-3.5 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 ${
                     isSelected
-                      ? "bg-sky-500/10 dark:bg-slate-950 border-sky-500 ring-1 ring-sky-500/30"
-                      : "bg-slate-50 dark:bg-slate-950/75 border-slate-200 dark:border-slate-800 hover:border-sky-500/40 hover:bg-slate-100 dark:hover:bg-slate-950"
+                      ? "bg-sky-500/15 dark:bg-slate-950 border-sky-500 ring-1 ring-sky-500/30"
+                      : "bg-white/80 dark:bg-slate-950/75 border-sky-500/20 dark:border-slate-800 hover:border-sky-500/45 hover:bg-sky-500/10 dark:hover:bg-slate-950"
                   }`}
                 >
                   <div className="flex items-center justify-between gap-3.5">

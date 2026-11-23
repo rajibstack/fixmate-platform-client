@@ -222,7 +222,7 @@ export default function CustomerPaymentHistoryPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header */}
-      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90">
+      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90 text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Payment history
         </h1>
@@ -241,8 +241,8 @@ export default function CustomerPaymentHistoryPage() {
 
       {/* Content */}
       {payments.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <Receipt className="w-6 h-6" />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
@@ -266,11 +266,11 @@ export default function CustomerPaymentHistoryPage() {
       ) : (
         <>
           {/* Desktop Table View */}
-          <div className="hidden md:block bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-md dark:shadow-xl">
+          <div className="hidden md:block bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl overflow-hidden shadow-md dark:shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                  <tr className="border-b border-sky-500/15 dark:border-slate-800 bg-sky-500/[0.04] dark:bg-slate-950/60 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                     <th className="py-4 px-6">Service</th>
                     <th className="py-4 px-6">Technician</th>
                     <th className="py-4 px-6">Amount</th>
@@ -278,14 +278,14 @@ export default function CustomerPaymentHistoryPage() {
                     <th className="py-4 px-6 text-right">Paid on</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-slate-800/80 text-sm">
+                <tbody className="divide-y divide-sky-500/15 dark:divide-slate-800/80 text-sm">
                   {payments.map((item) => {
                     const id = item._id || item.id;
                     const techName = resolveTechnicianName(item, userLookup);
                     return (
                       <tr
                         key={id}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition"
+                        className="hover:bg-sky-500/[0.05] dark:hover:bg-slate-800/40 transition"
                       >
                         <td className="py-4 px-6 font-semibold text-slate-900 dark:text-white">
                           {item.serviceTitle || "Repair Service"}
@@ -320,7 +320,7 @@ export default function CustomerPaymentHistoryPage() {
               return (
                 <div
                   key={id}
-                  className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-md dark:shadow-lg space-y-3"
+                  className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-4 shadow-md dark:shadow-lg space-y-3 transition"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -331,12 +331,17 @@ export default function CustomerPaymentHistoryPage() {
                         {techName}
                       </p>
                     </div>
-                    <span className="text-base font-bold text-sky-600 dark:text-sky-400 shrink-0">
-                      ${getBookingAmount(item)}
-                    </span>
+                    <div className="text-right shrink-0">
+                      <span className="text-base font-bold text-sky-600 dark:text-sky-400 block">
+                        ${getBookingAmount(item)}
+                      </span>
+                      <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+                        Paid
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="pt-2.5 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="pt-2.5 border-t border-sky-500/15 dark:border-slate-800/80 flex items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
                     <span className="inline-flex items-center gap-1.5 font-mono text-slate-500 dark:text-slate-400 truncate">
                       <CreditCard className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
                       {getTransactionId(item)}

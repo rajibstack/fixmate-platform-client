@@ -551,9 +551,42 @@ export default function DashboardLayout({ children }) {
           </div>
         </header>
 
-        <main className="flex-1 lg:overflow-y-auto p-4 sm:p-6 lg:p-8">
-          {children}
-        </main>
+        <div className="flex-1 lg:overflow-y-auto flex flex-col justify-between">
+          <main className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
+
+          <footer className="shrink-0 border-t border-slate-200 dark:border-slate-800/90 bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 px-4 sm:px-6 lg:px-8 py-3.5">
+            <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex items-center gap-2">
+                <span>© 2026 FixMate</span>
+                <span className="text-slate-300 dark:text-slate-700">•</span>
+                <span className="capitalize font-medium text-sky-700 dark:text-sky-400">
+                  {activeRole || "customer"} workspace
+                </span>
+              </div>
+
+              <div className="flex items-center gap-4">
+                <Link
+                  href="/"
+                  className="hover:text-sky-600 dark:hover:text-sky-400 transition"
+                >
+                  Home
+                </Link>
+                <Link
+                  href="/services"
+                  className="hover:text-sky-600 dark:hover:text-sky-400 transition"
+                >
+                  Services
+                </Link>
+                <Link
+                  href="/dashboard/profile"
+                  className="hover:text-sky-600 dark:hover:text-sky-400 transition"
+                >
+                  Profile
+                </Link>
+              </div>
+            </div>
+          </footer>
+        </div>
       </div>
     </div>
   );

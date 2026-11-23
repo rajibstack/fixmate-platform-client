@@ -8,6 +8,8 @@ import {
   Check,
   RotateCcw,
   X,
+  User,
+  Calendar,
 } from "lucide-react";
 import { toast } from "sonner";
 import { DashboardPageSkeleton } from "@/components/ui/LoadingState";
@@ -346,7 +348,7 @@ export default function ManageServicesPage() {
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
-        <div>
+        <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             Manage services
           </h1>
@@ -355,31 +357,45 @@ export default function ManageServicesPage() {
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto shadow-xs dark:shadow-none">
-          {filterTabs.map((tab) => {
+        <div
+          role="tablist"
+          aria-label="Service status filter"
+          className="inline-flex flex-wrap items-center justify-center sm:justify-start bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-2 py-1.5 mx-auto lg:mx-0 self-center lg:self-auto shadow-xs"
+        >
+          {filterTabs.map((tab, index) => {
             const active = activeTab === tab.key;
             return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
-                  active
-                    ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`text-xs ${
+              <div key={tab.key} className="inline-flex items-center">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer whitespace-nowrap ${
                     active
-                      ? "text-slate-950/80 font-bold"
-                      : "text-slate-500 dark:text-slate-400"
+                      ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-sky-500/10 dark:hover:bg-slate-800/70"
                   }`}
                 >
-                  {tab.count}
-                </span>
-              </button>
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-xs ${
+                      active
+                        ? "text-slate-950/85 font-bold"
+                        : "text-slate-500 dark:text-slate-400"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+
+                {index < filterTabs.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-1"
+                  />
+                )}
+              </div>
             );
           })}
         </div>
@@ -403,148 +419,243 @@ export default function ManageServicesPage() {
         </div>
       )}
 
-      {/* Services Table Card */}
-      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
-        {filteredServices.length === 0 ? (
-          <div className="py-16 px-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
-              <Wrench className="w-6 h-6" />
+      {/* Services Content */}
+      {filteredServices.length === 0 ? (
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl py-16 px-6 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+            <Wrench className="w-6 h-6" />
+          </div>
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            {activeTab === "all"
+              ? "No services submitted yet"
+              : "No services found"}
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            {activeTab === "all"
+              ? "Technician service listings will appear here for review once submitted."
+              : "There are no services in this status category right now."}
+          </p>
+          {activeTab !== "all" && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => setActiveTab("all")}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Show all services</span>
+              </button>
             </div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              {activeTab === "all"
-                ? "No services submitted yet"
-                : "No services found"}
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              {activeTab === "all"
-                ? "Technician service listings will appear here for review once submitted."
-                : "There are no services in this status category right now."}
-            </p>
-            {activeTab !== "all" && (
-              <div className="pt-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("all")}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-sky-500/15 dark:border-slate-800/90 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-sky-500/[0.04] dark:bg-slate-950/50">
+                    <th className="py-4 px-5">Service</th>
+                    <th className="py-4 px-4">Technician</th>
+                    <th className="py-4 px-4">Price</th>
+                    <th className="py-4 px-4">Submitted</th>
+                    <th className="py-4 px-4">Status</th>
+                    <th className="py-4 px-5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sky-500/15 dark:divide-slate-800/70 text-sm">
+                  {filteredServices.map((service) => {
+                    const id = service._id || service.id;
+                    const status = (service.status || "pending").toLowerCase();
+                    const busy = updatingId === id;
+                    const technicianLabel = resolveTechnicianName(
+                      service,
+                      userLookup
+                    );
+
+                    return (
+                      <tr
+                        key={id}
+                        className="hover:bg-sky-500/[0.05] dark:hover:bg-slate-800/40 transition-colors"
+                      >
+                        <td className="py-4 px-5">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-14 h-11 rounded-xl bg-white/85 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                              <AdminServiceThumbnail
+                                src={service.image}
+                                alt={service.title}
+                              />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-semibold text-slate-900 dark:text-white truncate">
+                                {service.title}
+                              </p>
+                              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
+                                {service.category}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {technicianLabel}
+                        </td>
+
+                        <td className="py-4 px-4 text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
+                          ${Number(service.price || 0)}
+                        </td>
+
+                        <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {formatSubmittedDate(service.createdAt)}
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(
+                              status
+                            )}`}
+                          >
+                            {formatStatusLabel(status)}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-5 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-2">
+                            {status !== "approved" && (
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() =>
+                                  handleStatusChange(service, "approved")
+                                }
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition shadow-sm cursor-pointer disabled:opacity-50"
+                              >
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Approve</span>
+                              </button>
+                            )}
+
+                            {status !== "rejected" && (
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => setServiceToReject(service)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 hover:bg-rose-500/15 hover:border-rose-500/30 text-slate-700 dark:text-slate-200 hover:text-rose-700 dark:hover:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                                <span>Reject</span>
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Mobile / Tablet Card View */}
+          <div className="lg:hidden space-y-3.5">
+            {filteredServices.map((service) => {
+              const id = service._id || service.id;
+              const status = (service.status || "pending").toLowerCase();
+              const busy = updatingId === id;
+              const technicianLabel = resolveTechnicianName(
+                service,
+                userLookup
+              );
+
+              return (
+                <div
+                  key={id}
+                  className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-4 shadow-md dark:shadow-lg space-y-3.5 transition"
                 >
-                  <RotateCcw className="w-4 h-4" />
-                  <span>Show all services</span>
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800/90 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40">
-                  <th className="py-4 px-5">Service</th>
-                  <th className="py-4 px-4">Technician</th>
-                  <th className="py-4 px-4">Price</th>
-                  <th className="py-4 px-4">Submitted</th>
-                  <th className="py-4 px-4">Status</th>
-                  <th className="py-4 px-5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/70 text-sm">
-                {filteredServices.map((service) => {
-                  const id = service._id || service.id;
-                  const status = (service.status || "pending").toLowerCase();
-                  const busy = updatingId === id;
-                  const technicianLabel = resolveTechnicianName(
-                    service,
-                    userLookup
-                  );
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-11 rounded-xl bg-white/85 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                        <AdminServiceThumbnail
+                          src={service.image}
+                          alt={service.title}
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                          {service.title}
+                        </h2>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                          {service.category}
+                        </p>
+                      </div>
+                    </div>
 
-                  return (
-                    <tr
-                      key={id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-                    >
-                      {/* Service Image/Icon + Title + Category */}
-                      <td className="py-4 px-5">
-                        <div className="flex items-center gap-3.5">
-                          <div className="w-14 h-11 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                            <AdminServiceThumbnail
-                              src={service.image}
-                              alt={service.title}
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="font-semibold text-slate-900 dark:text-white truncate">
-                              {service.title}
-                            </p>
-                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
-                              {service.category}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
+                    <span className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 shrink-0">
+                      ${Number(service.price || 0)}
+                    </span>
+                  </div>
 
-                      {/* Technician */}
-                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-slate-600 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1.5 truncate">
+                      <User className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                      Technician:{" "}
+                      <strong className="text-slate-800 dark:text-slate-200 font-medium truncate">
                         {technicianLabel}
-                      </td>
-
-                      {/* Price */}
-                      <td className="py-4 px-4 text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
-                        ${Number(service.price || 0)}
-                      </td>
-
-                      {/* Submitted */}
-                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                      </strong>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400 shrink-0" />
+                      Submitted:{" "}
+                      <strong className="text-slate-800 dark:text-slate-200 font-medium">
                         {formatSubmittedDate(service.createdAt)}
-                      </td>
+                      </strong>
+                    </span>
+                  </div>
 
-                      {/* Status Badge */}
-                      <td className="py-4 px-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(
-                            status
-                          )}`}
+                  <div className="pt-3 border-t border-sky-500/15 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-2">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getStatusBadgeStyle(
+                        status
+                      )}`}
+                    >
+                      {formatStatusLabel(status)}
+                    </span>
+
+                    <div className="inline-flex items-center gap-2">
+                      {status !== "approved" && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() =>
+                            handleStatusChange(service, "approved")
+                          }
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition shadow-sm cursor-pointer disabled:opacity-50"
                         >
-                          {formatStatusLabel(status)}
-                        </span>
-                      </td>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Approve</span>
+                        </button>
+                      )}
 
-                      {/* Approve / Reject Actions */}
-                      <td className="py-4 px-5 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-2">
-                          {status !== "approved" && (
-                            <button
-                              type="button"
-                              disabled={busy}
-                              onClick={() =>
-                                handleStatusChange(service, "approved")
-                              }
-                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold transition shadow-sm cursor-pointer disabled:opacity-50"
-                            >
-                              <Check className="w-3.5 h-3.5" />
-                              <span>Approve</span>
-                            </button>
-                          )}
-
-                          {status !== "rejected" && (
-                            <button
-                              type="button"
-                              disabled={busy}
-                              onClick={() => setServiceToReject(service)}
-                              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-rose-500/15 hover:border-rose-500/30 text-slate-700 dark:text-slate-200 hover:text-rose-700 dark:hover:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
-                            >
-                              <X className="w-3.5 h-3.5" />
-                              <span>Reject</span>
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      {status !== "rejected" && (
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => setServiceToReject(service)}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 hover:bg-rose-500/15 hover:border-rose-500/30 text-slate-700 dark:text-slate-200 hover:text-rose-700 dark:hover:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>Reject</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        )}
-      </div>
+        </>
+      )}
 
       {/* Reject Service Confirmation Modal */}
       <ConfirmModal

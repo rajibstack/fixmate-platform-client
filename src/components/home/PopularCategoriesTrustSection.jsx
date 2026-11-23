@@ -92,7 +92,7 @@ export default function PopularCategoriesTrustSection({
 }) {
   return (
     <section
-      className={`max-w-7xl mx-auto px-4 sm:px-8 py-14 sm:py-16 space-y-12 ${className}`}
+      className={`max-w-7xl mx-auto px-4 sm:px-8 py-14 sm:py-16 space-y-12 transition-colors duration-200 ${className}`}
     >
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
@@ -128,18 +128,18 @@ export default function PopularCategoriesTrustSection({
                 key={cat.name}
                 type="button"
                 onClick={() => onSelectCategory?.(cat.name)}
-                className={`text-left h-full flex flex-col justify-between rounded-2xl p-5 border transition cursor-pointer ${
+                className={`text-left h-full flex flex-col justify-between rounded-2xl p-5 border transition cursor-pointer shadow-md dark:shadow-xl ${
                   isSelected
-                    ? "bg-sky-500/15 border-sky-500 text-slate-900 dark:text-white shadow-lg shadow-sky-500/10"
-                    : "bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-sky-500/40 text-slate-900 dark:text-slate-100"
+                    ? "bg-gradient-to-tl from-sky-500/20 via-sky-500/[0.08] to-white dark:from-sky-500/25 dark:via-slate-900 dark:to-slate-900 border-sky-500 ring-1 ring-sky-500/35 text-slate-900 dark:text-white"
+                    : "bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border-sky-500/25 dark:border-slate-800 hover:border-sky-500/50 text-slate-900 dark:text-slate-100"
                 }`}
               >
                 <div className="space-y-3">
                   <div
                     className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
                       isSelected
-                        ? "bg-sky-500 text-slate-950 border-sky-400"
-                        : "bg-slate-100 dark:bg-slate-950 text-sky-600 dark:text-sky-400 border-slate-200 dark:border-slate-800"
+                        ? "bg-sky-500 text-slate-950 border-sky-400 shadow-sm shadow-sky-500/30"
+                        : "bg-white/85 dark:bg-slate-950 text-sky-600 dark:text-sky-400 border-sky-500/20 dark:border-slate-800"
                     }`}
                   >
                     <Icon className="w-5 h-5" />
@@ -164,8 +164,8 @@ export default function PopularCategoriesTrustSection({
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-lg dark:shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800/80 pb-5">
+      <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md dark:shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-sky-500/15 dark:border-slate-800/80 pb-5">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
               Why Choose FixMate
@@ -177,7 +177,7 @@ export default function PopularCategoriesTrustSection({
           <Link
             href="/services"
             onClick={() => onNavigate?.()}
-            className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20 self-start sm:self-auto"
+            className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20 self-start sm:self-auto"
           >
             <span>Book a Repair</span>
             <ArrowRight className="w-4 h-4" />
@@ -190,9 +190,9 @@ export default function PopularCategoriesTrustSection({
             return (
               <div
                 key={stat.label}
-                className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 p-5 space-y-2.5"
+                className="rounded-2xl bg-white/85 dark:bg-slate-950/80 border border-sky-500/20 dark:border-slate-800 p-5 space-y-2.5 shadow-xs"
               >
-                <div className="w-10 h-10 rounded-xl bg-sky-500/10 border border-sky-500/25 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                <div className="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/25 flex items-center justify-center text-sky-600 dark:text-sky-400">
                   <Icon className="w-5 h-5" />
                 </div>
                 <p className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">

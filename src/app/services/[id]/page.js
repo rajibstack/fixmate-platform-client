@@ -122,7 +122,7 @@ function ReviewerAvatar({ src, name }) {
       src={src}
       alt={name || "Customer"}
       onError={() => setImgFailed(true)}
-      className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 shrink-0"
+      className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border border-sky-500/25 dark:border-slate-700 bg-white dark:bg-slate-800 shrink-0"
     />
   );
 }
@@ -878,7 +878,7 @@ export default function ServiceDetailsPage() {
   if (notFound || !service) {
     return (
       <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex items-center justify-center px-4 py-16 transition-colors duration-200">
-        <div className="max-w-md w-full bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-8 text-center shadow-xl dark:shadow-2xl space-y-4">
+        <div className="max-w-md w-full bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-8 text-center shadow-md dark:shadow-2xl space-y-4">
           <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/25 text-rose-600 dark:text-rose-400 flex items-center justify-center mx-auto">
             <AlertCircle className="w-7 h-7" />
           </div>
@@ -896,7 +896,7 @@ export default function ServiceDetailsPage() {
             <Link
               href="/services"
               onClick={() => setNavigating(true)}
-              className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20"
+              className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-sm px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Browse All Services</span>
@@ -934,8 +934,8 @@ export default function ServiceDetailsPage() {
           role="status"
           className={`fixed bottom-5 right-5 z-50 max-w-md rounded-2xl px-4 py-3.5 border shadow-2xl flex items-start gap-3 text-sm backdrop-blur ${
             toast.type === "success"
-              ? "bg-white/95 dark:bg-slate-900/95 border-emerald-500/40 text-emerald-800 dark:text-emerald-200"
-              : "bg-white/95 dark:bg-slate-900/95 border-rose-500/40 text-rose-800 dark:text-rose-200"
+              ? "bg-gradient-to-tl from-emerald-500/15 via-white to-white dark:from-emerald-500/20 dark:via-slate-900 dark:to-slate-900 border-emerald-500/40 text-emerald-800 dark:text-emerald-200"
+              : "bg-gradient-to-tl from-rose-500/15 via-white to-white dark:from-rose-500/20 dark:via-slate-900 dark:to-slate-900 border-rose-500/40 text-rose-800 dark:text-rose-200"
           }`}
         >
           {toast.type === "success" ? (
@@ -971,7 +971,7 @@ export default function ServiceDetailsPage() {
           <Link
             href="/services"
             onClick={() => setNavigating(true)}
-            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:hover:text-sky-400 transition"
+            className="inline-flex items-center gap-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-sky-600 dark:text-sky-400 transition"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Services</span>
@@ -979,7 +979,7 @@ export default function ServiceDetailsPage() {
         </div>
 
         {submittedSuccess && (
-          <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="bg-gradient-to-tl from-emerald-500/15 via-emerald-500/[0.04] to-white dark:from-emerald-500/20 dark:via-slate-900 dark:to-slate-900 border border-emerald-500/30 rounded-3xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-md dark:shadow-xl">
             <div className="flex items-start gap-3">
               <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
               <div>
@@ -995,7 +995,7 @@ export default function ServiceDetailsPage() {
             </div>
             <Link
               href="/dashboard/customer/bookings"
-              className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-md shadow-sky-500/20 shrink-0"
+              className="inline-flex items-center justify-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 font-semibold text-xs sm:text-sm px-4 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20 shrink-0"
             >
               <span>My Bookings</span>
               <ExternalLink className="w-4 h-4" />
@@ -1005,8 +1005,8 @@ export default function ServiceDetailsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 space-y-6">
-            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl overflow-hidden shadow-md dark:shadow-xl">
-              <div className="aspect-[16/10] w-full bg-slate-100 dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-center overflow-hidden">
+            <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl overflow-hidden shadow-md dark:shadow-xl">
+              <div className="aspect-[16/10] w-full bg-slate-100 dark:bg-slate-950 border-b border-sky-500/15 dark:border-slate-800/80 flex items-center justify-center overflow-hidden">
                 {showServicePhoto ? (
                   <img
                     src={serviceImageUrl}
@@ -1022,10 +1022,10 @@ export default function ServiceDetailsPage() {
               <div className="p-6 sm:p-8 space-y-4">
                 <div className="flex flex-wrap items-center justify-between gap-2.5">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-3 py-1 rounded-full bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25 text-xs font-semibold">
+                    <span className="px-3 py-1 rounded-full bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/25 text-xs font-semibold">
                       {service.category || "General Repair"}
                     </span>
-                    <span className="px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/80 text-xs font-medium">
+                    <span className="px-3 py-1 rounded-full bg-white/80 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-sky-500/20 dark:border-slate-700/80 text-xs font-medium">
                       {modeLabel}
                     </span>
                   </div>
@@ -1052,8 +1052,8 @@ export default function ServiceDetailsPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-3.5">
+            <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-sky-500/15 dark:border-slate-800/80 pb-3.5">
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <UserCheck className="w-5 h-5 text-sky-600 dark:text-sky-400" />
                   <span>Technician Summary</span>
@@ -1065,7 +1065,7 @@ export default function ServiceDetailsPage() {
                     <span>Verified Pro</span>
                   </span>
                 ) : (
-                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+                  <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
                     Verified Specialist
                   </span>
                 )}
@@ -1103,8 +1103,8 @@ export default function ServiceDetailsPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-5">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-slate-800/80 pb-4">
+            <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-5">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-sky-500/15 dark:border-slate-800/80 pb-4">
                 <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <MessageSquareQuote className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                   <span>Customer Reviews</span>
@@ -1154,7 +1154,7 @@ export default function ServiceDetailsPage() {
                     return (
                       <div
                         key={item?._id || item?.bookingId || index}
-                        className="rounded-2xl bg-slate-50 dark:bg-slate-950/75 border border-slate-200 dark:border-slate-800/90 p-4 space-y-2.5"
+                        className="rounded-2xl bg-white/85 dark:bg-slate-950/75 border border-sky-500/20 dark:border-slate-800/90 p-4 space-y-2.5 shadow-xs"
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-3.5 min-w-0">
@@ -1202,8 +1202,8 @@ export default function ServiceDetailsPage() {
           </div>
 
           <div className="lg:col-span-5 space-y-6 lg:sticky lg:top-20">
-            <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-6">
-              <div className="flex items-end justify-between border-b border-slate-200 dark:border-slate-800/80 pb-5">
+            <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-7 shadow-md dark:shadow-xl space-y-6">
+              <div className="flex items-end justify-between border-b border-sky-500/15 dark:border-slate-800/80 pb-5">
                 <div>
                   <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     Starting Price
@@ -1228,7 +1228,7 @@ export default function ServiceDetailsPage() {
               </div>
 
               <div className="space-y-3.5 text-sm">
-                <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-800/60">
+                <div className="flex items-center justify-between py-2 border-b border-sky-500/15 dark:border-slate-800/60">
                   <span className="text-slate-600 dark:text-slate-400 inline-flex items-center gap-2">
                     <Clock className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                     Estimated Duration
@@ -1238,7 +1238,7 @@ export default function ServiceDetailsPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between py-2 border-b border-slate-200 dark:border-slate-800/60">
+                <div className="flex items-center justify-between py-2 border-b border-sky-500/15 dark:border-slate-800/60">
                   <span className="text-slate-600 dark:text-slate-400 inline-flex items-center gap-2">
                     <Laptop className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                     Service Mode
@@ -1299,9 +1299,9 @@ export default function ServiceDetailsPage() {
       </div>
 
       {requestOpen && role === "customer" && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 my-auto">
-            <div className="flex items-start justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl max-w-xl w-full p-6 sm:p-7 shadow-2xl space-y-5 my-auto">
+            <div className="flex items-start justify-between gap-4 border-b border-sky-500/15 dark:border-slate-800 pb-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-sky-600 dark:text-sky-400">
                   Booking Request
@@ -1317,7 +1317,7 @@ export default function ServiceDetailsPage() {
                   setFormError("");
                 }}
                 aria-label="Close request modal"
-                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="p-2 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/70 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -1340,7 +1340,7 @@ export default function ServiceDetailsPage() {
                     type="text"
                     readOnly
                     value={sessionUser?.name || ""}
-                    className="w-full rounded-xl bg-slate-100 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none"
+                    className="w-full rounded-xl bg-white/60 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none"
                   />
                 </div>
 
@@ -1352,7 +1352,7 @@ export default function ServiceDetailsPage() {
                     type="email"
                     readOnly
                     value={sessionUser?.email || ""}
-                    className="w-full rounded-xl bg-slate-100 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none"
+                    className="w-full rounded-xl bg-white/60 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 px-3.5 py-2.5 text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed outline-none"
                   />
                 </div>
               </div>
@@ -1375,7 +1375,7 @@ export default function ServiceDetailsPage() {
                       value={formData.phone}
                       onChange={handleFieldChange}
                       placeholder="+880 17XX-XXXXXX"
-                      className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                      className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                     />
                   </div>
                 </div>
@@ -1397,7 +1397,7 @@ export default function ServiceDetailsPage() {
                       min={todayStr}
                       value={formData.preferredDate}
                       onChange={handleFieldChange}
-                      className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition dark:[color-scheme:dark]"
+                      className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition dark:[color-scheme:dark]"
                     />
                   </div>
                 </div>
@@ -1420,7 +1420,7 @@ export default function ServiceDetailsPage() {
                     value={formData.address}
                     onChange={handleFieldChange}
                     placeholder="House / Road / Area details"
-                    className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+                    className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 pl-10 pr-3.5 py-2.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
                   />
                 </div>
               </div>
@@ -1446,25 +1446,25 @@ export default function ServiceDetailsPage() {
                   value={formData.problemDescription}
                   onChange={handleFieldChange}
                   placeholder="Describe the issue clearly (at least 20 characters)..."
-                  className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 p-3.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-none"
+                  className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 p-3.5 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-200 dark:border-slate-800">
+              <div className="flex items-center justify-end gap-3 pt-2 border-t border-sky-500/15 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => {
                     setRequestOpen(false);
                     setFormError("");
                   }}
-                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/85 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-800 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer disabled:opacity-60"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-lg shadow-sky-500/20 cursor-pointer disabled:opacity-60"
                 >
                   {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
                   <span>{submitting ? "Submitting..." : "Submit Request"}</span>

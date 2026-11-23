@@ -297,16 +297,16 @@ export default function ChooseHowYouUseSection({
                 Boolean(card.highlighted);
 
               const cardSurfaceClass = isGolden
-                ? "bg-white dark:bg-slate-900 border-amber-400 dark:border-amber-400/80 ring-1 ring-amber-400/35 hover:border-amber-500"
+                ? "bg-gradient-to-tl from-amber-500/15 via-amber-500/[0.04] to-white dark:from-amber-500/20 dark:via-slate-900 dark:to-slate-900 border-amber-400 dark:border-amber-400/80 ring-1 ring-amber-400/35 hover:border-amber-500"
                 : isProStyle
-                ? "bg-white dark:bg-slate-900 border-sky-500/60 ring-1 ring-sky-500/25 hover:border-sky-500"
-                : "bg-slate-50/80 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-sky-500/40";
+                ? "bg-gradient-to-tl from-sky-500/20 via-sky-500/[0.06] to-white dark:from-sky-500/25 dark:via-slate-900 dark:to-slate-900 border-sky-500/60 ring-1 ring-sky-500/25 hover:border-sky-500"
+                : "bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border-sky-500/25 dark:border-slate-800 hover:border-sky-500/45";
 
               const badgeClass = isGolden
-                ? "bg-amber-50 dark:bg-amber-950/80 text-amber-500 dark:text-amber-400 border border-amber-400"
+                ? "bg-amber-50/90 dark:bg-amber-950/80 text-amber-600 dark:text-amber-400 border border-amber-400"
                 : isProStyle
-                ? "bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 border border-sky-400/60"
-                : "bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800";
+                ? "bg-sky-50/90 dark:bg-sky-950/80 text-sky-700 dark:text-sky-300 border border-sky-400/60"
+                : "bg-white/85 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-sky-500/20 dark:border-slate-800";
 
               const badgeIconClass = isGolden
                 ? "text-amber-500 dark:text-amber-400"
@@ -317,14 +317,18 @@ export default function ChooseHowYouUseSection({
                 : "text-sky-600 dark:text-sky-400";
 
               const checkBadgeClass = isGolden
-                ? "bg-amber-50 dark:bg-amber-950/80 border-amber-400 text-amber-500 dark:text-amber-400"
-                : "bg-sky-50 dark:bg-sky-950/80 border-sky-400/70 text-sky-600 dark:text-sky-400";
+                ? "bg-amber-50/90 dark:bg-amber-950/80 border-amber-400 text-amber-600 dark:text-amber-400"
+                : "bg-sky-50/90 dark:bg-sky-950/80 border-sky-400/70 text-sky-600 dark:text-sky-400";
 
               const buttonClass = isGolden
                 ? "bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold shadow-md shadow-amber-500/25"
                 : isProStyle
-                ? "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold shadow-md shadow-sky-500/20"
-                : "bg-white dark:bg-slate-800 hover:bg-sky-500 text-slate-900 dark:text-white hover:text-slate-950 font-semibold border border-slate-300 dark:border-slate-700 hover:border-sky-400";
+                ? "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold shadow-lg shadow-sky-500/20"
+                : "bg-white/90 dark:bg-slate-800 hover:bg-sky-500 text-slate-900 dark:text-white hover:text-slate-950 font-semibold border border-slate-300 dark:border-slate-700 hover:border-sky-400 shadow-xs";
+
+              const dividerClass = isGolden
+                ? "border-amber-500/20 dark:border-slate-800/80"
+                : "border-sky-500/15 dark:border-slate-800/80";
 
               return (
                 <article
@@ -356,7 +360,7 @@ export default function ChooseHowYouUseSection({
                       </p>
                     </div>
 
-                    <ul className="space-y-2.5 pt-2 border-t border-slate-200 dark:border-slate-800/80">
+                    <ul className={`space-y-2.5 pt-2 border-t ${dividerClass}`}>
                       {card.benefits.map((benefit) => (
                         <li
                           key={benefit}
@@ -373,7 +377,7 @@ export default function ChooseHowYouUseSection({
                     </ul>
                   </div>
 
-                  <div className="pt-6 mt-6 border-t border-slate-200 dark:border-slate-800/80">
+                  <div className={`pt-6 mt-6 border-t ${dividerClass}`}>
                     <Link
                       href={action.href}
                       onClick={(e) => handleRoleCardActionClick(e, card)}
@@ -397,8 +401,8 @@ export default function ChooseHowYouUseSection({
           aria-labelledby="role-popup-title"
           className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-4"
         >
-          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
-            <div className="flex items-start justify-between gap-3 border-b border-slate-200 dark:border-slate-800 pb-4">
+          <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between gap-3 border-b border-sky-500/15 dark:border-slate-800 pb-4">
               <div className="flex items-center gap-2.5">
                 <div className="w-10 h-10 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                   <AlertCircle className="w-5 h-5" />
@@ -415,7 +419,7 @@ export default function ChooseHowYouUseSection({
                 type="button"
                 onClick={closeRolePopup}
                 aria-label="Close popup"
-                className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+                className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/70 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -425,11 +429,11 @@ export default function ChooseHowYouUseSection({
               {rolePopup.message}
             </p>
 
-            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-200 dark:border-slate-800">
+            <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-sky-500/15 dark:border-slate-800">
               <button
                 type="button"
                 onClick={closeRolePopup}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer"
+                className="px-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/85 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-xs sm:text-sm font-medium text-slate-700 dark:text-slate-200 transition cursor-pointer"
               >
                 Close
               </button>
@@ -441,7 +445,7 @@ export default function ChooseHowYouUseSection({
                   setRolePopup(null);
                   router.push(target);
                 }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-md shadow-sky-500/20 cursor-pointer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs sm:text-sm font-bold transition shadow-lg shadow-sky-500/20 cursor-pointer"
               >
                 <span>{rolePopup.signupLabel}</span>
                 <ArrowRight className="w-4 h-4" />

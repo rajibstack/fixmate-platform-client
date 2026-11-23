@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -24,6 +24,13 @@ const statusStyles = {
   replied:
     "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300 border-emerald-500/30",
 };
+
+const FILTER_TABS = [
+  { key: "all", label: "All" },
+  { key: "unread", label: "Unread" },
+  { key: "read", label: "Read" },
+  { key: "replied", label: "Replied" },
+];
 
 export default function AdminMessagesPage() {
   const [messages, setMessages] = useState([]);
@@ -214,6 +221,26 @@ export default function AdminMessagesPage() {
     }
   };
 
+  const counts = useMemo(() => {
+    let unread = 0;
+    let read = 0;
+    let replied = 0;
+
+    for (const msg of messages) {
+      const st = msg?.status || "unread";
+      if (st === "unread") unread += 1;
+      else if (st === "read") read += 1;
+      else if (st === "replied") replied += 1;
+    }
+
+    return {
+      all: messages.length,
+      unread,
+      read,
+      replied,
+    };
+  }, [messages]);
+
   const filteredMessages =
     filter === "all"
       ? messages
@@ -224,42 +251,72 @@ export default function AdminMessagesPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xs dark:shadow-none">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-sky-600 dark:text-sky-400" />
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
+        <div className="text-center sm:text-left">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white flex items-center justify-center sm:justify-start gap-2.5">
+            <MessageSquare className="w-6 h-6 text-sky-600 dark:text-sky-400 shrink-0" />
             <span>Contact Messages</span>
           </h1>
-          <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+          <p className="text-slate-600 dark:text-slate-400 text-sm mt-1.5">
             Messages submitted from the public Contact Us page ({messages.length}{" "}
             total)
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {["all", "unread", "read", "replied"].map((tab) => (
-            <button
-              key={tab}
-              type="button"
-              onClick={() => setFilter(tab)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold capitalize transition cursor-pointer ${
-                filter === tab
-                  ? "bg-sky-500 text-slate-950"
-                  : "bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-800 hover:bg-slate-200 dark:hover:bg-slate-800"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5 mx-auto xl:mx-0">
+          <div
+            role="tablist"
+            aria-label="Message status filter"
+            className="inline-flex flex-wrap items-center justify-center bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-2 py-1.5 shadow-xs"
+          >
+            {FILTER_TABS.map((tab, index) => {
+              const active = filter === tab.key;
+              const tabCount = counts[tab.key] ?? 0;
+
+              return (
+                <div key={tab.key} className="inline-flex items-center">
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setFilter(tab.key)}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer whitespace-nowrap ${
+                      active
+                        ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
+                        : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-sky-500/10 dark:hover:bg-slate-800/70"
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span
+                      className={`text-xs ${
+                        active
+                          ? "text-slate-950/85 font-bold"
+                          : "text-slate-500 dark:text-slate-400"
+                      }`}
+                    >
+                      {tabCount}
+                    </span>
+                  </button>
+
+                  {index < FILTER_TABS.length - 1 && (
+                    <span
+                      aria-hidden="true"
+                      className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-1"
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
 
           <button
             type="button"
             onClick={() => fetchMessages({ silent: false })}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-200 transition cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 hover:border-sky-500/40 border border-slate-200 dark:border-slate-800 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 transition cursor-pointer shadow-xs"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
+            <RefreshCw className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
             <span>Refresh</span>
           </button>
         </div>
@@ -279,8 +336,8 @@ export default function AdminMessagesPage() {
           </button>
         </div>
       ) : filteredMessages.length === 0 ? (
-        <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3 shadow-md dark:shadow-xl">
-          <div className="w-12 h-12 rounded-2xl bg-sky-500/10 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-12 text-center space-y-3 shadow-md dark:shadow-xl">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <MessageSquare className="w-6 h-6" />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
@@ -307,7 +364,7 @@ export default function AdminMessagesPage() {
               <button
                 type="button"
                 onClick={() => fetchMessages({ silent: false })}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-950 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white text-xs sm:text-sm font-semibold transition cursor-pointer"
               >
                 <RefreshCw className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>Refresh inbox</span>
@@ -327,7 +384,7 @@ export default function AdminMessagesPage() {
             return (
               <div
                 key={id}
-                className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-2xl p-5 sm:p-6 space-y-4 shadow-xs dark:shadow-none transition"
+                className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-5 sm:p-6 space-y-4 shadow-md dark:shadow-lg transition"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="space-y-1.5">
@@ -370,7 +427,7 @@ export default function AdminMessagesPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2.5 text-xs text-slate-500 dark:text-slate-400">
-                      <span className="px-2.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium">
+                      <span className="px-2.5 py-0.5 rounded-full bg-white/85 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-medium">
                         {msg.topic || "General Inquiry"}
                       </span>
                       {msg.createdAt && (
@@ -398,7 +455,7 @@ export default function AdminMessagesPage() {
                       onChange={(e) =>
                         handleStatusChange(id, e.target.value)
                       }
-                      className="rounded-lg bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-200 px-2.5 py-1.5 focus:border-sky-500 focus:outline-none cursor-pointer"
+                      className="rounded-lg bg-white/90 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 text-xs text-slate-900 dark:text-slate-200 px-2.5 py-1.5 focus:border-sky-500 focus:outline-none cursor-pointer"
                     >
                       <option
                         value="unread"
@@ -433,12 +490,12 @@ export default function AdminMessagesPage() {
                   </div>
                 </div>
 
-                <p className="text-sm text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800/80 rounded-xl p-4 leading-relaxed whitespace-pre-line">
+                <p className="text-sm text-slate-700 dark:text-slate-300 bg-white/80 dark:bg-slate-950/80 border border-sky-500/15 dark:border-slate-800/80 rounded-xl p-4 leading-relaxed whitespace-pre-line">
                   {msg.message}
                 </p>
 
                 {currentStatus === "replied" && (
-                  <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                  <div className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Marked as replied</span>
                   </div>

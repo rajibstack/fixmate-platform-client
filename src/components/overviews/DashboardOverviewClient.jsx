@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CustomerOverview from "@/components/overviews/CustomerOverview";
 import TechnicianOverview from "@/components/overviews/TechnicianOverview";
@@ -70,7 +70,11 @@ export default function DashboardOverviewClient() {
   }, [loading, user, redirecting, router]);
 
   if (loading || !user || redirecting) {
-    return <DashboardPageSkeleton />;
+    return (
+      <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 p-4 sm:p-6 lg:p-8 transition-colors duration-200">
+        <DashboardPageSkeleton />
+      </div>
+    );
   }
 
   const role = (user?.role || "customer").toString().toLowerCase().trim();

@@ -9,6 +9,8 @@ import {
   AlertCircle,
   Save,
   User as UserIcon,
+  Phone,
+  MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -410,7 +412,7 @@ export default function UpdateProfilePage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
-      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90">
+      <div className="pb-5 border-b border-slate-200 dark:border-slate-800/90 text-center sm:text-left">
         <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
           Update profile
         </h1>
@@ -440,11 +442,11 @@ export default function UpdateProfilePage() {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-8 shadow-md dark:shadow-xl space-y-6"
+        className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl p-5 sm:p-8 shadow-md dark:shadow-xl space-y-6"
       >
         {/* Photo Upload Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 pb-6 border-b border-slate-200 dark:border-slate-800/80">
-          <div className="relative w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 pb-6 border-b border-sky-500/15 dark:border-slate-800/80">
+          <div className="relative w-20 h-20 rounded-full bg-white/85 dark:bg-slate-950 border border-sky-500/30 dark:border-slate-700 flex items-center justify-center overflow-hidden shrink-0 self-center sm:self-auto shadow-xs">
             {displayAvatar ? (
               <>
                 <img
@@ -457,21 +459,21 @@ export default function UpdateProfilePage() {
                   type="button"
                   onClick={handleRemovePhoto}
                   aria-label="Remove photo"
-                  className="absolute inset-0 bg-black/65 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition cursor-pointer"
+                  className="absolute inset-0 bg-slate-950/70 opacity-0 hover:opacity-100 flex items-center justify-center text-white transition cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </>
             ) : (
               <div className="flex flex-col items-center text-center px-1.5 text-slate-400 dark:text-slate-500">
-                <UserIcon className="w-5 h-5 mb-0.5 text-slate-400 dark:text-slate-600" />
+                <UserIcon className="w-5 h-5 mb-0.5 text-sky-600/75 dark:text-sky-400/75" />
                 <span className="text-[10px] leading-tight">No image yet</span>
               </div>
             )}
           </div>
 
-          <div className="space-y-1.5">
-            <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white transition cursor-pointer">
+          <div className="space-y-1.5 text-center sm:text-left">
+            <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/90 dark:bg-slate-800 hover:bg-sky-500/10 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 text-sm font-medium text-slate-900 dark:text-white transition cursor-pointer">
               {uploadingPhoto ? (
                 <FixMateSpinner compact />
               ) : (
@@ -510,16 +512,17 @@ export default function UpdateProfilePage() {
               value={formData.name}
               onChange={handleChange}
               placeholder="Your full name"
-              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+              className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
             />
           </div>
 
           <div>
             <label
               htmlFor="phone"
-              className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
             >
-              Phone
+              <Phone className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+              <span>Phone</span>
             </label>
             <input
               id="phone"
@@ -528,7 +531,7 @@ export default function UpdateProfilePage() {
               value={formData.phone}
               onChange={handleChange}
               placeholder="01812-445566"
-              className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+              className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
             />
           </div>
         </div>
@@ -550,7 +553,7 @@ export default function UpdateProfilePage() {
               readOnly
               aria-readonly="true"
               value={formData.email}
-              className="w-full rounded-xl bg-slate-100/80 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 outline-none cursor-not-allowed select-none"
+              className="w-full rounded-xl bg-white/60 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/90 px-4 py-3 text-sm text-slate-500 dark:text-slate-400 outline-none cursor-not-allowed select-none"
             />
           </div>
 
@@ -559,7 +562,7 @@ export default function UpdateProfilePage() {
               Role
             </span>
             <div className="h-[46px] flex items-center gap-2">
-              <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-300 border border-sky-500/25">
+              <span className="inline-flex items-center px-3.5 py-1.5 rounded-full text-xs font-semibold bg-sky-500/15 text-sky-700 dark:text-sky-300 border border-sky-500/30">
                 {formatRoleLabel(formData.role)}
               </span>
               {formData.role === "technician" && (
@@ -567,7 +570,7 @@ export default function UpdateProfilePage() {
                   className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
                     formData.isVerifiedPro
                       ? "bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-400/35"
-                      : "bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
+                      : "bg-white/80 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700"
                   }`}
                 >
                   {formData.isVerifiedPro ? "Verified Pro" : "Free"}
@@ -581,9 +584,10 @@ export default function UpdateProfilePage() {
         <div>
           <label
             htmlFor="area"
-            className="block text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
+            className="flex items-center gap-1.5 text-sm font-medium text-slate-800 dark:text-slate-200 mb-2"
           >
-            Area
+            <MapPin className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+            <span>Area</span>
           </label>
           <input
             id="area"
@@ -592,7 +596,7 @@ export default function UpdateProfilePage() {
             value={formData.area}
             onChange={handleChange}
             placeholder="Mirpur, Dhaka"
-            className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
+            className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition"
           />
         </div>
 
@@ -611,7 +615,7 @@ export default function UpdateProfilePage() {
             value={formData.bio}
             onChange={handleChange}
             placeholder="Share your repair experience, specialties, and warranty details..."
-            className="w-full rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-y"
+            className="w-full rounded-xl bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 px-4 py-3 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 outline-none transition resize-y"
           />
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5">
             Customers read this on your service pages.

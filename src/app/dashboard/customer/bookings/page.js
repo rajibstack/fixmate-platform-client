@@ -260,7 +260,7 @@ function JobTimelineTracker({ booking }) {
   const timeline = useMemo(() => buildTimelineState(booking), [booking]);
 
   return (
-    <div className="mt-4 pt-3.5 border-t border-slate-200 dark:border-slate-800/80 space-y-2.5">
+    <div className="mt-4 pt-3.5 border-t border-sky-500/15 dark:border-slate-800/80 space-y-2.5">
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
           Job Timeline
@@ -289,7 +289,7 @@ function JobTimelineTracker({ booking }) {
           const timestampLabel = formatTimelineTimestamp(step.changedAt);
 
           let cardStyle =
-            "bg-slate-100/80 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 text-slate-500";
+            "bg-white/75 dark:bg-slate-950/60 border-slate-200 dark:border-slate-800/80 text-slate-500";
           if (step.isCompleted) {
             cardStyle =
               "bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-200";
@@ -837,7 +837,7 @@ export default function CustomerMyBookingsPage() {
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* Header + Filter Tabs */}
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
-        <div>
+        <div className="text-center sm:text-left">
           <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
             My bookings
           </h1>
@@ -846,31 +846,45 @@ export default function CustomerMyBookingsPage() {
           </p>
         </div>
 
-        <div className="inline-flex flex-wrap items-center bg-white dark:bg-slate-900/95 border border-slate-200 dark:border-slate-800 rounded-xl p-1 gap-1 self-start lg:self-auto shadow-xs dark:shadow-none">
-          {tabs.map((tab) => {
+        <div
+          role="tablist"
+          aria-label="Booking status filter"
+          className="inline-flex flex-wrap items-center justify-center sm:justify-start bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl px-2 py-1.5 mx-auto lg:mx-0 self-center lg:self-auto shadow-xs"
+        >
+          {tabs.map((tab, index) => {
             const active = activeTab === tab.key;
             return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-medium transition cursor-pointer ${
-                  active
-                    ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
-                    : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
-                }`}
-              >
-                <span>{tab.label}</span>
-                <span
-                  className={`text-xs ${
+              <div key={tab.key} className="inline-flex items-center">
+                <button
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium transition cursor-pointer whitespace-nowrap ${
                     active
-                      ? "text-slate-950/80 font-bold"
-                      : "text-slate-500 dark:text-slate-400"
+                      ? "bg-sky-500 text-slate-950 font-semibold shadow-sm"
+                      : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-sky-500/10 dark:hover:bg-slate-800/70"
                   }`}
                 >
-                  {tab.count}
-                </span>
-              </button>
+                  <span>{tab.label}</span>
+                  <span
+                    className={`text-xs ${
+                      active
+                        ? "text-slate-950/85 font-bold"
+                        : "text-slate-500 dark:text-slate-400"
+                    }`}
+                  >
+                    {tab.count}
+                  </span>
+                </button>
+
+                {index < tabs.length - 1 && (
+                  <span
+                    aria-hidden="true"
+                    className="h-5 w-px bg-slate-200 dark:bg-slate-800 mx-1"
+                  />
+                )}
+              </div>
             );
           })}
         </div>
@@ -896,8 +910,8 @@ export default function CustomerMyBookingsPage() {
 
       {/* Bookings List / States */}
       {filteredBookings.length === 0 ? (
-        <div className="py-16 px-6 text-center bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
-          <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+        <div className="py-16 px-6 text-center bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl space-y-3 shadow-md dark:shadow-none">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
             <Wrench className="w-6 h-6" />
           </div>
           <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
@@ -949,11 +963,11 @@ export default function CustomerMyBookingsPage() {
             return (
               <div
                 key={id}
-                className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700/90 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
+                className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-3xl p-4 sm:p-5 shadow-md dark:shadow-xl transition flex flex-col xl:flex-row xl:items-stretch justify-between gap-5"
               >
                 {/* Left Section: Fixed-Size Thumbnail + Info + Problem Description + Saved Review + Job Timeline */}
                 <div className="flex flex-col sm:flex-row sm:items-start gap-4 sm:gap-5 flex-1 min-w-0">
-                  <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                  <div className="w-full h-36 sm:w-36 sm:h-28 rounded-2xl bg-white/85 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
                     <BookingThumbnail
                       src={booking?.serviceImage}
                       alt={booking?.serviceTitle || "Repair Service"}
@@ -994,7 +1008,7 @@ export default function CustomerMyBookingsPage() {
                     )}
 
                     {hasReview && (
-                      <div className="mt-2 rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-amber-400/30 dark:border-amber-400/20 px-3.5 py-2.5 space-y-1">
+                      <div className="mt-2 rounded-2xl bg-white/80 dark:bg-slate-950/80 border border-amber-400/30 dark:border-amber-400/20 px-3.5 py-2.5 space-y-1">
                         <div className="flex items-center gap-1.5">
                           {[1, 2, 3, 4, 5].map((star) => (
                             <Star
@@ -1023,7 +1037,7 @@ export default function CustomerMyBookingsPage() {
                 </div>
 
                 {/* Right Section: Expanded Leftward, No Top Dash, Side-by-Side Badges & Action */}
-                <div className="w-full xl:w-[27rem] xl:pl-6 xl:border-l xl:border-dashed xl:border-slate-200 dark:xl:border-slate-800 flex flex-col justify-between gap-4 shrink-0">
+                <div className="w-full xl:w-[27rem] xl:pl-6 xl:border-l xl:border-dashed xl:border-sky-500/20 dark:xl:border-slate-800 flex flex-col justify-between gap-4 shrink-0">
                   <div className="flex items-start justify-between gap-4">
                     <span className="text-xs font-medium text-slate-500 dark:text-slate-400 pt-0.5">
                       Ticket {getTicketCode(booking)}
@@ -1033,7 +1047,7 @@ export default function CustomerMyBookingsPage() {
                       <span className="block text-[11px] text-slate-500 dark:text-slate-400 leading-tight">
                         {amountLabel}
                       </span>
-                      <span className="text-2xl font-bold text-slate-900 dark:text-white leading-tight">
+                      <span className="text-2xl font-bold text-sky-600 dark:text-sky-400 leading-tight">
                         ${amount}
                       </span>
                     </div>

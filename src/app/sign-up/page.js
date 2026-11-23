@@ -222,10 +222,10 @@ function SignUpContent() {
   const isBusy = loading || googleLoading;
 
   return (
-    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-10 sm:py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+    <div className="relative min-h-[calc(100vh-4rem)] overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 py-10 sm:py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center transition-colors duration-200">
       <div className="pointer-events-none absolute -top-28 left-1/2 -translate-x-1/2 w-[780px] h-[360px] rounded-full bg-sky-500/10 blur-3xl" />
 
-      <div className="relative w-full max-w-4xl bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border border-slate-200/90 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl dark:shadow-2xl">
+      <div className="relative w-full max-w-4xl bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 backdrop-blur-md border border-sky-500/25 dark:border-slate-800 rounded-3xl p-6 sm:p-8 shadow-md dark:shadow-2xl">
         <div className="text-center mb-6">
           <Link
             href="/"
@@ -255,7 +255,7 @@ function SignUpContent() {
         )}
 
         {isBusy ? (
-          <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 px-4 py-8">
+          <div className="rounded-2xl bg-white/80 dark:bg-slate-950/80 border border-sky-500/20 dark:border-slate-800 px-4 py-8">
             <FixMateSpinner
               label={
                 googleLoading
@@ -277,8 +277,8 @@ function SignUpContent() {
                   onClick={() => setAccountType("customer")}
                   className={`text-left cursor-pointer border rounded-2xl p-3.5 transition ${
                     accountType === "customer"
-                      ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white ring-1 ring-sky-500/30"
-                      : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
+                      ? "border-sky-500 bg-sky-500/15 text-slate-900 dark:text-white ring-1 ring-sky-500/30"
+                      : "border-sky-500/20 dark:border-slate-800 bg-white/80 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-sky-500/40 dark:hover:border-slate-700"
                   }`}
                 >
                   <p className="font-semibold text-sm text-slate-900 dark:text-white">
@@ -294,8 +294,8 @@ function SignUpContent() {
                   onClick={() => setAccountType("technician")}
                   className={`text-left cursor-pointer border rounded-2xl p-3.5 transition ${
                     accountType === "technician"
-                      ? "border-sky-500 bg-sky-500/10 text-slate-900 dark:text-white ring-1 ring-sky-500/30"
-                      : "border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-slate-400 dark:hover:border-slate-700"
+                      ? "border-sky-500 bg-sky-500/15 text-slate-900 dark:text-white ring-1 ring-sky-500/30"
+                      : "border-sky-500/20 dark:border-slate-800 bg-white/80 dark:bg-slate-950 text-slate-600 dark:text-slate-400 hover:border-sky-500/40 dark:hover:border-slate-700"
                   }`}
                 >
                   <p className="font-semibold text-sm text-slate-900 dark:text-white">
@@ -324,7 +324,7 @@ function SignUpContent() {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Enter your full name"
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
+                  className="w-full px-4 py-2.5 bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
                 />
               </div>
 
@@ -343,7 +343,7 @@ function SignUpContent() {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="name@company.com"
-                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
+                  className="w-full px-4 py-2.5 bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
                 />
               </div>
             </div>
@@ -365,7 +365,7 @@ function SignUpContent() {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Create a password"
-                    className="w-full pl-4 pr-11 py-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
+                    className="w-full pl-4 pr-11 py-2.5 bg-white/85 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500/20 transition text-sm"
                   />
                   <button
                     type="button"
@@ -418,7 +418,7 @@ function SignUpContent() {
                 </ul>
               </div>
 
-              <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/75 border border-slate-200 dark:border-slate-800 p-3.5 sm:mt-6">
+              <div className="rounded-2xl bg-white/80 dark:bg-slate-950/75 border border-sky-500/20 dark:border-slate-800 p-3.5 sm:mt-6">
                 <ul className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400">
                   {ACCOUNT_TYPE_NOTES.map((note) => (
                     <li key={note} className="flex items-start gap-2">
@@ -444,7 +444,7 @@ function SignUpContent() {
                   type="button"
                   disabled={isBusy}
                   onClick={() => handleGoogleSignUp()}
-                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-white dark:bg-slate-950 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
+                  className="w-full cursor-pointer disabled:cursor-not-allowed bg-white/90 dark:bg-slate-950 hover:bg-sky-500/10 dark:hover:bg-slate-800 disabled:opacity-50 border border-slate-300 dark:border-slate-800 text-slate-900 dark:text-white font-medium py-3 rounded-xl transition text-sm flex items-center justify-center gap-3 shadow-xs dark:shadow-none"
                 >
                   <svg className="w-5 h-5" viewBox="0 0 24 24">
                     <path

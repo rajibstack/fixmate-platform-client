@@ -14,6 +14,7 @@ import {
   Sparkles,
   Lock,
   Check,
+  Tag,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -579,8 +580,8 @@ export default function MyServicesPage() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-slate-200 dark:border-slate-800/90">
-        <div>
-          <div className="flex flex-wrap items-center gap-2.5">
+        <div className="text-center sm:text-left">
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2.5">
             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-white">
               My services
             </h1>
@@ -591,7 +592,7 @@ export default function MyServicesPage() {
                 <span>Verified Pro</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-white dark:bg-slate-800/90 text-slate-700 dark:text-slate-300 border border-sky-500/25 dark:border-slate-700">
                 <span>
                   Free Plan ({services.length}/{FREE_SERVICE_LIMIT} services)
                 </span>
@@ -603,7 +604,7 @@ export default function MyServicesPage() {
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2.5 self-center sm:self-auto">
           {!isPro && (
             <button
               type="button"
@@ -621,7 +622,7 @@ export default function MyServicesPage() {
               type="button"
               onClick={() => setUpgradeModalOpen(true)}
               disabled={upgradingPro}
-              className="inline-flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-amber-700 dark:text-amber-300 border border-amber-400/35 dark:border-amber-400/30 font-semibold text-sm px-5 py-2.5 rounded-xl transition cursor-pointer disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-amber-700 dark:text-amber-300 border border-amber-400/35 dark:border-amber-400/30 font-semibold text-sm px-5 py-2.5 rounded-xl transition cursor-pointer disabled:opacity-60"
             >
               <Lock className="w-4 h-4" />
               <span>Limit reached (3/3) — Unlock Pro</span>
@@ -658,7 +659,7 @@ export default function MyServicesPage() {
           className={`rounded-2xl px-4 py-3.5 border flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sm ${
             hasReachedFreeLimit
               ? "bg-rose-500/10 border-rose-500/30 text-rose-800 dark:text-rose-200"
-              : "bg-white dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 shadow-xs dark:shadow-none"
+              : "bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border-sky-500/25 dark:border-slate-800 text-slate-700 dark:text-slate-300 shadow-xs"
           }`}
         >
           <p>
@@ -716,140 +717,243 @@ export default function MyServicesPage() {
         </div>
       )}
 
-      <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
-        {services.length === 0 ? (
-          <div className="py-16 px-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
-              <Wrench className="w-6 h-6" />
-            </div>
-            <h2 className="text-base font-bold text-slate-900 dark:text-white">
-              No services listed yet
-            </h2>
-            <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
-              Create your first repair service listing to start receiving customer
-              requests after admin approval.
-            </p>
-            <div className="pt-2">
-              <Link
-                href="/dashboard/technician/add-service"
-                onClick={() => setNavigating(true)}
-                className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add a service</span>
-              </Link>
-            </div>
+      {services.length === 0 ? (
+        <div className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl py-16 px-6 text-center space-y-3">
+          <div className="w-12 h-12 rounded-2xl bg-sky-500/15 border border-sky-500/25 text-sky-600 dark:text-sky-400 flex items-center justify-center mx-auto">
+            <Wrench className="w-6 h-6" />
           </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-slate-200 dark:border-slate-800/90 text-xs font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-950/40">
-                  <th className="py-4 px-5">Service</th>
-                  <th className="py-4 px-4">Category</th>
-                  <th className="py-4 px-4">Price</th>
-                  <th className="py-4 px-4">Review</th>
-                  <th className="py-4 px-4">Available</th>
-                  <th className="py-4 px-5 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 dark:divide-slate-800/70 text-sm">
-                {services.map((service) => {
-                  const id = service._id || service.id;
-                  const isAvailable = service.available ?? true;
-                  const isDeleting = deletingId === id;
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+            No services listed yet
+          </h2>
+          <p className="text-sm text-slate-600 dark:text-slate-400 max-w-md mx-auto">
+            Create your first repair service listing to start receiving customer
+            requests after admin approval.
+          </p>
+          <div className="pt-2">
+            <Link
+              href="/dashboard/technician/add-service"
+              onClick={() => setNavigating(true)}
+              className="inline-flex items-center gap-2 bg-sky-500 hover:bg-sky-400 text-slate-950 text-sm font-semibold px-5 py-2.5 rounded-xl transition shadow-lg shadow-sky-500/20"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Add a service</span>
+            </Link>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden lg:block bg-gradient-to-tl from-sky-500/10 via-sky-500/[0.03] to-white dark:from-sky-500/15 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 dark:border-slate-800 rounded-3xl shadow-md dark:shadow-xl overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-sky-500/15 dark:border-slate-800/90 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 bg-sky-500/[0.04] dark:bg-slate-950/50">
+                    <th className="py-4 px-5">Service</th>
+                    <th className="py-4 px-4">Category</th>
+                    <th className="py-4 px-4">Price</th>
+                    <th className="py-4 px-4">Review</th>
+                    <th className="py-4 px-4">Available</th>
+                    <th className="py-4 px-5 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sky-500/15 dark:divide-slate-800/70 text-sm">
+                  {services.map((service) => {
+                    const id = service._id || service.id;
+                    const isAvailable = service.available ?? true;
+                    const isDeleting = deletingId === id;
 
-                  return (
-                    <tr
-                      key={id}
-                      className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors"
-                    >
-                      <td className="py-4 px-5">
-                        <div className="flex items-center gap-3.5">
-                          <div className="w-12 h-10 rounded-xl bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
-                            <ServiceThumbnail
-                              src={service.image}
-                              alt={service.title}
-                            />
+                    return (
+                      <tr
+                        key={id}
+                        className="hover:bg-sky-500/[0.05] dark:hover:bg-slate-800/40 transition-colors"
+                      >
+                        <td className="py-4 px-5">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-12 h-10 rounded-xl bg-white/85 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                              <ServiceThumbnail
+                                src={service.image}
+                                alt={service.title}
+                              />
+                            </div>
+                            <span className="font-semibold text-slate-900 dark:text-white">
+                              {service.title}
+                            </span>
                           </div>
-                          <span className="font-semibold text-slate-900 dark:text-white">
-                            {service.title}
-                          </span>
-                        </div>
-                      </td>
+                        </td>
 
-                      <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
-                        {service.category}
-                      </td>
+                        <td className="py-4 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">
+                          {service.category}
+                        </td>
 
-                      <td className="py-4 px-4 text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
-                        ${Number(service.price || 0)}
-                      </td>
+                        <td className="py-4 px-4 text-sky-600 dark:text-sky-400 font-semibold whitespace-nowrap">
+                          ${Number(service.price || 0)}
+                        </td>
 
-                      <td className="py-4 px-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getReviewBadgeStyle(
-                            service.status
-                          )}`}
-                        >
-                          {formatReviewLabel(service.status)}
-                        </span>
-                      </td>
-
-                      <td className="py-4 px-4 whitespace-nowrap">
-                        <button
-                          type="button"
-                          role="switch"
-                          aria-checked={isAvailable}
-                          aria-label={`Toggle availability for ${service.title}`}
-                          disabled={togglingId === id}
-                          onClick={() => handleToggleAvailable(service)}
-                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer disabled:opacity-60 ${
-                            isAvailable
-                              ? "bg-sky-500"
-                              : "bg-slate-300 dark:bg-slate-700 border border-slate-400/50 dark:border-slate-600"
-                          }`}
-                        >
+                        <td className="py-4 px-4 whitespace-nowrap">
                           <span
-                            className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getReviewBadgeStyle(
+                              service.status
+                            )}`}
+                          >
+                            {formatReviewLabel(service.status)}
+                          </span>
+                        </td>
+
+                        <td className="py-4 px-4 whitespace-nowrap">
+                          <button
+                            type="button"
+                            role="switch"
+                            aria-checked={isAvailable}
+                            aria-label={`Toggle availability for ${service.title}`}
+                            disabled={togglingId === id}
+                            onClick={() => handleToggleAvailable(service)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer disabled:opacity-60 ${
                               isAvailable
-                                ? "translate-x-6 bg-slate-950"
-                                : "translate-x-1 bg-white dark:bg-slate-300"
+                                ? "bg-sky-500"
+                                : "bg-slate-300 dark:bg-slate-700 border border-slate-400/50 dark:border-slate-600"
                             }`}
-                          />
-                        </button>
-                      </td>
-
-                      <td className="py-4 px-5 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-2.5">
-                          <button
-                            type="button"
-                            onClick={() => openEditModal(service)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium transition cursor-pointer"
                           >
-                            <Pencil className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
-                            <span>Edit</span>
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                                isAvailable
+                                  ? "translate-x-6 bg-slate-950"
+                                  : "translate-x-1 bg-white dark:bg-slate-300"
+                              }`}
+                            />
                           </button>
+                        </td>
 
-                          <button
-                            type="button"
-                            disabled={isDeleting}
-                            onClick={() => setServiceToDelete(service)}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 dark:border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                            <span>{isDeleting ? "Deleting..." : "Delete"}</span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        <td className="py-4 px-5 text-right whitespace-nowrap">
+                          <div className="inline-flex items-center gap-2.5">
+                            <button
+                              type="button"
+                              onClick={() => openEditModal(service)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium transition cursor-pointer"
+                            >
+                              <Pencil className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                              <span>Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled={isDeleting}
+                              onClick={() => setServiceToDelete(service)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-rose-500/30 dark:border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>
+                                {isDeleting ? "Deleting..." : "Delete"}
+                              </span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Mobile / Tablet Card View */}
+          <div className="lg:hidden space-y-3.5">
+            {services.map((service) => {
+              const id = service._id || service.id;
+              const isAvailable = service.available ?? true;
+              const isDeleting = deletingId === id;
+
+              return (
+                <div
+                  key={id}
+                  className="bg-gradient-to-tl from-sky-500/15 via-sky-500/[0.04] to-white dark:from-sky-500/20 dark:via-slate-900 dark:to-slate-900 border border-sky-500/25 hover:border-sky-500/45 dark:border-slate-800 rounded-2xl p-4 shadow-md dark:shadow-lg space-y-3.5 transition"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-12 h-11 rounded-xl bg-white/85 dark:bg-slate-950 border border-sky-500/20 dark:border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+                        <ServiceThumbnail
+                          src={service.image}
+                          alt={service.title}
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                          {service.title}
+                        </h2>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 inline-flex items-center gap-1 mt-0.5 truncate">
+                          <Tag className="w-3 h-3 text-sky-600 dark:text-sky-400 shrink-0" />
+                          <span>{service.category}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <span className="text-base sm:text-lg font-bold text-sky-600 dark:text-sky-400 shrink-0">
+                      ${Number(service.price || 0)}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t border-sky-500/15 dark:border-slate-800/80">
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getReviewBadgeStyle(
+                        service.status
+                      )}`}
+                    >
+                      {formatReviewLabel(service.status)}
+                    </span>
+
+                    <div className="inline-flex items-center gap-2">
+                      <span className="text-xs font-medium text-slate-600 dark:text-slate-400">
+                        {isAvailable ? "Available" : "Paused"}
+                      </span>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={isAvailable}
+                        aria-label={`Toggle availability for ${service.title}`}
+                        disabled={togglingId === id}
+                        onClick={() => handleToggleAvailable(service)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer disabled:opacity-60 ${
+                          isAvailable
+                            ? "bg-sky-500"
+                            : "bg-slate-300 dark:bg-slate-700 border border-slate-400/50 dark:border-slate-600"
+                        }`}
+                      >
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full transition-transform ${
+                            isAvailable
+                              ? "translate-x-6 bg-slate-950"
+                              : "translate-x-1 bg-white dark:bg-slate-300"
+                          }`}
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2.5 border-t border-sky-500/15 dark:border-slate-800/80 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(service)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-medium transition cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                      <span>Edit</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      disabled={isDeleting}
+                      onClick={() => setServiceToDelete(service)}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border border-rose-500/30 dark:border-rose-500/20 bg-rose-500/10 hover:bg-rose-500/20 text-rose-700 dark:text-rose-300 text-xs font-medium transition cursor-pointer disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>{isDeleting ? "Deleting..." : "Delete"}</span>
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Upgrade to Pro Popup Modal */}
       {upgradeModalOpen && !isPro && (
@@ -873,6 +977,7 @@ export default function MyServicesPage() {
                 type="button"
                 disabled={upgradingPro}
                 onClick={() => setUpgradeModalOpen(false)}
+                aria-label="Close upgrade modal"
                 className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
@@ -898,7 +1003,9 @@ export default function MyServicesPage() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                  <span>Display Verified Pro badge on your profile & services</span>
+                  <span>
+                    Display Verified Pro badge on your profile &amp; services
+                  </span>
                 </li>
               </ul>
             </div>
@@ -956,6 +1063,7 @@ export default function MyServicesPage() {
               <button
                 type="button"
                 onClick={() => setEditingService(null)}
+                aria-label="Close edit modal"
                 className="p-1.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
               >
                 <X className="w-4 h-4" />
