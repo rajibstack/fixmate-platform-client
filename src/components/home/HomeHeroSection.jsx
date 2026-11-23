@@ -86,7 +86,6 @@ export default function HomeHeroSection({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
   const [brokenImages, setBrokenImages] = useState({});
 
   const totalSlides = HERO_SLIDES.length;
@@ -107,12 +106,11 @@ export default function HomeHeroSection({
   }, [activeIndex, goToSlide]);
 
   useEffect(() => {
-    if (isPaused) return;
     const timer = setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % totalSlides);
     }, 2800);
     return () => clearInterval(timer);
-  }, [isPaused, totalSlides]);
+  }, [totalSlides]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -144,8 +142,6 @@ export default function HomeHeroSection({
     <section
       aria-roledescription="carousel"
       aria-label="Featured repair highlights"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       className="relative h-auto lg:h-[700px] min-h-[680px] sm:min-h-[640px] lg:min-h-[700px] flex items-center overflow-hidden border-b border-slate-200 dark:border-slate-800/80 bg-white dark:bg-slate-950 transition-colors duration-300"
     >
       {/* Clearer background image layer with smooth crossfade */}

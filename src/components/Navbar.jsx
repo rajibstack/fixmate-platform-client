@@ -18,6 +18,9 @@ import {
   LogOut,
   Menu,
   X,
+  Home,
+  Info,
+  Phone,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeProvider";
@@ -124,6 +127,8 @@ export default function Navbar() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [avatarError, setAvatarError] = useState(false);
   const dropdownRef = useRef(null);
+  const mobileMenuRef = useRef(null);
+  const mobileToggleRef = useRef(null);
 
   const loadUser = useCallback(() => {
     const sessionUser = readStoredSessionUser();
@@ -154,6 +159,14 @@ export default function Navbar() {
     const handleOutsideClick = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
         setMenuOpen(false);
+      }
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(e.target) &&
+        mobileToggleRef.current &&
+        !mobileToggleRef.current.contains(e.target)
+      ) {
+        setMobileNavOpen(false);
       }
     };
 
@@ -187,10 +200,10 @@ export default function Navbar() {
   };
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Services", href: "/services" },
-    { name: "About Us", href: "/about" },
-    { name: "Contact", href: "/contact" },
+    { name: "Home", href: "/", icon: Home },
+    { name: "Services", href: "/services", icon: Wrench },
+    { name: "About Us", href: "/about", icon: Info },
+    { name: "Contact", href: "/contact", icon: Phone },
   ];
 
   const isNavItemActive = (href) => {
@@ -214,6 +227,7 @@ export default function Navbar() {
         {/* Left: Mobile Toggle + Brand */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           <button
+            ref={mobileToggleRef}
             type="button"
             onClick={() => setMobileNavOpen((prev) => !prev)}
             aria-label={
@@ -242,24 +256,32 @@ export default function Navbar() {
           </Link>
         </div>
 
-        {/* Desktop Nav Links */}
+        {/* Desktop & Laptop Nav Links with Icons */}
         <nav
           aria-label="Primary Navigation"
-          className="hidden md:flex items-center gap-7"
+          className="hidden md:flex items-center gap-7 lg:gap-10"
         >
           {navLinks.map((item) => {
+            const Icon = item.icon;
             const active = isNavItemActive(item.href);
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`text-sm font-medium transition ${
+                className={`inline-flex items-center gap-2 text-sm font-medium transition whitespace-nowrap ${
                   active
-                    ? "text-sky-600 dark:text-sky-400"
+                    ? "text-sky-600 dark:text-sky-400 font-semibold"
                     : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
                 }`}
               >
-                {item.name}
+                <Icon
+                  className={`w-4 h-4 shrink-0 ${
+                    active
+                      ? "text-sky-600 dark:text-sky-400"
+                      : "text-slate-400 dark:text-slate-400"
+                  }`}
+                />
+                <span>{item.name}</span>
               </Link>
             );
           })}
@@ -393,29 +415,59 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Navigation Drawer / Dropdown */}
+      {/* Compact Mobile Page Menu Card */}
       {mobileNavOpen && (
         <nav
+          ref={mobileMenuRef}
           aria-label="Mobile Navigation"
-          className="md:hidden bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800/90 px-4 py-3 space-y-1"
+          className="md:hidden absolute left-3 mt-1.5 w-52 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden z-50"
         >
-          {navLinks.map((item) => {
-            const active = isNavItemActive(item.href);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileNavOpen(false)}
-                className={`block px-3.5 py-2.5 rounded-xl text-sm font-medium transition ${
-                  active
-                    ? "bg-sky-500/15 text-sky-700 dark:text-sky-400 border border-sky-500/25 font-semibold"
-                    : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70"
-                }`}
-              >
-                {item.name}
-              </Link>
-            );
-          })}
+          <div className="px-3.5 py-2.5 flex items-center justify-between">
+            <span className="inline-flex items-center gap-2 text-base font-bold tracking-tight text-slate-900 dark:text-white">
+              <span className="w-7 h-7 rounded-lg bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400">
+                <Wrench className="w-3.5 h-3.5" />
+              </span>
+              <span>
+                Fix<span className="text-sky-600 dark:text-sky-400">Mate</span>
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={() => setMobileNavOpen(false)}
+              aria-label="Close navigation menu"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <div className="py-1 space-y-0.5">
+            {navLinks.map((item) => {
+              const Icon = item.icon;
+              const active = isNavItemActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className={`flex items-center gap-2.5 px-3.5 py-2 text-sm transition ${
+                    active
+                      ? "bg-sky-500/15 text-sky-700 dark:text-sky-400 font-semibold"
+                      : "text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/80 hover:text-sky-600 dark:hover:text-sky-400"
+                  }`}
+                >
+                  <Icon
+                    className={`w-4 h-4 shrink-0 ${
+                      active
+                        ? "text-sky-600 dark:text-sky-400"
+                        : "text-slate-400"
+                    }`}
+                  />
+                  <span className="truncate">{item.name}</span>
+                </Link>
+              );
+            })}
+          </div>
         </nav>
       )}
     </header>
