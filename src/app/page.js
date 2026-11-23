@@ -9,6 +9,7 @@ import PopularCategoriesTrustSection, {
   POPULAR_CATEGORIES,
 } from "@/components/home/PopularCategoriesTrustSection";
 import CustomerReviewsSection from "@/components/home/CustomerReviewsSection";
+import ChooseHowYouUseSection from "@/components/services/ChooseHowYouUseSection";
 
 
 function isServiceApprovedAndAvailable(service) {
@@ -467,6 +468,8 @@ export default function HomePage() {
         onNavigate={() => setNavigating(true)}
         resolveTechnicianName={(srv) => resolveTechnicianName(srv, currentUser)}
       />
+
+      <ChooseHowYouUseSection />
 
       <HowFixMateWorksHomeSection />
 

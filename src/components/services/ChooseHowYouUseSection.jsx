@@ -22,6 +22,7 @@ const DEFAULT_ROLE_CARDS = [
       "Hassle-free device & home appliance repairs with pay-after-service trust.",
     priceTag: "Free to Join",
     icon: User,
+    variant: "customer",
     highlighted: false,
     benefits: [
       "Browse verified technicians & transparent starting prices",
@@ -41,7 +42,8 @@ const DEFAULT_ROLE_CARDS = [
     subtitle: "Ideal for independent technicians getting started on FixMate.",
     priceTag: "$0 / month",
     icon: Sparkles,
-    highlighted: false,
+    variant: "free-pro",
+    highlighted: true,
     benefits: [
       "List up to 3 repair services in your specialist categories",
       "Receive customer repair requests & update live job progress",
@@ -61,6 +63,7 @@ const DEFAULT_ROLE_CARDS = [
       "Built for growing repair pros who want unlimited listings & priority trust.",
     priceTag: "$19 / month",
     icon: Crown,
+    variant: "golden-pro",
     highlighted: true,
     benefits: [
       "Unlimited service listings across all supported repair categories",
@@ -285,29 +288,61 @@ export default function ChooseHowYouUseSection({
               const Icon = card.icon || User;
               const action = getCardActionDisplay(card);
 
+              const isGolden =
+                card.variant === "golden-pro" || card.key === "pro-technician";
+              const isProStyle =
+                isGolden ||
+                card.variant === "free-pro" ||
+                card.key === "free-technician" ||
+                Boolean(card.highlighted);
+
+              const cardSurfaceClass = isGolden
+                ? "bg-white dark:bg-slate-900 border-amber-400 dark:border-amber-400/80 ring-1 ring-amber-400/35 hover:border-amber-500"
+                : isProStyle
+                ? "bg-white dark:bg-slate-900 border-sky-500/60 ring-1 ring-sky-500/25 hover:border-sky-500"
+                : "bg-slate-50/80 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-sky-500/40";
+
+              const badgeClass = isGolden
+                ? "bg-amber-50 dark:bg-amber-950/80 text-amber-500 dark:text-amber-400 border border-amber-400"
+                : isProStyle
+                ? "bg-sky-50 dark:bg-sky-950/80 text-sky-600 dark:text-sky-300 border border-sky-400/60"
+                : "bg-slate-100 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800";
+
+              const badgeIconClass = isGolden
+                ? "text-amber-500 dark:text-amber-400"
+                : "text-sky-600 dark:text-sky-400";
+
+              const priceClass = isGolden
+                ? "text-amber-500 dark:text-amber-400"
+                : "text-sky-600 dark:text-sky-400";
+
+              const checkBadgeClass = isGolden
+                ? "bg-amber-50 dark:bg-amber-950/80 border-amber-400 text-amber-500 dark:text-amber-400"
+                : "bg-sky-50 dark:bg-sky-950/80 border-sky-400/70 text-sky-600 dark:text-sky-400";
+
+              const buttonClass = isGolden
+                ? "bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold shadow-md shadow-amber-500/25"
+                : isProStyle
+                ? "bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold shadow-md shadow-sky-500/20"
+                : "bg-white dark:bg-slate-800 hover:bg-sky-500 text-slate-900 dark:text-white hover:text-slate-950 font-semibold border border-slate-300 dark:border-slate-700 hover:border-sky-400";
+
               return (
                 <article
                   key={card.key}
-                  className={`h-full flex flex-col justify-between rounded-3xl p-6 transition shadow-md dark:shadow-xl border ${
-                    card.highlighted
-                      ? "bg-white dark:bg-slate-900 border-sky-500/60 ring-1 ring-sky-500/25"
-                      : "bg-slate-50/80 dark:bg-slate-900/90 border-slate-200 dark:border-slate-800 hover:border-sky-500/40"
-                  }`}
+                  className={`h-full flex flex-col justify-between rounded-3xl p-6 transition shadow-md dark:shadow-xl border ${cardSurfaceClass}`}
                 >
                   <div className="space-y-5">
                     <div className="flex items-center justify-between gap-2">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border ${
-                          card.highlighted
-                            ? "bg-sky-500/15 text-sky-700 dark:text-sky-300 border-sky-500/35"
-                            : "bg-white dark:bg-slate-950 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800"
-                        }`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold ${badgeClass}`}
                       >
-                        <Icon className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
+                        <Icon className={`w-3.5 h-3.5 ${badgeIconClass}`} />
                         <span>{card.badge}</span>
                       </span>
 
-                      <span className="text-xs font-bold text-sky-600 dark:text-sky-400">
+                      <span
+                        className={`text-base sm:text-lg font-bold tracking-tight ${priceClass}`}
+                      >
                         {card.priceTag}
                       </span>
                     </div>
@@ -327,7 +362,9 @@ export default function ChooseHowYouUseSection({
                           key={benefit}
                           className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-300"
                         >
-                          <span className="w-4 h-4 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-600 dark:text-sky-400 flex items-center justify-center shrink-0 mt-0.5">
+                          <span
+                            className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 mt-0.5 ${checkBadgeClass}`}
+                          >
                             <Check className="w-2.5 h-2.5 stroke-[3]" />
                           </span>
                           <span className="leading-relaxed">{benefit}</span>
@@ -340,11 +377,7 @@ export default function ChooseHowYouUseSection({
                     <Link
                       href={action.href}
                       onClick={(e) => handleRoleCardActionClick(e, card)}
-                      className={`w-full inline-flex items-center justify-center gap-2 font-semibold text-xs sm:text-sm px-4 py-3 rounded-xl transition cursor-pointer ${
-                        card.highlighted
-                          ? "bg-sky-500 hover:bg-sky-400 text-slate-950 shadow-md shadow-sky-500/20"
-                          : "bg-white dark:bg-slate-800 hover:bg-sky-500 text-slate-900 dark:text-white hover:text-slate-950 border border-slate-300 dark:border-slate-700 hover:border-sky-400"
-                      }`}
+                      className={`w-full inline-flex items-center justify-center gap-2 text-xs sm:text-sm px-4 py-3 rounded-xl transition cursor-pointer ${buttonClass}`}
                     >
                       <span>{action.label}</span>
                       <ArrowRight className="w-4 h-4" />

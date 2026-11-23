@@ -210,9 +210,9 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-950/85 backdrop-blur border-b border-slate-200 dark:border-slate-800/80 text-slate-900 dark:text-slate-100 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto h-16 px-4 sm:px-8 flex items-center justify-between gap-3">
+      <div className="max-w-7xl mx-auto h-16 px-2.5 sm:px-6 lg:px-8 flex items-center justify-between gap-1.5 sm:gap-3">
         {/* Left: Mobile Toggle + Brand */}
-        <div className="flex items-center gap-2.5 min-w-0">
+        <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
           <button
             type="button"
             onClick={() => setMobileNavOpen((prev) => !prev)}
@@ -223,18 +223,18 @@ export default function Navbar() {
             className="md:hidden p-2 rounded-xl bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 transition cursor-pointer shrink-0"
           >
             {mobileNavOpen ? (
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             ) : (
-              <Menu className="w-5 h-5" />
+              <Menu className="w-4 h-4 sm:w-5 sm:h-5" />
             )}
           </button>
 
           <Link
             href="/"
-            className="flex items-center gap-2.5 text-xl font-bold shrink-0"
+            className="flex items-center gap-1.5 sm:gap-2.5 text-base sm:text-xl font-bold shrink-0 whitespace-nowrap"
           >
-            <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400">
-              <Wrench className="w-5 h-5" />
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center text-sky-600 dark:text-sky-400 shrink-0">
+              <Wrench className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
             <span className="tracking-tight text-slate-900 dark:text-white">
               Fix<span className="text-sky-600 dark:text-sky-400">Mate</span>
@@ -266,24 +266,24 @@ export default function Navbar() {
         </nav>
 
         {/* Right: Theme Toggle + Auth / Profile Dropdown */}
-        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
           <ThemeToggle />
 
           {!user ? (
-            <>
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
               <Link
                 href="/sign-in"
-                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2.5 sm:px-3 py-2 rounded-lg transition"
+                className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition whitespace-nowrap shrink-0"
               >
                 Sign in
               </Link>
               <Link
                 href="/sign-up"
-                className="text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-slate-950 px-3.5 sm:px-4 py-2 rounded-xl transition shadow-md shadow-sky-500/20"
+                className="text-xs sm:text-sm font-semibold bg-sky-500 hover:bg-sky-400 text-slate-950 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-xl transition shadow-md shadow-sky-500/20 whitespace-nowrap shrink-0"
               >
                 Sign Up
               </Link>
-            </>
+            </div>
           ) : (
             <div className="relative" ref={dropdownRef}>
               <button
@@ -292,7 +292,7 @@ export default function Navbar() {
                 aria-expanded={menuOpen}
                 aria-label="Open account menu"
                 onClick={() => setMenuOpen((prev) => !prev)}
-                className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 transition cursor-pointer"
+                className="flex items-center gap-2 pl-1.5 pr-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-900 hover:bg-slate-200 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-800 transition cursor-pointer shrink-0"
               >
                 {showAvatarImage ? (
                   <img
